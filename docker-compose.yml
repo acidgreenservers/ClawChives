@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  claw-chives:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: clawchives-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - sqlite_data:/app/data
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+
+volumes:
+  sqlite_data:

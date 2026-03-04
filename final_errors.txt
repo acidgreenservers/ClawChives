@@ -1,0 +1,6 @@
+src/components/dashboard/BookmarkDashboard.tsx(334,17): error TS2322: Type '{ key: string; bookmark: Bookmark; layout: "grid" | "list"; iconSize: "small" | "medium" | "large"; onEdit: (b: Bookmark) => void; onDelete: (id: string) => void; onToggleStar: (id: string) => void; onToggleArchive: (id: string) => void; onDragStart: (e: DragEvent<...>, id: string) => void; }' is not assignable to type 'IntrinsicAttributes & BookmarkCardProps'.
+  Property 'layout' does not exist on type 'IntrinsicAttributes & BookmarkCardProps'.
+src/components/settings/AppearanceSettings.tsx(33,17): error TS2345: Argument of type '"title" | "dateAdded" | "starred"' is not assignable to parameter of type 'SetStateAction<"title" | "dateAdded" | "domain">'.
+  Type '"starred"' is not assignable to type 'SetStateAction<"title" | "dateAdded" | "domain">'.
+src/components/settings/AppearanceSettings.tsx(46,7): error TS2322: Type '"title" | "dateAdded" | "domain"' is not assignable to type '"title" | "dateAdded" | "starred"'.
+  Type '"domain"' is not assignable to type '"title" | "dateAdded" | "starred"'.

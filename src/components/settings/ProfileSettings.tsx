@@ -1,0 +1,209 @@
+import { useState, useEffect } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { User, Mail, Save, Upload, X } from "lucide-react";
+import * as IndexedDB from "../../lib/indexedDB";
+
+export function ProfileSettings() {
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const loadUserProfile = async () => {
+    const user = await IndexedDB.getUser();
+    if (user) {
+      setUsername(user.username);
+      setDisplayName(user.displayName);
+      setEmail(user.email || "");
+      setAvatar(user.avatar || "");
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    setSaveMessage("");
+
+    try {
+      const existingUser = await IndexedDB.getUser();
+      await IndexedDB.saveUser({
+        uuid: existingUser?.uuid || crypto.randomUUID(),
+        createdAt: existingUser?.createdAt || new Date().toISOString(),
+        username,
+        displayName,
+        email,
+        avatar,
+      });
+      setSaveMessage("Profile updated successfully!");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (error) {
+      setSaveMessage("Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatar(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatar("");
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Settings</CardTitle>
+          <CardDescription>
+            Manage your account information and preferences
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Avatar Section */}
+          <div className="flex items-start gap-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+                {avatar ? (
+                  <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-12 h-12 text-white" />
+                )}
+              </div>
+              {avatar && (
+                <button
+                  onClick={handleRemoveAvatar}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+            <div className="flex-1 space-y-3">
+              <div>
+                <Label htmlFor="avatar-upload">Avatar Image</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="flex-1"
+                  />
+                  <Button variant="outline" size="icon">
+                    <Upload className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Recommended: Square image, at least 200x200px
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Fields */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="mt-1"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Your unique identifier (cannot be changed after setup)
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="displayName">Display Name</Label>
+              <Input
+                id="displayName"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="mt-1"
+                placeholder="How others see you"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email">Email (Optional)</Label>
+              <div className="relative mt-1">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  placeholder="your@email.com"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+            {saveMessage && (
+              <span className={`text-sm ${saveMessage.includes("success") ? "text-green-600" : "text-red-600"}`}>
+                {saveMessage}
+              </span>
+            )}
+            <Button
+              onClick={handleSaveProfile}
+              disabled={isSaving}
+              className="ml-auto bg-cyan-700 hover:bg-cyan-800"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Account Info Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-slate-600">Account Type</span>
+              <span className="font-medium text-slate-900">Personal</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-600">Storage</span>
+              <span className="font-medium text-slate-900">Local (Encrypted)</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-600">Created</span>
+              <span className="font-medium text-slate-900">
+                {new Date().toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
