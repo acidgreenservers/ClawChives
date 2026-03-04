@@ -79,7 +79,7 @@ export interface User {
 export interface UserKey {
   id: string;         // typically same as user uuid
   uuid: string;       // links back to User.uuid
-  token: string;      // the hu-<64chars> identity token (hashed in production)
+  tokenHash: string;  // SHA-256 hash of the hu-<64chars> identity token (NEVER store plaintext)
   createdAt: string;
 }
 
@@ -300,15 +300,32 @@ export const tags = {
 
 // ─── User operations ──────────────────────────────────────────────────────────
 
-/** Get the current user (there should only be one) */
-export const getUser = async (): Promise<User | null> => {
+/** Get all users stored in the database (multi-user support) */
+export const getAllUsers = async (): Promise<User[]> => {
+  return getAll<User>(STORES.USER);
+};
+
+/** Get a specific user by UUID */
+export const getUserByUUID = async (uuid: string): Promise<User | null> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.USER, "readonly");
-    const req = tx.objectStore(STORES.USER).getAll();
-    req.onsuccess = () => resolve(req.result.length > 0 ? req.result[0] : null);
+    const req = tx.objectStore(STORES.USER).get(uuid);
+    req.onsuccess = () => resolve(req.result || null);
     req.onerror = () => reject(req.error);
   });
+};
+
+/** Get user by username */
+export const getUserByUsername = async (username: string): Promise<User | null> => {
+  const users = await getAllUsers();
+  return users.find(u => u.username.toLowerCase() === username.toLowerCase()) ?? null;
+};
+
+/** Get the current user (deprecated - use getUserByUUID for multi-user) */
+export const getUser = async (): Promise<User | null> => {
+  const users = await getAllUsers();
+  return users.length > 0 ? users[0] : null;
 };
 
 /** Check if a username is already taken — uses scan, not index, for migration safety */
@@ -346,10 +363,18 @@ export const saveUserKey = async (userKey: UserKey): Promise<UserKey> => {
   return update(STORES.USER_KEYS, userKey); // put so it can be overwritten on re-setup
 };
 
-/** Get the identity key for a given user UUID — uses scan, not index, for migration safety */
+/** Get the identity key hash for a given user UUID — uses scan, not index, for migration safety */
 export const getUserKey = async (uuid: string): Promise<UserKey | null> => {
   const keys = await getAll<UserKey>(STORES.USER_KEYS);
   return keys.find((k) => k.uuid === uuid) ?? null;
+};
+
+/** Verify a plaintext token against stored hash for a user */
+export const verifyUserToken = async (uuid: string, plaintextToken: string): Promise<boolean> => {
+  const { verifyToken } = await import("./crypto");
+  const userKey = await getUserKey(uuid);
+  if (!userKey) return false;
+  return verifyToken(plaintextToken, userKey.tokenHash);
 };
 
 /** Delete the identity key for a user (e.g., on account wipe) */
@@ -520,8 +545,11 @@ export const IndexedDB = {
   bookmarks,
   folders,
   tags,
-  // User
-  getUser,
+  // User (multi-user support)
+  getUser,              // deprecated - returns first user
+  getAllUsers,
+  getUserByUUID,
+  getUserByUsername,
   saveUser,
   deleteUser,
   isUsernameTaken,
@@ -529,6 +557,7 @@ export const IndexedDB = {
   saveUserKey,
   getUserKey,
   deleteUserKey,
+  verifyUserToken,      // secure token verification with hashing
   // Agent Keys
   getAllAgentKeys,
   saveAgentKey,

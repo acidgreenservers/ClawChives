@@ -38,20 +38,42 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
+      <section className="pt-8 pb-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
+            <img
+              src="/src/assets/main-logo.png"
+              alt="ClawChives Logo"
+              style={{ 
+                mixBlendMode: "multiply",
+                filter: "brightness(1.1) contrast(1.1)"
+              }}
+              className="w-72 h-72 object-contain mx-auto -mb-12"
+            />
+
             <div className="inline-flex items-center gap-2 bg-cyan-100 text-cyan-800 px-4 py-2 rounded-full text-sm font-medium mb-8">
               <Zap className="w-4 h-4" />
               Local-First Sovereign Bookmarking
             </div>
+
             
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 tracking-tight">
-              ClawChives
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
+              <span className="text-red-500">Claw</span>
+              <span className="text-cyan-600">Chives</span>
             </h1>
             
-            <p className="text-xl sm:text-2xl text-slate-600 mb-8 leading-relaxed">
+            <p className="text-xl sm:text-2xl text-slate-600 mb-4 leading-relaxed">
               Your sovereign bookmark library where <span className="text-cyan-700 font-semibold">humans</span> and <span className="text-amber-600 font-semibold">AI agents</span> collaborate to organize the web.
+            </p>
+
+            <p className="text-lg text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Snap out of the generic SaaS trap.{" "}
+              <span className="text-cyan-600 font-semibold">ClawChives</span> secures your links with{" "}
+              <span className="text-amber-500 font-semibold">ShellCryption</span> and{" "}
+              <span className="text-cyan-600 font-semibold">Armor Plated Authentication</span>.{" "}
+              <span className="text-amber-500 font-semibold">Dangle</span> some keys to your sovereign AI agents, lets them{" "}
+              <span className="text-cyan-600 font-semibold">scuttle</span> the net, and{" "}
+              <span className="text-amber-500 font-semibold">pinch</span> some bookmarks for you! 🦐
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -60,7 +82,7 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
                 size="lg"
                 className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-lg px-8 py-6 shadow-xl shadow-cyan-200"
               >
-                Create Your Archive
+                Hatch Your ClawChive
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button 
@@ -141,9 +163,26 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Human + Agent Collaboration</h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              A bookmarking system designed for the future of human-AI partnership
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              Human + <span className="text-red-500">Lobster</span> Collaboration
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+              <span className="text-cyan-600 font-semibold">ClawChives</span> allows you to{" "}
+              <span className="text-amber-500 font-semibold">molt</span> away the tediousness of grabbing multiple URLs or organizing those unkempt libraries by hand.{" "}
+              Let your <span className="text-red-500 font-semibold">Lobsters</span> help you organize that mess!{" "}
+              Don&apos;t feel like going out on the boat today? No problem — you{" "}
+              <span className="text-amber-500 font-semibold">cast the net</span>, and your agent{" "}
+              <span className="text-cyan-600 font-semibold">pulls in the URLs</span>!{" "}
+              <br className="hidden sm:block" /><br className="hidden sm:block" />
+              All <span className="text-amber-500 font-semibold">pinchmarks</span> are parsed and converted to a markdown version so your agent has a more{" "}
+              <span className="text-cyan-600 font-semibold">traversable format</span> to{" "}
+              <span className="text-cyan-600 font-semibold">scuttle</span> through.{" "}
+              <br className="hidden sm:block" /><br className="hidden sm:block" />
+              <em className="text-slate-700">
+                ClawChives is a <span className="text-red-500 font-semibold">carapace</span> for your{" "}
+                <span className="text-amber-500 font-semibold">pinchmarks</span>, that{" "}
+                <span className="text-cyan-600 font-semibold">molts</span>, but retains its core.
+              </em>
             </p>
           </div>
 
@@ -155,7 +194,7 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Human Curated</h3>
               <p className="text-slate-600">
-                Add bookmarks manually with rich metadata, tags, and folders. Your personal web archive, organized your way.
+                Cast your own net and haul in the links yourself. Pinch URLs with precision, tag your catch, and sort your shell collection exactly your way.
               </p>
             </div>
 
@@ -164,9 +203,9 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
               <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center mb-6">
                 <Bot className="w-7 h-7 text-amber-700" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Agent Powered</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3"><span className="text-red-500">Lobster</span> Powered</h3>
               <p className="text-slate-600">
-                AI agents can add bookmarks on your behalf, research topics, and populate your archive with curated content.
+                Unleash your <span className="text-red-500 font-semibold">Lobsters</span> to scuttle the seafloor of the web. They'll pinch links, research topics, and pack your shell full of curated catches.
               </p>
             </div>
 
@@ -175,9 +214,9 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
               <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-6">
                 <FolderTree className="w-7 h-7 text-green-700" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Shared Organization</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Shared Tide Pool</h3>
               <p className="text-slate-600">
-                Both humans and agents organize content using the same folders, tags, and structure. Seamless collaboration.
+                Humans and <span className="text-red-500 font-semibold">Lobsters</span> share the same reef. Both species sort the catch into the same folders, tags, and burrows — no territorial disputes.
               </p>
             </div>
 
@@ -186,9 +225,9 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
               <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
                 <Database className="w-7 h-7 text-purple-700" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Local First</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Your Own Shell</h3>
               <p className="text-slate-600">
-                Your data lives in your browser's IndexedDB. Full control, complete privacy, instant access. No cloud dependency.
+                Your pinchmarks live in your own shell — no landlords, no cloud tanks. IndexedDB or SQLite, your burrow, your rules. No evictions.
               </p>
             </div>
 
@@ -197,9 +236,9 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
               <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
                 <Lock className="w-7 h-7 text-blue-700" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Encrypted Storage</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">ShellCrypted Vault</h3>
               <p className="text-slate-600">
-                All data is encrypted at rest. Your bookmarks, your keys, your privacy. Military-grade security built in.
+                Every pinchmark is locked in armour-plated encryption. Nobody cracks your stash without the right key. Not even us — we don't have it.
               </p>
             </div>
 
@@ -208,9 +247,9 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
               <div className="w-14 h-14 bg-rose-100 rounded-xl flex items-center justify-center mb-6">
                 <Globe className="w-7 h-7 text-rose-700" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Agent Permissions</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-3"><span className="text-red-500">Lobster</span> Permits</h3>
               <p className="text-slate-600">
-                Granular control over what agents can do. Read, write, delete permissions per agent. You're always in charge.
+                You decide which <span className="text-red-500 font-semibold">Lobsters</span> get the master claw and which only browse the reef. Granular read/write/delete permits, per crustacean. You're the Captain.
               </p>
             </div>
           </div>

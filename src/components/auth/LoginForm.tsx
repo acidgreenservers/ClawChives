@@ -6,7 +6,7 @@ import { validateIdentityFile } from "../../lib/crypto";
 import * as IndexedDB from "../../lib/indexedDB";
 
 interface LoginFormProps {
-  onSuccess: () => void;
+  onSuccess: (uuid: string) => void;
   onCancel: () => void;
 }
 
@@ -51,25 +51,19 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
       const { uuid, token } = keyData as { username: string; uuid: string; token: string };
 
       // 3. Look up the user by UUID
-      const user = await IndexedDB.getUser();
+      const user = await IndexedDB.getUserByUUID(uuid);
       if (!user) {
-        throw new Error("No account found on this device. Please create an account first.");
-      }
-      if (user.uuid !== uuid) {
-        throw new Error("This identity file does not match the account on this device.");
+        throw new Error("No account found with this identity. The user may have been deleted.");
       }
 
-      // 4. Validate the key against the userKeys store
-      const storedKey = await IndexedDB.getUserKey(uuid);
-      if (!storedKey) {
-        throw new Error("No identity key found for this account. The keystore may be corrupted.");
-      }
-      if (storedKey.token !== token) {
-        throw new Error("Invalid identity key. The token in this file does not match.");
+      // 4. Validate the token hash against the userKeys store (secure comparison)
+      const isValid = await IndexedDB.verifyUserToken(uuid, token);
+      if (!isValid) {
+        throw new Error("Invalid identity key. The token does not match the stored credentials.");
       }
 
-      // ✅ All checks passed
-      onSuccess();
+      // ✅ All checks passed - pass UUID to parent for session management
+      onSuccess(uuid);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed. Please check your identity file.");
     } finally {

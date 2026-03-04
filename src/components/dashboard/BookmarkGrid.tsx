@@ -1,13 +1,13 @@
 import { BookmarkCard } from "./BookmarkCard";
 
-import type { Bookmark } from "../../types";
+import type { Bookmark } from "../../lib/indexedDB";
 
 interface BookmarkGridProps {
   bookmarks: Bookmark[];
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
-  onToggleStar: (id: string) => void;
-  onToggleArchive: (id: string) => void;
+  onToggleStar: (bookmark: Bookmark) => void;
+  onToggleArchive: (bookmark: Bookmark) => void;
 }
 
 export function BookmarkGrid({ 

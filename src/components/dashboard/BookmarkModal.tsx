@@ -4,13 +4,13 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { X, Plus, Tag, Folder, Star, Archive } from "lucide-react";
 
-import type { Bookmark, Folder as FolderType } from "../../types";
+import type { Bookmark, Folder as FolderType } from "../../lib/indexedDB";
 
 interface BookmarkModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (bookmark: Omit<Bookmark, "id" | "createdAt">) => void;
-  bookmark?: Bookmark;
+  onSave: (bookmark: Bookmark) => void;
+  bookmark?: Bookmark | null;
   folders: FolderType[];
 }
 
@@ -29,7 +29,7 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders }: Bo
     if (bookmark) {
       setUrl(bookmark.url);
       setTitle(bookmark.title);
-      setDescription(bookmark.description);
+      setDescription(bookmark.description || "");
       setTags(bookmark.tags);
       setSelectedFolder(bookmark.folderId || "");
       setStarred(bookmark.starred);
@@ -82,15 +82,30 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders }: Bo
   const handleSave = () => {
     if (!url.trim()) return;
 
-    const bookmarkData: Omit<Bookmark, "id" | "createdAt"> = {
+    const now = new Date().toISOString();
+
+    // If editing existing bookmark, preserve id and createdAt
+    const bookmarkData: Bookmark = bookmark ? {
+      ...bookmark,
       url: url.trim(),
       title: title.trim() || "Untitled",
-      description: description.trim(),
+      description: description.trim() || undefined,
       tags,
       folderId: selectedFolder || undefined,
       starred,
       archived,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
+    } : {
+      id: crypto.randomUUID(),
+      url: url.trim(),
+      title: title.trim() || "Untitled",
+      description: description.trim() || undefined,
+      tags,
+      folderId: selectedFolder || undefined,
+      starred,
+      archived,
+      createdAt: now,
+      updatedAt: now,
     };
 
     onSave(bookmarkData);

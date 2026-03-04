@@ -1,0 +1,34 @@
+# ClawChives API Server
+# ─────────────────────────────────────────────────────────────────────────────
+# Dedicated Dockerfile for the Express/SQLite API backend (server.js).
+# Paired with the frontend (Dockerfile) in docker-compose.yml.
+# ─────────────────────────────────────────────────────────────────────────────
+
+FROM node:20-alpine
+
+# Install build tools needed for native modules (better-sqlite3)
+RUN apk add --no-cache python3 make g++
+
+WORKDIR /app
+
+# Copy only the server + package files first (layer cache optimisation)
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev
+
+COPY server.js ./
+
+# Data volume mount point
+RUN mkdir -p /app/data
+
+# Expose the API port
+EXPOSE 4242
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:4242/api/health || exit 1
+
+ENV NODE_ENV=production
+ENV PORT=4242
+ENV DATA_DIR=/app/data
+
+CMD ["node", "server.js"]

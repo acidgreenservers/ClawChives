@@ -6,21 +6,23 @@ import { BookmarkGrid } from "./BookmarkGrid";
 import { Sidebar } from "./Sidebar";
 import { BookmarkModal } from "./BookmarkModal";
 import * as IndexedDB from "../../lib/indexedDB";
+import type { User, Bookmark } from "../../lib/indexedDB";
 
 interface DashboardProps {
+  user: User | null;
   onLogout: () => void;
   onGoToSettings: () => void;
   onShowDatabaseStats: () => void;
 }
 
-export function Dashboard({ onLogout, onGoToSettings, onShowDatabaseStats }: DashboardProps) {
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
+export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats }: DashboardProps) {
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [folders, setFolders] = useState<any[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<"all" | "starred" | "archived">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingBookmark, setEditingBookmark] = useState<any>(null);
+  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -28,10 +30,15 @@ export function Dashboard({ onLogout, onGoToSettings, onShowDatabaseStats }: Das
   }, []);
 
   const loadData = async () => {
-    const allBookmarks = await IndexedDB.bookmarks.getAll();
-    const allFolders = await IndexedDB.folders.getAll();
-    setBookmarks(allBookmarks);
-    setFolders(allFolders);
+    try {
+      const allBookmarks = await IndexedDB.bookmarks.getAll();
+      const allFolders = await IndexedDB.folders.getAll();
+      setBookmarks(allBookmarks);
+      setFolders(allFolders);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+      alert("Failed to load bookmarks. Please refresh the page.");
+    }
   };
 
   const handleAddBookmark = () => {
@@ -39,35 +46,64 @@ export function Dashboard({ onLogout, onGoToSettings, onShowDatabaseStats }: Das
     setIsModalOpen(true);
   };
 
-  const handleEditBookmark = (bookmark: any) => {
+  const handleEditBookmark = (bookmark: Bookmark) => {
     setEditingBookmark(bookmark);
     setIsModalOpen(true);
   };
 
-  const handleSaveBookmark = async (bookmark: any) => {
-    await IndexedDB.bookmarks.add(bookmark);
-    await loadData();
-    setIsModalOpen(false);
+  const handleSaveBookmark = async (bookmark: Bookmark) => {
+    try {
+      // Use update (put) instead of add to handle both inserts and updates
+      await IndexedDB.bookmarks.update(bookmark);
+      await loadData();
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Failed to save bookmark:", error);
+      alert("Failed to save bookmark. Please try again.");
+    }
   };
 
   const handleDeleteBookmark = async (id: string) => {
     if (confirm("Are you sure you want to delete this bookmark?")) {
-      await IndexedDB.bookmarks.delete(id);
-      await loadData();
+      try {
+        await IndexedDB.bookmarks.delete(id);
+        await loadData();
+      } catch (error) {
+        console.error("Failed to delete bookmark:", error);
+        alert("Failed to delete bookmark. Please try again.");
+      }
     }
   };
 
-  const handleToggleStar = async (bookmark: any) => {
-    await IndexedDB.bookmarks.add({ ...bookmark, starred: !bookmark.starred });
-    await loadData();
+  const handleToggleStar = async (bookmark: Bookmark) => {
+    try {
+      await IndexedDB.bookmarks.update({
+        ...bookmark,
+        starred: !bookmark.starred,
+        updatedAt: new Date().toISOString()
+      });
+      await loadData();
+    } catch (error) {
+      console.error("Failed to toggle star:", error);
+      alert("Failed to update bookmark. Please try again.");
+    }
   };
 
-  const handleToggleArchive = async (bookmark: any) => {
-    await IndexedDB.bookmarks.add({ ...bookmark, archived: !bookmark.archived });
-    await loadData();
+  const handleToggleArchive = async (bookmark: Bookmark) => {
+    try {
+      await IndexedDB.bookmarks.update({
+        ...bookmark,
+        archived: !bookmark.archived,
+        updatedAt: new Date().toISOString()
+      });
+      await loadData();
+    } catch (error) {
+      console.error("Failed to toggle archive:", error);
+      alert("Failed to update bookmark. Please try again.");
+    }
   };
 
-  const filteredBookmarks = bookmarks.filter((bookmark) => {
+  const filteredBookmarks = bookmarks.filter((bookmark: Bookmark) => {
     const matchesSearch =
       bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bookmark.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,14 +142,19 @@ export function Dashboard({ onLogout, onGoToSettings, onShowDatabaseStats }: Das
           onSelectFolder={setSelectedFolder}
           onFilterChange={setFilterType}
           onAddFolder={async (name) => {
-            const newFolder = {
-              id: crypto.randomUUID(),
-              name,
-              color: "#06b6d4",
-              createdAt: new Date().toISOString(),
-            };
-            await IndexedDB.folders.add(newFolder);
-            await loadData();
+            try {
+              const newFolder = {
+                id: crypto.randomUUID(),
+                name,
+                color: "#06b6d4",
+                createdAt: new Date().toISOString(),
+              };
+              await IndexedDB.folders.add(newFolder);
+              await loadData();
+            } catch (error) {
+              console.error("Failed to add folder:", error);
+              alert("Failed to create folder. Please try again.");
+            }
           }}
           bookmarkCounts={{
             all: bookmarks.length,
@@ -138,6 +179,11 @@ export function Dashboard({ onLogout, onGoToSettings, onShowDatabaseStats }: Das
                   className="pl-10"
                 />
               </div>
+              {user && (
+                <div className="ml-4 flex items-center gap-2">
+                  <span className="text-sm font-medium text-slate-700">Hello, {user.displayName}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2">

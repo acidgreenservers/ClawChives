@@ -1,76 +1,212 @@
 # 🏗️ System Blueprint: ClawChives
 
 [![Blueprint](https://img.shields.io/badge/Architecture-Blueprint-blue?style=for-the-badge)](#)
+[![Separation of Concerns](https://img.shields.io/badge/Pattern-Feature_Separation-purple?style=for-the-badge)](#)
 
-This document serves as the high-level structural map of the ClawChives frontend project. It guarantees a separation of concerns driven by feature domains.
+> ASCII Construction Blueprint — the authoritative structural reference for ClawChives.
 
-## Directory Tree
+---
+
+## Full Directory Tree
 
 ```text
 ClawChives/
-├── .gitignore
-├── docker-compose.yml       # Dev container orchestration
-├── Dockerfile               # Node environment definition
-├── index.html               # Main entry HTML
-├── package.json             # NPM dependencies & scripts
-├── postcss.config.js        # CSS parsing config
-├── tailwind.config.js       # UI Design token config
-├── tsconfig.json            # TypeScript rules
-├── tsconfig.node.json       # Node environment TS rules
-├── vite.config.ts           # Bundler configuration
 │
-└── src/                     # Core Application Source
-    ├── App.tsx              # Root Component / View Controller
-    ├── index.css            # Global CSS / Tailwind Entry
-    ├── main.tsx             # React Mount entry
+├── 📄 index.html                    # Vite HTML entry point
+├── 📄 package.json                  # NPM dependencies & scripts
+├── 📄 vite.config.ts                # Vite bundler config
+├── 📄 tsconfig.json                 # TypeScript strict rules
+├── 📄 tsconfig.node.json            # Node-specific TS config
+├── 📄 tailwind.config.js            # Design token system
+├── 📄 postcss.config.js             # CSS processor pipeline
+├── 📄 components.json               # shadcn/ui component registry
+├── 📄 .env.example                  # Environment variable reference
+│
+├── 🐳 Dockerfile                    # Frontend container (Vite dev/build)
+├── 🐳 Dockerfile.api                # API server container (Express + SQLite)
+├── 🐳 docker-compose.yml            # Dual-profile orchestration
+│                                      (--profile indexeddb | --profile sqlite)
+│
+├── 🌐 server.js                     # Express REST API + SQLite backend
+│                                      Endpoints: bookmarks, folders, agent-keys
+│                                      Auth: hu- / ag- / api- key enforcement
+│                                      DB: better-sqlite3 → /app/data/db.sqlite
+│
+└── src/
     │
-    ├── components/          # Feature-scoped components
-    │   ├── auth/            # Authentication Views
-    │   ├── dashboard/       # Main Data Views
-    │   ├── landing/         # Marketing/Entry Views
-    │   └── settings/        # App Configuration Views
+    ├── 📄 main.tsx                  # React mount point (wraps in DatabaseProvider)
+    ├── 📄 App.tsx                   # Root view controller + session state manager
+    │                                  sessionStorage: cc_authenticated, cc_view
+    ├── 📄 index.css                 # Global styles + Tailwind CSS directives
     │
-    ├── hooks/               # Custom React Hooks (Logic sharing)
+    ├── components/                  # Feature-scoped UI components
+    │   ├── auth/
+    │   │   ├── LoginForm.tsx        # Identity file upload + hu- token validation
+    │   │   └── SetupWizard.tsx      # First-run: username, UUID, key generation
+    │   │                             Exports clawchives_identity_key.json
+    │   ├── dashboard/
+    │   │   ├── Dashboard.tsx        # Main layout: header, sidebar, content
+    │   │   ├── BookmarkGrid.tsx     # Responsive bookmark card grid
+    │   │   ├── BookmarkModal.tsx    # Add/Edit bookmark form
+    │   │   ├── Sidebar.tsx          # Folder tree + filter navigation
+    │   │   └── DatabaseStatsModal.tsx # IndexedDB record counts + size
+    │   ├── landing/
+    │   │   └── LandingPage.tsx      # Unauthenticated entry page
+    │   ├── settings/
+    │   │   ├── SettingsPanel.tsx    # Settings tabbed layout
+    │   │   ├── ProfileSettings.tsx  # Display name, avatar, email
+    │   │   ├── AppearanceSettings.tsx # Theme, layout, items-per-page
+    │   │   └── AgentKeyGeneratorModal.tsx # ag- key creation with permissions
+    │   └── ui/                      # shadcn/ui base components
+    │       ├── button.tsx
+    │       ├── card.tsx
+    │       ├── input.tsx
+    │       ├── label.tsx
+    │       └── select.tsx
     │
-    ├── lib/                 # Third-party wrappers/Core Libs
-    │   └── indexedDB/       # Client-side DB adapters
+    ├── services/                    # Business logic + data access
+    │   ├── index.ts                 # Barrel export
+    │   ├── database/
+    │   │   ├── adapter.ts           # ◀ IDatabaseAdapter interface (contract)
+    │   │   ├── DatabaseProvider.tsx # ◀ React context: resolves adapter by env var
+    │   │   ├── indexeddb/
+    │   │   │   └── IndexedDBAdapter.ts  # Wraps src/lib/indexedDB.ts
+    │   │   └── rest/
+    │   │       └── RestAdapter.ts       # fetch() → server.js (SQLite mode)
+    │   ├── bookmarks/               # Bookmark CRUD operations
+    │   ├── folders/                 # Folder management
+    │   ├── agents/                  # Agent key operations
+    │   ├── users/                   # User profile management
+    │   ├── auth/                    # Auth helper functions
+    │   ├── settings/                # Appearance + profile settings
+    │   ├── types/                   # Shared TypeScript interfaces
+    │   └── utils/                   # Constants, errors, DB helpers
     │
-    ├── services/            # API & external integration logic
+    ├── hooks/
+    │   └── useAuth.ts               # Authentication state hook
     │
-    └── types/               # TypeScript interface/type definitions
+    ├── lib/
+    │   ├── indexedDB.ts             # Low-level IndexedDB API (stores, migrations)
+    │   │                              Stores: bookmarks, folders, tags, agent_keys,
+    │   │                                      user_keys, appearance_settings,
+    │   │                                      profile_settings, user
+    │   ├── crypto.ts                # SHA-256 token hashing utilities
+    │   ├── api.ts                   # API client helpers
+    │   ├── exportImport.ts          # JSON bookmark import/export
+    │   └── utils.ts                 # Shared utility functions
+    │
+    └── types/
+        ├── index.ts                 # App-wide TypeScript types
+        └── agent.ts                 # AgentKey type + ExpirationType enum
 ```
+
+---
+
+## Data Flow
+
+```mermaid
+graph LR
+    subgraph UI ["UI Layer"]
+        A[Components]
+    end
+
+    subgraph Logic ["Logic Layer"]
+        B[useDatabaseAdapter hook]
+        C[DatabaseProvider]
+    end
+
+    subgraph Adapters ["Adapter Layer"]
+        D[IndexedDBAdapter]
+        E[RestAdapter]
+    end
+
+    subgraph Storage ["Storage Layer"]
+        F[(Browser IndexedDB)]
+        G[(SQLite server)]
+    end
+
+    A --> B
+    B --> C
+    C -->|INDEXEDDB| D
+    C -->|SQLITE| E
+    D --> F
+    E -->|HTTP + Bearer| G
+```
+
+---
 
 ## Architectural Tenets
 
 <details>
-  <summary>View Core Principles</summary>
+<summary>View Core Principles</summary>
 
-1. **Separation of Concerns**: Components display data. Hooks manage React state. Services handle data fetching/logic.
-2. **Feature First**: All directories inside `components/` are nested by feature area (`auth`, `dashboard`), avoiding generic `buttons`, `inputs` monoliths unless established as a core UI library.
-3. **No Monoliths**: Files must remain small, single-responsibility entities.
-4. **Locality of Behavior**: Styles, State, and Markup should co-exist gracefully where practical, leveraging Tailwind to avoid CSS scattering.
+1. **Separation of Concerns** — Components display. Hooks manage state. Services handle data. Adapters abstract storage.
+2. **Feature First** — All directories inside `components/` are nested by feature area (auth, dashboard, settings). No flat generic component soup.
+3. **No Monoliths** — Files are single-responsibility. A growing file is a signal to refactor.
+4. **Adapter Pattern** — The `IDatabaseAdapter` interface decouples the UI from storage. Components have zero knowledge of IndexedDB vs SQLite.
+5. **Auth is Always Client-Side** — Identity key validation always occurs in IndexedDB, regardless of database mode. The server never holds identity tokens.
+6. **Explicit State** — Navigation state and auth state are persisted in `sessionStorage` using namespaced keys (`cc_authenticated`, `cc_view`).
+
 </details>
+
+---
+
+## Key System
+
+```mermaid
+classDiagram
+    class IdentityKey {
+        +string username
+        +string uuid
+        +string token [hu-xxxxxxxx × 64]
+    }
+    class AgentKey {
+        +string id
+        +string name
+        +string apiKey [ag-xxxxxxxx × 64]
+        +Permissions permissions
+        +string expirationType
+        +boolean isActive
+    }
+    class ApiToken {
+        +string key [api-xxxxxxxx × 32]
+        +string ownerKey
+        +string ownerType
+        +string createdAt
+    }
+
+    IdentityKey --> ApiToken : can issue
+    AgentKey --> ApiToken : can issue
+```
+
+---
+
+## Component Class Diagram
 
 ```mermaid
 classDiagram
     class App {
-      +currentView View
-      +isAuthenticated boolean
-      +render()
+        +currentView string
+        +isAuthenticated boolean
+        +currentUser User
+        +sessionStorage cc_authenticated
+        +sessionStorage cc_view
     }
-    class Auth {
-      +SetupWizard Component
-      +LoginForm Component
+    class DatabaseProvider {
+        +IDatabaseAdapter adapter
+        +useDatabaseAdapter() hook
+        +useDatabaseMode() hook
     }
-    class Dashboard {
-      +Dashboard Component
-      +DatabaseStatsModal Component
+    class IndexedDBAdapter {
+        +implements IDatabaseAdapter
     }
-    class Settings {
-      +SettingsPanel Component
+    class RestAdapter {
+        +implements IDatabaseAdapter
+        +API_BASE string
+        +request() fetch
     }
-    
-    App --> Auth : manages state
-    App --> Dashboard : manages state
-    App --> Settings : manages state
+
+    App --> DatabaseProvider
+    DatabaseProvider --> IndexedDBAdapter
+    DatabaseProvider --> RestAdapter
 ```

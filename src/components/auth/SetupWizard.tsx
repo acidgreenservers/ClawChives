@@ -8,6 +8,7 @@ import {
   generateHumanKey,
   generateUUID,
   downloadIdentityFile,
+  hashToken,
   type IdentityData,
 } from "../../lib/crypto";
 import * as IndexedDB from "../../lib/indexedDB";
@@ -81,11 +82,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         createdAt: now,
       });
 
-      // 2. Save key separately in the userKeys store
+      // 2. Hash the token and save it separately in the userKeys store
+      const tokenHash = await hashToken(generatedKey);
       await IndexedDB.saveUserKey({
         id: generatedUUID,
         uuid: generatedUUID,
-        token: generatedKey,
+        tokenHash: tokenHash,
         createdAt: now,
       });
 

@@ -69,3 +69,42 @@ export function downloadIdentityFile(data: IdentityData) {
 export function copyToClipboard(text: string): Promise<void> {
   return navigator.clipboard.writeText(text);
 }
+
+// ─── Token Hashing ────────────────────────────────────────────────────────────
+
+/**
+ * Hashes a token using SHA-256 for secure storage in IndexedDB.
+ * This prevents plaintext tokens from being readable if browser storage is compromised.
+ *
+ * @param token - The plaintext token (e.g., "hu-abc123...")
+ * @returns Promise resolving to hex-encoded hash string
+ */
+export async function hashToken(token: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Verifies a plaintext token against a stored hash using constant-time comparison.
+ * This prevents timing attacks during authentication.
+ *
+ * @param plaintextToken - The token to verify (from user's identity file)
+ * @param storedHash - The hash stored in IndexedDB
+ * @returns Promise resolving to true if token matches
+ */
+export async function verifyToken(plaintextToken: string, storedHash: string): Promise<boolean> {
+  const computedHash = await hashToken(plaintextToken);
+
+  // Constant-time string comparison to prevent timing attacks
+  if (computedHash.length !== storedHash.length) return false;
+
+  let result = 0;
+  for (let i = 0; i < computedHash.length; i++) {
+    result |= computedHash.charCodeAt(i) ^ storedHash.charCodeAt(i);
+  }
+
+  return result === 0;
+}

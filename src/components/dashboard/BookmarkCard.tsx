@@ -2,7 +2,7 @@ import * as React from "react";
 import { Star, Archive, Trash2, ExternalLink, Clock } from "lucide-react";
 import { Button } from "../ui/button";
 
-import type { Bookmark } from "../../types";
+import type { Bookmark } from "../../lib/indexedDB";
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
@@ -10,8 +10,8 @@ interface BookmarkCardProps {
   iconSize?: "small" | "medium" | "large";
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
-  onToggleStar: (id: string) => void;
-  onToggleArchive: (id: string) => void;
+  onToggleStar: (bookmark: Bookmark) => void;
+  onToggleArchive: (bookmark: Bookmark) => void;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
 }
 
@@ -142,7 +142,7 @@ export function BookmarkCard({
             className={`h-8 w-8 p-0 ${bookmark.starred ? "text-amber-500" : "text-slate-400"}`}
             onClick={(e) => {
               e.stopPropagation();
-              onToggleStar(bookmark.id);
+              onToggleStar(bookmark);
             }}
           >
             <Star className={`w-4 h-4 ${bookmark.starred ? "fill-current" : ""}`} />
@@ -153,7 +153,7 @@ export function BookmarkCard({
             className={`h-8 w-8 p-0 ${bookmark.archived ? "text-cyan-600" : "text-slate-400"}`}
             onClick={(e) => {
               e.stopPropagation();
-              onToggleArchive(bookmark.id);
+              onToggleArchive(bookmark);
             }}
           >
             <Archive className="w-4 h-4" />

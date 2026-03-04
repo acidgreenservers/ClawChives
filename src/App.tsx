@@ -12,22 +12,36 @@ type View = "landing" | "login" | "setup" | "dashboard" | "settings";
 
 function App() {
   const [currentView, setCurrentView] = useState<View>("landing");
-  const [_isAuthenticated, setIsAuthenticated] = useState(false);
-  const [_currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showDatabaseModal, setShowDatabaseModal] = useState(false);
 
   useEffect(() => {
     checkAuth();
   }, []);
 
-  /** On startup: check if there's a persisted user account to auto-navigate to dashboard */
+  /** On startup: check if there's a session and restore it */
   const checkAuth = async () => {
     try {
-      const user = await IndexedDB.getUser();
-      if (user) {
-        // User exists — still require key-file login for security
-        // We show landing so they can click Login
-        setCurrentUser(user);
+      // Use localStorage for persistent sessions (survives browser close)
+      const savedUUID = localStorage.getItem("cc_current_user_uuid");
+      const savedView = localStorage.getItem("cc_view") as View;
+
+      if (savedUUID) {
+        // Load the user from IndexedDB
+        const user = await IndexedDB.getUserByUUID(savedUUID);
+        if (user) {
+          setCurrentUser(user);
+          // Restore the view
+          if (savedView && ["dashboard", "settings"].includes(savedView)) {
+            setCurrentView(savedView);
+          } else {
+            setCurrentView("dashboard");
+          }
+        } else {
+          // User was deleted, clear stale session
+          localStorage.removeItem("cc_current_user_uuid");
+          localStorage.removeItem("cc_view");
+        }
       }
     } catch (error) {
       console.error("Auth check failed:", error);
@@ -42,27 +56,50 @@ function App() {
     setCurrentView("login");
   };
 
-  const handleSetupComplete = (_username: string, _token: string) => {
-    setIsAuthenticated(true);
-    setCurrentView("dashboard");
+  const handleSetupComplete = async (username: string, _token: string) => {
+    try {
+      // Get the newly created user
+      const user = await IndexedDB.getUserByUsername(username);
+      if (user) {
+        localStorage.setItem("cc_current_user_uuid", user.uuid);
+        localStorage.setItem("cc_view", "dashboard");
+        setCurrentUser(user);
+        setCurrentView("dashboard");
+        console.log(`Account setup complete for ${username}`);
+      }
+    } catch (error) {
+      console.error("Failed to complete setup:", error);
+    }
   };
 
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-    setCurrentView("dashboard");
+  const handleLoginSuccess = async (uuid: string) => {
+    try {
+      const user = await IndexedDB.getUserByUUID(uuid);
+      if (user) {
+        localStorage.setItem("cc_current_user_uuid", user.uuid);
+        localStorage.setItem("cc_view", "dashboard");
+        setCurrentUser(user);
+        setCurrentView("dashboard");
+      }
+    } catch (error) {
+      console.error("Failed to complete login:", error);
+    }
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    localStorage.removeItem("cc_current_user_uuid");
+    localStorage.removeItem("cc_view");
     setCurrentUser(null);
     setCurrentView("landing");
   };
 
   const handleGoToSettings = () => {
+    localStorage.setItem("cc_view", "settings");
     setCurrentView("settings");
   };
 
   const handleBackToDashboard = () => {
+    localStorage.setItem("cc_view", "dashboard");
     setCurrentView("dashboard");
   };
 
@@ -76,8 +113,8 @@ function App() {
       )}
 
       {currentView === "login" && (
-        <LoginForm 
-          onSuccess={handleLoginSuccess}
+        <LoginForm
+          onSuccess={(uuid) => handleLoginSuccess(uuid)}
           onCancel={() => setCurrentView("landing")}
         />
       )}
@@ -90,6 +127,7 @@ function App() {
 
       {currentView === "dashboard" && (
         <Dashboard 
+          user={currentUser}
           onLogout={handleLogout}
           onGoToSettings={handleGoToSettings}
           onShowDatabaseStats={() => setShowDatabaseModal(true)}

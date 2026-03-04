@@ -7,7 +7,7 @@ import { FolderModal } from "./FolderModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { BookmarkCard } from "./BookmarkCard";
 import { Plus, Search, Grid, LayoutGrid, FolderPlus, List } from "lucide-react";
-import type { Bookmark, Folder } from "../../types";
+import type { Bookmark, Folder } from "../../lib/indexedDB";
 
 const MOCK_FOLDERS: Folder[] = [
   { id: "1", name: "Development", color: "#E63946", createdAt: new Date().toISOString() },
@@ -27,6 +27,7 @@ const MOCK_BOOKMARKS: Bookmark[] = [
     starred: true,
     archived: false,
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: "2",
@@ -39,6 +40,7 @@ const MOCK_BOOKMARKS: Bookmark[] = [
     starred: false,
     archived: false,
     createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
   },
   {
     id: "3",
@@ -51,6 +53,7 @@ const MOCK_BOOKMARKS: Bookmark[] = [
     starred: true,
     archived: false,
     createdAt: new Date(Date.now() - 172800000).toISOString(),
+    updatedAt: new Date(Date.now() - 172800000).toISOString(),
   },
 ];
 
@@ -71,27 +74,21 @@ export function BookmarkDashboard() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const filteredBookmarks = bookmarks.filter((b) => {
-    const matchesSearch = 
+    const matchesSearch =
       b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
     const matchesFolder = !selectedFolder || b.folderId === selectedFolder;
-    
+
     return matchesSearch && matchesFolder;
   });
 
-  const handleSaveBookmark = (bookmark: Omit<Bookmark, "id" | "createdAt">) => {
+  const handleSaveBookmark = (bookmark: Bookmark) => {
     if (editBookmark) {
-      const updated: Bookmark = { ...bookmark, id: editBookmark.id, createdAt: editBookmark.createdAt };
-      setBookmarks(bookmarks.map((b) => b.id === editBookmark.id ? updated : b));
+      setBookmarks(bookmarks.map((b) => b.id === bookmark.id ? bookmark : b));
     } else {
-      const newBookmark: Bookmark = {
-        ...bookmark,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString()
-      };
-      setBookmarks([newBookmark, ...bookmarks]);
+      setBookmarks([bookmark, ...bookmarks]);
     }
     setEditBookmark(undefined);
   };
@@ -108,15 +105,15 @@ export function BookmarkDashboard() {
     }
   };
 
-  const handleToggleStar = (id: string) => {
-    setBookmarks(bookmarks.map((b) => 
-      b.id === id ? { ...b, starred: !b.starred } : b
+  const handleToggleStar = (bookmark: Bookmark) => {
+    setBookmarks(bookmarks.map((b) =>
+      b.id === bookmark.id ? { ...b, starred: !b.starred, updatedAt: new Date().toISOString() } : b
     ));
   };
 
-  const handleToggleArchive = (id: string) => {
-    setBookmarks(bookmarks.map((b) => 
-      b.id === id ? { ...b, archived: !b.archived } : b
+  const handleToggleArchive = (bookmark: Bookmark) => {
+    setBookmarks(bookmarks.map((b) =>
+      b.id === bookmark.id ? { ...b, archived: !b.archived, updatedAt: new Date().toISOString() } : b
     ));
   };
 

@@ -1,20 +1,73 @@
 version: '3.8'
 
 services:
+  # ─── Frontend (Vite + React) ───────────────────────────────────────────────
   claw-chives:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
-    container_name: clawchives-dev
+    container_name: clawchives-ui
     ports:
       - "5173:5173"
     volumes:
       - .:/app
       - /app/node_modules
-      - sqlite_data:/app/data
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
+      # ── Database Mode ───────────────────────────────────────────────────────
+      # Set to INDEXEDDB for static/offline mode (no API server needed).
+      # Set to SQLITE  to persist data via the API server below.
+      - VITE_DATABASE=${DATABASE:-INDEXEDDB}
+      - VITE_API_URL=http://localhost:4242
+    depends_on:
+      claw-chives-api:
+        condition: service_healthy
+    profiles:
+      - sqlite   # only start the frontend's API dependency when in sqlite mode
+
+  # ─── Alternative: Frontend in INDEXEDDB mode (no API dependency) ──────────
+  claw-chives-static:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clawchives-ui-static
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_DATABASE=INDEXEDDB
+    profiles:
+      - indexeddb   # default mode — no API server
+
+  # ─── API Server (Express + SQLite) ────────────────────────────────────────
+  claw-chives-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: clawchives-api
+    ports:
+      - "4242:4242"
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=4242
+      - DATA_DIR=/app/data
+      - CORS_ORIGIN=http://localhost:5173
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4242/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    profiles:
+      - sqlite   # only started when using SQLite mode
 
 volumes:
   sqlite_data:
+    driver: local
