@@ -8,10 +8,8 @@ import {
   generateHumanKey,
   generateUUID,
   downloadIdentityFile,
-  hashToken,
   type IdentityData,
 } from "../../lib/crypto";
-import * as IndexedDB from "../../lib/indexedDB";
 
 type Step = "welcome" | "profile" | "generating" | "complete";
 
@@ -38,14 +36,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setError("");
 
     try {
-      // Check for username conflicts before generating a key
-      const taken = await IndexedDB.isUsernameTaken(trimmed);
-      if (taken) {
-        setError(`Username "${trimmed}" is already taken on this device. Choose a different one.`);
-        setLoading(false);
-        return;
-      }
-
       setStep("generating");
 
       // Slight artificial delay for UX effect
@@ -72,24 +62,24 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setError("");
 
     try {
-      const now = new Date().toISOString();
-
-      // 1. Save user record (no key material here)
-      await IndexedDB.saveUser({
-        username: username.trim(),
-        displayName: displayName.trim() || username.trim(),
-        uuid: generatedUUID,
-        createdAt: now,
+      // 1. Exchange human key for API token from server
+      const apiUrl = ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
+      const tokenResponse = await fetch(`${apiUrl}/api/auth/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerKey: generatedKey }),
       });
 
-      // 2. Hash the token and save it separately in the userKeys store
-      const tokenHash = await hashToken(generatedKey);
-      await IndexedDB.saveUserKey({
-        id: generatedUUID,
-        uuid: generatedUUID,
-        tokenHash: tokenHash,
-        createdAt: now,
-      });
+      if (!tokenResponse.ok) {
+        throw new Error("Failed to obtain API token. Is server running?");
+      }
+
+      const { data: tokenData } = await tokenResponse.json();
+      
+      // 2. Store API token in sessionStorage
+      sessionStorage.setItem("cc_api_token", tokenData.token);
+      sessionStorage.setItem("cc_username", username.trim());
+      sessionStorage.setItem("cc_user_uuid", generatedUUID);
 
       onComplete(username.trim(), generatedKey);
     } catch (err) {

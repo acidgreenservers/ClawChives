@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Palette, Layout, Grid, List, Sun, Moon, Monitor } from "lucide-react";
-import * as IndexedDB from "../../lib/indexedDB";
+import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
 
 type Theme = "light" | "dark" | "auto";
 type Layout = "grid" | "list" | "masonry";
@@ -18,26 +18,34 @@ export function AppearanceSettings() {
   const [notifications, setNotifications] = useState(true);
   const [pwaUpdates, setPwaUpdates] = useState(true);
 
+  const db = useDatabaseAdapter();
+
   useEffect(() => {
     loadAppearanceSettings();
   }, []);
 
   const loadAppearanceSettings = async () => {
-    const settings = await IndexedDB.getAppearanceSettings();
-    if (settings) {
-      setTheme(settings.theme);
-      setLayout(settings.layout);
-      setItemsPerPage(settings.itemsPerPage as 12 | 24 | 48);
-      setCompactMode(settings.compactMode ?? false);
-      setShowFavicons(settings.showFavicons ?? true);
-      setSortBy(settings.sortBy || "dateAdded");
-      setNotifications(settings.notifications ?? true);
-      setPwaUpdates(settings.pwaUpdates ?? true);
+    if (!db) return;
+    try {
+      const settings = await db.getAppearanceSettings();
+      if (settings) {
+        setTheme(settings.theme);
+        setLayout(settings.layout);
+        setItemsPerPage(settings.itemsPerPage as 12 | 24 | 48);
+        setCompactMode(settings.compactMode ?? false);
+        setShowFavicons(settings.showFavicons ?? true);
+        setSortBy(settings.sortBy || "dateAdded");
+        setNotifications(settings.notifications ?? true);
+        setPwaUpdates(settings.pwaUpdates ?? true);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
   const handleSaveSettings = async () => {
-    await IndexedDB.saveAppearanceSettings({
+    if (!db) return;
+    await db.saveAppearanceSettings({
       theme,
       layout,
       itemsPerPage,

@@ -7,7 +7,7 @@ import { FolderModal } from "./FolderModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { BookmarkCard } from "./BookmarkCard";
 import { Plus, Search, Grid, LayoutGrid, FolderPlus, List } from "lucide-react";
-import type { Bookmark, Folder } from "../../lib/indexedDB";
+import type { Bookmark, Folder } from "../../services/types";
 
 const MOCK_FOLDERS: Folder[] = [
   { id: "1", name: "Development", color: "#E63946", createdAt: new Date().toISOString() },

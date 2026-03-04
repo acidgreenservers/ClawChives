@@ -15,34 +15,12 @@ services:
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-      # ── Database Mode ───────────────────────────────────────────────────────
-      # Set to INDEXEDDB for static/offline mode (no API server needed).
-      # Set to SQLITE  to persist data via the API server below.
-      - VITE_DATABASE=${DATABASE:-INDEXEDDB}
       - VITE_API_URL=http://localhost:4242
     depends_on:
       claw-chives-api:
         condition: service_healthy
-    profiles:
-      - sqlite   # only start the frontend's API dependency when in sqlite mode
 
-  # ─── Alternative: Frontend in INDEXEDDB mode (no API dependency) ──────────
-  claw-chives-static:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: clawchives-ui-static
-    ports:
-      - "5173:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-      - VITE_DATABASE=INDEXEDDB
-    profiles:
-      - indexeddb   # default mode — no API server
+
 
   # ─── API Server (Express + SQLite) ────────────────────────────────────────
   claw-chives-api:
@@ -65,8 +43,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
-    profiles:
-      - sqlite   # only started when using SQLite mode
 
 volumes:
   sqlite_data:

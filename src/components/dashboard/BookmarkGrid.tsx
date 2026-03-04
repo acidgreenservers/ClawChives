@@ -1,6 +1,6 @@
 import { BookmarkCard } from "./BookmarkCard";
 
-import type { Bookmark } from "../../lib/indexedDB";
+import type { Bookmark } from "../../services/types";
 
 interface BookmarkGridProps {
   bookmarks: Bookmark[];

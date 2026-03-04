@@ -1,12 +1,10 @@
 /**
  * IDatabaseAdapter
  * ─────────────────────────────────────────────────────────────────────────────
- * Shared interface implemented by both the IndexedDB adapter (static / GitHub
- * Pages mode) and the REST adapter (Docker / SQLite mode).
+ * Shared interface implemented by the REST adapter (Docker / SQLite mode).
  *
- * Components NEVER import a concrete adapter directly — they use the
- * `useDatabaseAdapter()` hook from DatabaseProvider.tsx, which resolves the
- * correct adapter at build time via VITE_DATABASE.
+ * Components use the `useDatabaseAdapter()` hook instead of hardcoded
+ * imports to interact with the database.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 

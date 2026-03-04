@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { X, Database, FileText, Folder, Tag, Star, Archive, Trash2, Search } from "lucide-react";
-import * as IndexedDB from "../../lib/indexedDB";
+import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
 
 interface DatabaseStatsModalProps {
   isOpen: boolean;
@@ -10,7 +10,7 @@ interface DatabaseStatsModalProps {
 }
 
 export function DatabaseStatsModal({ isOpen, onClose }: DatabaseStatsModalProps) {
-  const [stats, setStats] = useState<IndexedDB.DatabaseStats | null>(null);
+  const [stats, setStats] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [allBookmarks, setAllBookmarks] = useState<any[]>([]);
   const [filteredBookmarks, setFilteredBookmarks] = useState<any[]>([]);
@@ -34,24 +34,60 @@ export function DatabaseStatsModal({ isOpen, onClose }: DatabaseStatsModalProps)
     }
   }, [searchQuery, allBookmarks]);
 
+  const db = useDatabaseAdapter();
   const loadData = async () => {
-    const statsData = await IndexedDB.getDatabaseStats();
-    const bookmarks = await IndexedDB.bookmarks.getAll();
-    setStats(statsData);
-    setAllBookmarks(bookmarks);
-    setFilteredBookmarks(bookmarks);
+    try {
+      if (!db) return;
+      
+      const bookmarks = await db.getBookmarks();
+      const folders = await db.getFolders();
+      const keys = await db.getAgentKeys();
+      const appearance = await db.getAppearanceSettings();
+      const profile = await db.getProfileSettings();
+      
+      const uniqueTags = new Set(bookmarks.flatMap((b: any) => b.tags || [])).size;
+      const starredCount = bookmarks.filter((b: any) => b.starred).length;
+      const archivedCount = bookmarks.filter((b: any) => b.archived).length;
+      
+      const totalSizeMB = (
+        (JSON.stringify(bookmarks).length + 
+        JSON.stringify(folders).length + 
+        JSON.stringify(keys).length + 
+        JSON.stringify(appearance).length + 
+        JSON.stringify(profile).length) / (1024 * 1024)
+      ).toFixed(2);
+      
+      const statsData = {
+        totalBookmarks: bookmarks.length,
+        totalFolders: folders.length,
+        uniqueTags,
+        totalSizeMB: parseFloat(totalSizeMB),
+        starredCount,
+        archivedCount,
+        totalKeys: keys.length,
+        totalSettings: (appearance ? 1 : 0) + (profile ? 1 : 0),
+      };
+
+      setStats(statsData);
+      setAllBookmarks(bookmarks);
+      setFilteredBookmarks(bookmarks);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleDeleteBookmark = async (id: string) => {
+    if (!db) return;
     if (confirm("Are you sure you want to delete this bookmark?")) {
-      await IndexedDB.bookmarks.delete(id);
+      await db.deleteBookmark(id);
       await loadData();
     }
   };
 
   const handleClearDatabase = async () => {
     if (confirm("Are you sure you want to clear ALL data? This cannot be undone.")) {
-      await IndexedDB.clearDatabase();
+      // no-op for now; normally would reset sqlite DB
+      alert("Database clearing not implemented via REST on frontend yet.");
       await loadData();
     }
   };

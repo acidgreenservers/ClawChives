@@ -5,8 +5,9 @@ import { Search, Plus, Settings, LogOut, Database, Menu, X } from "lucide-react"
 import { BookmarkGrid } from "./BookmarkGrid";
 import { Sidebar } from "./Sidebar";
 import { BookmarkModal } from "./BookmarkModal";
-import * as IndexedDB from "../../lib/indexedDB";
-import type { User, Bookmark } from "../../lib/indexedDB";
+import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
+import type { Bookmark } from "../../services/types";
+import { User } from "../../App";
 
 interface DashboardProps {
   user: User | null;
@@ -25,14 +26,19 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  const db = useDatabaseAdapter();
+
   useEffect(() => {
-    loadData();
-  }, []);
+    if (db) {
+      loadData();
+    }
+  }, [db]);
 
   const loadData = async () => {
+    if (!db) return;
     try {
-      const allBookmarks = await IndexedDB.bookmarks.getAll();
-      const allFolders = await IndexedDB.folders.getAll();
+      const allBookmarks = await db.getBookmarks();
+      const allFolders = await db.getFolders();
       setBookmarks(allBookmarks);
       setFolders(allFolders);
     } catch (error) {
@@ -52,9 +58,15 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   };
 
   const handleSaveBookmark = async (bookmark: Bookmark) => {
+    if (!db) return;
     try {
       // Use update (put) instead of add to handle both inserts and updates
-      await IndexedDB.bookmarks.update(bookmark);
+      const isExisting = bookmarks.some(b => b.id === bookmark.id);
+      if (isExisting) {
+        await db.updateBookmark(bookmark);
+      } else {
+        await db.saveBookmark(bookmark);
+      }
       await loadData();
       setIsModalOpen(false);
     } catch (error) {
@@ -64,9 +76,10 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   };
 
   const handleDeleteBookmark = async (id: string) => {
+    if (!db) return;
     if (confirm("Are you sure you want to delete this bookmark?")) {
       try {
-        await IndexedDB.bookmarks.delete(id);
+        await db.deleteBookmark(id);
         await loadData();
       } catch (error) {
         console.error("Failed to delete bookmark:", error);
@@ -76,8 +89,9 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   };
 
   const handleToggleStar = async (bookmark: Bookmark) => {
+    if (!db) return;
     try {
-      await IndexedDB.bookmarks.update({
+      await db.updateBookmark({
         ...bookmark,
         starred: !bookmark.starred,
         updatedAt: new Date().toISOString()
@@ -90,8 +104,9 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   };
 
   const handleToggleArchive = async (bookmark: Bookmark) => {
+    if (!db) return;
     try {
-      await IndexedDB.bookmarks.update({
+      await db.updateBookmark({
         ...bookmark,
         archived: !bookmark.archived,
         updatedAt: new Date().toISOString()
@@ -142,14 +157,16 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
           onSelectFolder={setSelectedFolder}
           onFilterChange={setFilterType}
           onAddFolder={async (name) => {
+            if (!db) return;
             try {
               const newFolder = {
                 id: crypto.randomUUID(),
                 name,
                 color: "#06b6d4",
                 createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               };
-              await IndexedDB.folders.add(newFolder);
+              await db.saveFolder(newFolder);
               await loadData();
             } catch (error) {
               console.error("Failed to add folder:", error);
@@ -181,7 +198,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
               </div>
               {user && (
                 <div className="ml-4 flex items-center gap-2">
-                  <span className="text-sm font-medium text-slate-700">Hello, {user.displayName}</span>
+                  <span className="text-sm font-medium text-slate-700">Hello, {user.username}</span>
                 </div>
               )}
             </div>

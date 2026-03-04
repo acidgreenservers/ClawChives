@@ -4,7 +4,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { X, Plus, Tag, Folder, Star, Archive } from "lucide-react";
 
-import type { Bookmark, Folder as FolderType } from "../../lib/indexedDB";
+import type { Bookmark, Folder as FolderType } from "../../services/types";
 
 interface BookmarkModalProps {
   isOpen: boolean;

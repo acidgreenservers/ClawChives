@@ -2,7 +2,7 @@ import * as React from "react";
 import { Star, Archive, Trash2, ExternalLink, Clock } from "lucide-react";
 import { Button } from "../ui/button";
 
-import type { Bookmark } from "../../lib/indexedDB";
+import type { Bookmark } from "../../services/types";
 
 interface BookmarkCardProps {
   bookmark: Bookmark;

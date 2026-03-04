@@ -58,6 +58,8 @@ export interface AppearanceSettings {
   sortBy: "dateAdded" | "title" | "starred";
   notifications: boolean;
   pwaUpdates: boolean;
+  compactMode?: boolean;
+  showFavicons?: boolean;
 }
 
 export interface ProfileSettings {

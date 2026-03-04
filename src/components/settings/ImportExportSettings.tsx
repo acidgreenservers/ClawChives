@@ -4,12 +4,14 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Upload, FileText, Database, FileSpreadsheet, CheckCircle } from "lucide-react";
-import * as IndexedDB from "../../lib/indexedDB";
+import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
 
 export function ImportExportSettings() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ success: boolean; message: string; count?: number } | null>(null);
+
+  const db = useDatabaseAdapter();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -37,7 +39,7 @@ export function ImportExportSettings() {
       // Import bookmarks
       let count = 0;
       for (const bookmark of data) {
-        await IndexedDB.bookmarks.add({
+        await db.saveBookmark({
           url: bookmark.url,
           title: bookmark.title || bookmark.url,
           description: bookmark.description || "",
@@ -69,7 +71,7 @@ export function ImportExportSettings() {
   };
 
   const handleExport = async (format: "json" | "html" | "csv") => {
-    const bookmarks = await IndexedDB.bookmarks.getAll();
+    const bookmarks = await db.getBookmarks();
 
     let content = "";
     let filename = "";
@@ -81,7 +83,7 @@ export function ImportExportSettings() {
       mimeType = "application/json";
     } else if (format === "csv") {
       const headers = ["Title", "URL", "Description", "Tags", "Starred", "Archived", "Created"];
-      const rows = bookmarks.map(b => [
+      const rows = bookmarks.map((b: any) => [
         `"${b.title}"`,
         `"${b.url}"`,
         `"${b.description}"`,
@@ -90,7 +92,7 @@ export function ImportExportSettings() {
         b.archived,
         b.createdAt,
       ]);
-      content = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      content = [headers.join(","), ...rows.map((r: any) => r.join(","))].join("\n");
       filename = "clawchives_bookmarks.csv";
       mimeType = "text/csv";
     } else if (format === "html") {
@@ -99,7 +101,7 @@ export function ImportExportSettings() {
 <TITLE>Bookmarks</TITLE>
 <H1>Bookmarks</H1>
 <DL><p>
-${bookmarks.map(b => `  <DT><A HREF="${b.url}" ADD_DATE="${new Date(b.createdAt || "").getTime() / 1000}">${b.title}</A>`).join("\n")}
+${bookmarks.map((b: any) => `  <DT><A HREF="${b.url}" ADD_DATE="${new Date(b.createdAt || "").getTime() / 1000}">${b.title}</A>`).join("\n")}
 </DL><p>`;
       filename = "clawchives_bookmarks.html";
       mimeType = "text/html";
@@ -234,9 +236,9 @@ ${bookmarks.map(b => `  <DT><A HREF="${b.url}" ADD_DATE="${new Date(b.createdAt 
             onClick={async () => {
               if (confirm("Are you sure you want to delete ALL bookmarks? This cannot be undone.")) {
                 // Get all bookmarks to clear them one by one since there is no native clear method
-                const allBookmarks = await IndexedDB.bookmarks.getAll();
+                const allBookmarks = await db.getBookmarks();
                 for (const b of allBookmarks) {
-                    await IndexedDB.bookmarks.delete(b.id);
+                    await db.deleteBookmark(b.id);
                 }
                 alert("All bookmarks have been deleted.");
               }

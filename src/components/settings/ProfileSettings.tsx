@@ -4,7 +4,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { User, Mail, Save, Upload, X } from "lucide-react";
-import * as IndexedDB from "../../lib/indexedDB";
+import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
 
 export function ProfileSettings() {
   const [username, setUsername] = useState("");
@@ -14,29 +14,35 @@ export function ProfileSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
+  const db = useDatabaseAdapter();
+
   useEffect(() => {
     loadUserProfile();
   }, []);
 
   const loadUserProfile = async () => {
-    const user = await IndexedDB.getUser();
-    if (user) {
-      setUsername(user.username);
-      setDisplayName(user.displayName);
-      setEmail(user.email || "");
-      setAvatar(user.avatar || "");
+    if (!db) return;
+    const settings = await db.getProfileSettings();
+    if (settings) {
+      setDisplayName(settings.displayName);
+      setEmail(settings.email || "");
+      setAvatar(settings.avatar || "");
+    }
+    
+    // Also load username from sessionStorage since we drop user object fetch
+    const sessionUsername = sessionStorage.getItem("cc_username");
+    if (sessionUsername) {
+      setUsername(sessionUsername);
     }
   };
 
   const handleSaveProfile = async () => {
+    if (!db) return;
     setIsSaving(true);
     setSaveMessage("");
 
     try {
-      const existingUser = await IndexedDB.getUser();
-      await IndexedDB.saveUser({
-        uuid: existingUser?.uuid || crypto.randomUUID(),
-        createdAt: existingUser?.createdAt || new Date().toISOString(),
+      await db.saveProfileSettings({
         username,
         displayName,
         email,

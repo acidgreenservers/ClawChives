@@ -8,7 +8,7 @@ import {
   getAllAgentKeys, 
   deleteAgentKey, 
   revokeAgentKey 
-} from "../../lib/indexedDB";
+} from "../../services/agents/agentKeyService";
 import { AgentKey, PERMISSION_INFO } from "../../types/agent";
 import { 
   Key, 

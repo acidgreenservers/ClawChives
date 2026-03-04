@@ -25,7 +25,7 @@ import {
   AgentKeyFormData,
   AgentKey 
 } from "../../types/agent";
-import { saveAgentKey } from "../../lib/indexedDB";
+import { saveAgentKey } from "../../services/agents/agentKeyService";
 import { Check, AlertTriangle, Copy, Eye, EyeOff, Key, Clock, Zap } from "lucide-react";
 
 type Step = "details" | "permissions" | "expiration" | "ratelimit" | "review" | "generated";

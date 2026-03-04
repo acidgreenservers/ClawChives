@@ -43,16 +43,12 @@ npm install
 # 3. Copy the environment config
 cp .env.example .env
 
-# 4. Start the development server
+# 4. Start the backend server
+node server.js
+
+# 5. Start the frontend development server
 npm run dev
 # → http://localhost:5173
-```
-
-For **SQLite mode** contributions, also run:
-```bash
-npm install express cors better-sqlite3
-node server.js
-# → http://localhost:4242/api/health
 ```
 
 ---
@@ -108,7 +104,7 @@ git checkout -b feat/my-new-feature
 > These are **non-negotiable** constraints that maintain the project's long-term maintainability.
 
 1. **Separation of Concerns** — Components display. Services fetch/persist. Adapters abstract storage.
-2. **Use the adapter** — Components must call `useDatabaseAdapter()`, never call `indexedDB.ts` or `fetch()` directly.
+2. **Use the REST architecture** — Database operations should be executed through the REST Server (`server.js`) rather than modifying local states.
 3. **No monolith files** — Files growing beyond ~150 lines are a signal to refactor into sub-modules.
 4. **Auth stays client-side** — Never send `hu-*` identity keys to the server. Only `api-` and `ag-` tokens are server-side artifacts.
 5. **Feature-first directories** — New component groups go inside a named feature folder (`components/myfeature/`), not flat in the components root.
@@ -132,7 +128,6 @@ Open a GitHub Issue with:
 - Steps to reproduce (minimal reproduction preferred)
 - Expected vs actual behaviour
 - Browser + OS version
-- Database mode (`INDEXEDDB` or `SQLITE`)
 - Any console errors (screenshot or paste)
 
 For **security vulnerabilities**, see [SECURITY.md](./SECURITY.md) — do **not** open a public issue.

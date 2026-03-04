@@ -3,7 +3,6 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Key, Lock, AlertCircle, Upload, ArrowLeft, CheckCircle } from "lucide-react";
 import { validateIdentityFile } from "../../lib/crypto";
-import * as IndexedDB from "../../lib/indexedDB";
 
 interface LoginFormProps {
   onSuccess: (uuid: string) => void;
@@ -48,19 +47,26 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
         throw new Error(`Identity file is missing or has invalid fields: ${missingFields.join(", ")}.`);
       }
 
-      const { uuid, token } = keyData as { username: string; uuid: string; token: string };
+      const { uuid, token, username } = keyData as { username: string; uuid: string; token: string };
 
-      // 3. Look up the user by UUID
-      const user = await IndexedDB.getUserByUUID(uuid);
-      if (!user) {
-        throw new Error("No account found with this identity. The user may have been deleted.");
+      // 3. Exchange for API Token
+      const apiUrl = ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
+      const tokenResponse = await fetch(`${apiUrl}/api/auth/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerKey: token }),
+      });
+
+      if (!tokenResponse.ok) {
+        throw new Error("Invalid identity key or server unreachable.");
       }
 
-      // 4. Validate the token hash against the userKeys store (secure comparison)
-      const isValid = await IndexedDB.verifyUserToken(uuid, token);
-      if (!isValid) {
-        throw new Error("Invalid identity key. The token does not match the stored credentials.");
-      }
+      const { data } = await tokenResponse.json();
+
+      // 4. Store API token in sessionStorage
+      sessionStorage.setItem("cc_api_token", data.token);
+      sessionStorage.setItem("cc_username", username);
+      sessionStorage.setItem("cc_user_uuid", uuid);
 
       // ✅ All checks passed - pass UUID to parent for session management
       onSuccess(uuid);

@@ -1,16 +1,4 @@
-// Agent key generation and management
-
-import { STORES } from "../utils/constants";
-import { ValidationError } from "../utils/errors";
-import { 
-  getAllFromStore, 
-  addToStore, 
-  updateInStore, 
-  deleteFromStore,
-  executeTransaction 
-} from "../utils/database";
-import { generateRandomString } from "../utils/database";
-import type { AgentKey } from "../types";
+import type { AgentKey } from "../../types/agent";
 
 export interface AgentConfig {
   name: string;
@@ -21,61 +9,59 @@ export interface AgentConfig {
   rateLimit?: number;
 }
 
-export async function generateAgentKey(config: AgentConfig): Promise<AgentKey> {
-  if (!config.name) {
-    throw new ValidationError("Agent key must have a name");
+const getApiUrl = () => {
+  return ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
+};
+
+const getToken = () => {
+  const token = sessionStorage.getItem("cc_api_token");
+  if (!token) throw new Error("Not authenticated");
+  return token;
+};
+
+export async function saveAgentKey(config: AgentConfig): Promise<AgentKey> {
+  const response = await fetch(`${getApiUrl()}/api/agent-keys`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify(config),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to create agent key");
   }
-  
-  const apiKey = `claw_${generateRandomString(32)}`;
-  const agentKey: AgentKey = {
-    id: crypto.randomUUID(),
-    name: config.name,
-    description: config.description,
-    apiKey,
-    permissions: config.permissions,
-    expirationType: config.expirationType,
-    expirationDate: config.expirationDate,
-    rateLimit: config.rateLimit,
-    isActive: true,
-    createdAt: new Date().toISOString(),
-  };
-  
-  return addToStore(STORES.AGENT_KEYS, agentKey);
+
+  const { data } = await response.json();
+  return data;
 }
 
 export async function getAllAgentKeys(): Promise<AgentKey[]> {
-  return getAllFromStore<AgentKey>(STORES.AGENT_KEYS);
-}
-
-export async function getAgentKey(id: string): Promise<AgentKey | undefined> {
-  return executeTransaction(STORES.AGENT_KEYS, "readonly", (store) => store.get(id));
-}
-
-export async function getAgentKeyByApiKey(apiKey: string): Promise<AgentKey | undefined> {
-  return executeTransaction(STORES.AGENT_KEYS, "readonly", (store) => {
-    const index = store.index("apiKey");
-    return index.get(apiKey);
+  const response = await fetch(`${getApiUrl()}/api/agent-keys`, {
+    headers: { "Authorization": `Bearer ${getToken()}` },
   });
+
+  if (!response.ok) throw new Error("Failed to fetch agent keys");
+  const { data } = await response.json();
+  return data;
 }
 
 export async function revokeAgentKey(id: string): Promise<void> {
-  const keys = await getAllAgentKeys();
-  const key = keys.find(k => k.id === id);
-  
-  if (key) {
-    key.isActive = false;
-    await updateInStore(STORES.AGENT_KEYS, key);
-  }
+  const response = await fetch(`${getApiUrl()}/api/agent-keys/${id}/revoke`, {
+    method: "PATCH",
+    headers: { "Authorization": `Bearer ${getToken()}` },
+  });
+
+  if (!response.ok) throw new Error("Failed to revoke agent key");
 }
 
 export async function deleteAgentKey(id: string): Promise<void> {
-  deleteFromStore(STORES.AGENT_KEYS, id);
-}
+  const response = await fetch(`${getApiUrl()}/api/agent-keys/${id}`, {
+    method: "DELETE",
+    headers: { "Authorization": `Bearer ${getToken()}` },
+  });
 
-export async function updateAgentKeyLastUsed(apiKey: string): Promise<void> {
-  const key = await getAgentKeyByApiKey(apiKey);
-  if (key) {
-    key.lastUsed = new Date().toISOString();
-    await updateInStore(STORES.AGENT_KEYS, key);
-  }
+  if (!response.ok) throw new Error("Failed to delete agent key");
 }

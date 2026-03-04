@@ -11,7 +11,7 @@
   ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝╚══════╝
 ```
 
-*A self-hosted, dual-mode bookmark manager for the Lobster Ecosystem*
+*A self-hosted, server-backed bookmark manager for the Human-Agent Ecosystem*
 
 </div>
 
@@ -34,12 +34,10 @@
 <summary>Click to expand</summary>
 
 - [About](#-about)
-- [Database Modes](#-database-modes)
 - [Architecture](#-architecture)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
-  - [Mode 1 — IndexedDB (Local / GitHub Pages)](#mode-1--indexeddb-local--github-pages)
-  - [Mode 2 — SQLite (Docker / Self-Hosted)](#mode-2--sqlite-docker--self-hosted)
+  - [Docker / Self-Hosted](#docker--self-hosted)
 - [API Reference](#-api-reference)
 - [Key System](#-key-system)
 - [Available Scripts](#-available-scripts)
@@ -53,25 +51,12 @@
 
 ## 📌 About
 
-**ClawChives** is a privacy-first, self-hostable bookmark manager built with Vite + React + TypeScript. It stores your bookmarks locally in the browser (`IndexedDB`) or persistently on your own server (`SQLite`) — your choice.
+**ClawChives** is a privacy-first, self-hostable bookmark manager built with Vite + React + TypeScript. It stores your bookmarks securely in an integrated SQLite backend, offering persistent server-side storage and cross-device availability.
 
 - 🔐 **Identity Key Authentication** — login with a generated JSON identity file, not a password
 - 🤖 **Agent Key System** — generate API access keys (`ag-`) for automated agents and scripts
-- 🗄️ **Dual Database** — swap between browser-local IndexedDB and server-side SQLite via one env var
+- 🗄️ **SQLite Server** — backend architecture for reliable and powerful state management
 - 🐳 **Docker-First** — fully containerized with persistent volume mounts
-
----
-
-## 🗄️ Database Modes
-
-ClawChives supports two storage backends, controlled by `VITE_DATABASE`:
-
-| Mode | `VITE_DATABASE` | Hosting | Server Required |
-|---|---|---|---|
-| **IndexedDB** | `INDEXEDDB` *(default)* | GitHub Pages, Netlify, any CDN | ❌ No |
-| **SQLite** | `SQLITE` | Docker, VPS, self-hosted | ✅ Yes (`server.js`) |
-
-> Auth (identity key file, `hu-`/`ag-` tokens) always validates **client-side** in both modes. Your private key never leaves the browser.
 
 ---
 
@@ -83,21 +68,17 @@ graph TD
         UI[React / Tailwind UI]
         Auth[Auth Module<br/>SetupWizard + LoginForm]
         Provider[DatabaseProvider<br/>useDatabaseAdapter hook]
-        IDB[IndexedDBAdapter]
         REST[RestAdapter]
-        IStore[(Browser IndexedDB)]
     end
 
-    subgraph Server ["🖥️ server.js — optional"]
+    subgraph Server ["🖥️ server.js"]
         API[Express REST API<br/>Port 4242]
         DB[(SQLite db.sqlite)]
     end
 
     UI --> Auth
     UI --> Provider
-    Provider -->|VITE_DATABASE=INDEXEDDB| IDB
-    Provider -->|VITE_DATABASE=SQLITE| REST
-    IDB --> IStore
+    Provider --> REST
     REST -->|fetch + Bearer token| API
     API --> DB
 ```
@@ -114,63 +95,31 @@ graph TD
 
 ---
 
-### Mode 1 — IndexedDB (Local / GitHub Pages)
-
-No server required. All data stays in the browser.
-
-```bash
-# ── Copy environment config ──────────────────────────────
-cp .env.example .env
-# Leave VITE_DATABASE=INDEXEDDB (default)
-
-# ── Install dependencies ─────────────────────────────────
-npm install
-
-# ── Start development server ──────────────────────────────
-npm run dev
-# → http://localhost:5173
-
-# ── Production build (deploy dist/ anywhere) ──────────────
-npm run build
-```
-
-**Docker — IndexedDB mode:**
-```bash
-docker-compose --profile indexeddb up -d --build
-# → http://localhost:5173
-
-# Stop
-docker-compose --profile indexeddb down
-```
-
----
-
-### Mode 2 — SQLite (Docker / Self-Hosted)
+### Docker / Self-Hosted
 
 Persistent server-side storage. Requires `server.js` alongside the frontend.
 
 **Local development (2 terminals):**
 ```bash
 # Terminal 1 — API server
-npm install express cors better-sqlite3
+npm install
 node server.js
 # → http://localhost:4242/api/health
 
 # Terminal 2 — Frontend
-VITE_DATABASE=SQLITE VITE_API_URL=http://localhost:4242 npm run dev
+npm run dev
 # → http://localhost:5173
 ```
 
-**Docker — SQLite mode (recommended):**
+**Docker (recommended):**
 ```bash
-# Edit DATABASE variable if needed (SQLITE | INDEXEDDB)
-DATABASE=SQLITE docker-compose --profile sqlite up -d --build
+docker-compose up -d --build
 
 # View logs
 docker-compose logs -f claw-chives-api
 
 # Stop
-docker-compose --profile sqlite down
+docker-compose down
 ```
 
 Data is persisted in the `sqlite_data` Docker volume at `/app/data/db.sqlite`.
@@ -253,14 +202,11 @@ ClawChives/
 │   │   └── database/
 │   │       ├── adapter.ts           # IDatabaseAdapter interface
 │   │       ├── DatabaseProvider.tsx # React context + hook
-│   │       ├── indexeddb/           # IndexedDBAdapter
 │   │       └── rest/                # RestAdapter (SQLite mode)
-│   └── lib/
-│       └── indexedDB.ts     # Low-level IndexedDB API
 ├── server.js                # Express + SQLite API server
 ├── Dockerfile               # Frontend container
 ├── Dockerfile.api           # API server container
-├── docker-compose.yml       # Dual-profile orchestration
+├── docker-compose.yml       # Stack Orchestration
 └── .env.example             # Environment variable reference
 ```
 
