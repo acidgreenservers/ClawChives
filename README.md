@@ -11,7 +11,7 @@
   ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝  ╚══════╝╚══════╝
 ```
 
-*A self-hosted, server-backed bookmark manager for the Human-Agent Ecosystem*
+*Your Sovereign Pinchmark Library — where Humans and AI Lobsters collaborate to scuttle the web.*
 
 </div>
 
@@ -24,24 +24,25 @@
 [![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![Build](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)](#)
+[![Phase](https://img.shields.io/badge/Phase-2_Polish_Complete-red?style=for-the-badge)](#)
 
 ---
 
 ## 📜 Table of Contents
 
 <details>
-<summary>Click to expand</summary>
+<summary>Unfurl the Scroll 📜</summary>
 
 - [About](#-about)
 - [Architecture](#-architecture)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
-  - [Docker / Self-Hosted](#docker--self-hosted)
-- [API Reference](#-api-reference)
+  - [Running with npm](#-running-with-npm)
+  - [Running with Docker](#-running-with-docker)
 - [Key System](#-key-system)
-- [Available Scripts](#-available-scripts)
+- [API Reference](#-api-reference)
 - [Project Structure](#-project-structure)
+- [Available Scripts](#-available-scripts)
 - [Contributing](#-contributing)
 - [Security](#-security)
 
@@ -51,12 +52,15 @@
 
 ## 📌 About
 
-**ClawChives** is a privacy-first, self-hostable bookmark manager built with Vite + React + TypeScript. It stores your bookmarks securely in an integrated SQLite backend, offering persistent server-side storage and cross-device availability.
+**ClawChives** is a privacy-first, self-hostable **pinchmark** (bookmark) manager designed for the Human-Agent ecosystem. It stores your pinchmarks in an integrated SQLite backend, with a sovereign identity system that uses cryptographic key files instead of usernames and passwords.
 
-- 🔐 **Identity Key Authentication** — login with a generated JSON identity file, not a password
-- 🤖 **Agent Key System** — generate API access keys (`ag-`) for automated agents and scripts
-- 🗄️ **SQLite Server** — backend architecture for reliable and powerful state management
-- 🐳 **Docker-First** — fully containerized with persistent volume mounts
+No cloud. No landlords. Your reef, your rules.
+
+- 🔐 **ShellCryption Auth** — login with a generated JSON identity file, not a password. Your key, your identity.
+- 🤖 **Lobster Key System** — issue granular `ag-` API keys to your AI agents and scripts. Let your Lobsters scuttle the net.
+- 🗄️ **SQLite Bedrock** — a fast, reliable, zero-dependency backend for persistent local storage.
+- 🐳 **Docker-First** — fully containerized with named volume mounts for seamless self-hosting.
+- 🌊 **Liquid Metal Theming** — a stunning circular-reveal View Transition on every theme switch.
 
 ---
 
@@ -66,20 +70,22 @@
 graph TD
     subgraph Client ["🌐 Browser"]
         UI[React / Tailwind UI]
-        Auth[Auth Module<br/>SetupWizard + LoginForm]
-        Provider[DatabaseProvider<br/>useDatabaseAdapter hook]
+        Auth["Auth Module\nSetupWizard + LoginForm"]
+        Provider["DatabaseProvider\nuseDatabase() hook"]
         REST[RestAdapter]
+        Theme[ThemeProvider\nLiquid Metal Toggle]
     end
 
-    subgraph Server ["🖥️ server.js"]
-        API[Express REST API<br/>Port 4242]
+    subgraph Server ["🖥️ server.js (Express)"]
+        API["REST API\nPort 4242"]
         DB[(SQLite db.sqlite)]
     end
 
     UI --> Auth
+    UI --> Theme
     UI --> Provider
     Provider --> REST
-    REST -->|fetch + Bearer token| API
+    REST -->|"fetch + Bearer token"| API
     API --> DB
 ```
 
@@ -91,38 +97,126 @@ graph TD
 
 - **Node.js** v20+
 - **npm** v10+
-- **Docker & Docker Compose** *(for containerized modes)*
+- **Docker & Docker Compose** *(for containerized deployment)*
 
 ---
 
-### Docker / Self-Hosted
+### 🐚 Running with npm
 
-Persistent server-side storage. Requires `server.js` alongside the frontend.
+<details>
+<summary>Expand npm instructions</summary>
 
-**Local development (2 terminals):**
+**Install dependencies first:**
 ```bash
-# Terminal 1 — API server
 npm install
-node server.js
-# → http://localhost:4242/api/health
-
-# Terminal 2 — Frontend
-npm run dev
-# → http://localhost:5173
 ```
 
-**Docker (recommended):**
+**Start everything (API + Frontend) concurrently:**
+```bash
+npm run start
+```
+> Fires up `server.js` on `http://localhost:4242` and Vite on `http://localhost:5173` together.
+
+**Run just the API:**
+```bash
+npm run start:api
+```
+> Starts only `server.js`. Useful for running alongside a manually launched `npm run dev`.
+
+**Run just the frontend (dev mode with HMR):**
+```bash
+npm run dev
+```
+> Requires the API to be running separately.
+
+**Stop the API server:**
+```bash
+npm run stop:api
+```
+
+**Build the production bundle:**
+```bash
+npm run build
+```
+> TypeScript check + Vite production bundle → `dist/`
+
+**Preview the production build locally:**
+```bash
+npm run preview
+```
+
+</details>
+
+---
+
+### 🐳 Running with Docker
+
+<details>
+<summary>Expand Docker instructions</summary>
+
+**Environment Variables (edit before running):**
+
+```bash
+# Edit these values to match your environment before running
+UI_PORT=5173
+API_PORT=4242
+CORS_ORIGIN=http://localhost:5173
+```
+
+**Build and start the full stack:**
 ```bash
 docker-compose up -d --build
+```
 
-# View logs
+**View API logs in real time:**
+```bash
 docker-compose logs -f claw-chives-api
+```
 
-# Stop
+**Stop the stack:**
+```bash
 docker-compose down
 ```
 
-Data is persisted in the `sqlite_data` Docker volume at `/app/data/db.sqlite`.
+**Run API container standalone (without compose):**
+```bash
+docker run -d \
+  --name clawchives-api \
+  -p 4242:4242 \
+  -e PORT=4242 \
+  -e DATA_DIR=/app/data \
+  -e CORS_ORIGIN=http://localhost:5173 \
+  -v clawchives_data:/app/data \
+  clawchives-api
+```
+
+**Run frontend container standalone:**
+```bash
+docker run -d \
+  --name clawchives-ui \
+  -p 5173:5173 \
+  -e VITE_API_URL=http://localhost:4242 \
+  clawchives-ui
+```
+
+> ⚓ **Persistence**: Data is stored in the `sqlite_data` Docker named volume, mounted at `/app/data/db.sqlite` inside the container.
+
+</details>
+
+---
+
+## 🔑 Key System
+
+ClawChives uses a **prefix-based identity token system** — no passwords, no usernames stored on a server. Your key file is your identity.
+
+| Prefix | Type | Length | Usage |
+|---|---|---|---|
+| `hu-` | **Human Key** | 64 chars | Your personal identity. Lives in `clawchives_identity_key.json`. |
+| `ag-` | **Agent Key** | 64 chars | For your AI Lobsters and automated scripts. Generated in Settings. |
+| `api-` | **Session Token** | 32 chars | Short-lived REST API bearer. Issued via `POST /api/auth/token`. |
+
+> [!CAUTION]
+> Your `hu-` key file is the **only** way to access your ClawChive. Keep it safe. If you lose it, it cannot be recovered. Back it up somewhere dry.
 
 ---
 
@@ -136,55 +230,28 @@ Data is persisted in the `sqlite_data` Docker volume at `/app/data/db.sqlite`.
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/health` | Health check + record counts |
+| `POST` | `/api/auth/register` | Register a new identity |
 | `POST` | `/api/auth/token` | Issue `api-` token from `hu-` or `ag-` key |
 | `GET` | `/api/auth/validate` | Validate current Bearer token |
-| `GET` | `/api/bookmarks` | List all bookmarks (filterable) |
-| `POST` | `/api/bookmarks` | Create bookmark |
-| `GET` | `/api/bookmarks/:id` | Get single bookmark |
-| `PUT` | `/api/bookmarks/:id` | Update bookmark |
-| `DELETE` | `/api/bookmarks/:id` | Delete bookmark |
+| `GET` | `/api/bookmarks` | List all pinchmarks (filterable) |
+| `POST` | `/api/bookmarks` | Create pinchmark |
+| `GET` | `/api/bookmarks/:id` | Get single pinchmark |
+| `PUT` | `/api/bookmarks/:id` | Update pinchmark |
+| `DELETE` | `/api/bookmarks/:id` | Delete pinchmark |
 | `PATCH` | `/api/bookmarks/:id/star` | Toggle star |
 | `PATCH` | `/api/bookmarks/:id/archive` | Toggle archive |
 | `GET` | `/api/folders` | List all folders |
 | `POST` | `/api/folders` | Create folder |
 | `PUT` | `/api/folders/:id` | Update folder |
 | `DELETE` | `/api/folders/:id` | Delete folder |
-| `GET` | `/api/agent-keys` | List agent keys |
-| `POST` | `/api/agent-keys` | Create agent key |
+| `GET` | `/api/agent-keys` | List agent Lobster keys |
+| `POST` | `/api/agent-keys` | Create agent Lobster key |
 | `PATCH` | `/api/agent-keys/:id/revoke` | Revoke agent key |
 | `DELETE` | `/api/agent-keys/:id` | Delete agent key |
 | `GET` | `/api/settings/:key` | Get setting |
 | `PUT` | `/api/settings/:key` | Update setting |
 
 </details>
-
----
-
-## 🔑 Key System
-
-ClawChives uses a prefix-based cryptographic key system:
-
-| Prefix | Type | Usage |
-|---|---|---|
-| `hu-` | **Human Key** | Your personal identity key (in `clawchives_identity_key.json`) |
-| `ag-` | **Agent Key** | For automated scripts/agents (generated in Settings) |
-| `api-` | **REST Token** | Short-lived token for API access (issued via `POST /api/auth/token`) |
-
-All keys are 64-character random strings. Your `hu-` key is paired with a UUID and exported as a JSON identity file — **keep it safe, it cannot be recovered**.
-
----
-
-## 🛠️ Available Scripts
-
-| Script | Description |
-|---|---|
-| `npm run start` | Start both the API (`server.js`) and UI (`vite`) concurrently |
-| `npm run start:api` | Start only the API server |
-| `npm run stop:api` | Manually kill the API server |
-| `npm run dev` | Vite dev server with HMR on `http://localhost:5173` |
-| `npm run build` | TypeScript check + Vite production bundle → `dist/` |
-| `npm run preview` | Serve the production `dist/` locally |
-| `npm run lint` | ESLint check across all `.ts` / `.tsx` files |
 
 ---
 
@@ -195,22 +262,48 @@ See [BLUEPRINT.md](./BLUEPRINT.md) for the full ASCII construction diagram.
 ```
 ClawChives/
 ├── src/
-│   ├── components/          # Feature-scoped UI components
-│   │   ├── auth/            # SetupWizard + LoginForm
-│   │   ├── dashboard/       # Bookmark grid, sidebar, modals
-│   │   ├── landing/         # Unauthenticated landing page
-│   │   └── settings/        # AgentKey, Profile, Appearance
+│   ├── components/             # Feature-scoped UI components
+│   │   ├── auth/               # SetupWizard + LoginForm (Key-based auth)
+│   │   ├── dashboard/          # Pinchmark grid, sidebar, modals, search
+│   │   ├── landing/            # Unauthenticated landing page + gateway
+│   │   ├── settings/           # AgentKey, Profile, Appearance panels
+│   │   ├── theme-provider.tsx  # Liquid Metal View Transition theme context
+│   │   └── ui/                 # Shadcn base components (Button, Input, etc.)
 │   ├── services/
 │   │   └── database/
 │   │       ├── adapter.ts           # IDatabaseAdapter interface
-│   │       ├── DatabaseProvider.tsx # React context + hook
-│   │       └── rest/                # RestAdapter (SQLite mode)
-├── server.js                # Express + SQLite API server
-├── Dockerfile               # Frontend container
-├── Dockerfile.api           # API server container
-├── docker-compose.yml       # Stack Orchestration
-└── .env.example             # Environment variable reference
+│   │       ├── DatabaseProvider.tsx # React context + useDatabase() hook
+│   │       └── rest/                # RestAdapter (SQLite REST mode)
+│   ├── lib/
+│   │   └── crypto.ts           # Key generation, hashing, file download
+│   └── index.css               # Global styles + Liquid Metal transitions
+├── server.js                   # Express + better-sqlite3 API server
+├── Dockerfile                  # Frontend container
+├── Dockerfile.api              # API server container
+├── docker-compose.yml          # Full stack orchestration
+├── .env.example                # Environment variable reference
+├── .agents/
+│   ├── GEMINI.md               # Agent intelligence directive
+│   ├── AGENT_API_GUIDE.md      # REST API guide for Lobster agents
+│   └── skills/
+│       ├── lobster-auth-flow/  # Reusable key-based auth skill
+│       └── liquid-metal-theme-toggle/ # Reusable theme toggle skill
+└── README.md                   # You are here 🦞
 ```
+
+---
+
+## 🛠️ Available Scripts
+
+| Script | Description |
+|---|---|
+| `npm run start` | 🦞 Start both API + UI concurrently (recommended) |
+| `npm run start:api` | Start only the Express API server |
+| `npm run stop:api` | Kill the API server process |
+| `npm run dev` | Vite dev server with HMR on `http://localhost:5173` |
+| `npm run build` | TypeScript check + Vite production bundle → `dist/` |
+| `npm run preview` | Serve the production `dist/` locally |
+| `npm run lint` | ESLint check across all `.ts` / `.tsx` files |
 
 ---
 
@@ -225,6 +318,19 @@ See [SECURITY.md](./SECURITY.md) for vulnerability reporting and key security pr
 ---
 
 <div align="center">
+
+```
+       _..._
+     .'     '.      HATCH YOUR CLAWCHIVE.
+    /  _   _  \     RECLAIM YOUR LINKS.
+    | (q) (p) |     PUNCH THE CLOUD.
+    (_   Y   _)
+     '.__W__.'
+     _.'   '._
+    (         )
+     '._ _ .-'
+        'u'
+```
 
 *Maintained with 🦞 by Lucas*
 

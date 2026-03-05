@@ -82,8 +82,8 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-amber-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-8 border-2 border-red-500">
         <Button
           variant="ghost"
           onClick={onCancel}
@@ -94,7 +94,7 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
         </Button>
 
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-200">
+          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-200 dark:shadow-red-900/20">
             <span className="text-3xl">🦞</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-2">Welcome Back</h1>
@@ -118,11 +118,11 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
                 className={`flex items-center justify-center gap-3 w-full p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
                   keyFile
                     ? "border-cyan-500 bg-cyan-50 dark:bg-cyan-950/30"
-                    : "border-slate-300 dark:border-slate-700 hover:border-cyan-400 hover:bg-cyan-50/50"
+                    : "border-slate-300 dark:border-slate-700 hover:border-cyan-400 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/20"
                 }`}
               >
                 {keyFile ? (
-                  <CheckCircle className="w-8 h-8 text-cyan-600" />
+                  <CheckCircle className="w-8 h-8 text-cyan-600 dark:text-cyan-500" />
                 ) : (
                   <Upload className="w-8 h-8 text-slate-400" />
                 )}
@@ -147,12 +147,12 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
           )}
 
           {/* Info */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4">
             <div className="flex items-start gap-3">
-              <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <Lock className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-amber-900">Can't find your identity file?</p>
-                <p className="text-sm text-amber-700 mt-1">
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-500">Can't find your identity file?</p>
+                <p className="text-sm text-amber-700 dark:text-amber-600/80 mt-1">
                   Your identity file is the only way to access your account. If you've lost it, you'll need to create a new account.
                 </p>
               </div>
@@ -162,7 +162,7 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
           <Button
             onClick={handleLogin}
             disabled={!keyFile || loading}
-            className="w-full bg-cyan-700 hover:bg-cyan-800"
+            className="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 shadow-lg shadow-cyan-200 dark:shadow-cyan-900/40 text-white"
             size="lg"
           >
             {loading ? (
