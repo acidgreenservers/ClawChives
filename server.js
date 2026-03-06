@@ -230,7 +230,11 @@ const humanOnly = requireHuman(db);
 
 function generateString(length) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from(crypto.randomBytes(length), (b) => chars[b % chars.length]).join("");
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars[crypto.randomInt(0, chars.length)];
+  }
+  return result;
 }
 
 function generateId() { return crypto.randomUUID(); }
@@ -338,8 +342,18 @@ function requireAuth(req, res, next) {
       finalPermissions = HUMAN_PERMISSIONS;
       actualKeyType = "human";
     } else if (row.owner_type === "agent") {
-      const agent = db.prepare("SELECT user_uuid, permissions FROM agent_keys WHERE api_key = ?").get(row.owner_key);
+      const agent = db.prepare("SELECT user_uuid, permissions, is_active FROM agent_keys WHERE api_key = ?").get(row.owner_key);
       if (!agent) return res.status(401).json({ success: false, error: "Agent for this token no longer exists" });
+      if (agent.is_active === 0) {
+        audit.log("AUTH_FAILURE", {
+          actor: row.owner_key,
+          action: "validate_token",
+          outcome: "failure",
+          resource: "api_token",
+          details: { reason: "Agent key is revoked" },
+        });
+        return res.status(401).json({ success: false, error: "Lobster Key Revoked, Are you art of this reef?" });
+      }
       finalUserUuid = agent.user_uuid;
       finalPermissions = JSON.parse(agent.permissions || "{}");
       actualKeyType = "agent";
@@ -744,7 +758,7 @@ app.post("/api/agent-keys", requireAuth, humanOnly, validateBody(AgentKeySchemas
 
 app.patch("/api/agent-keys/:id/revoke", requireAuth, humanOnly, (req, res) => {
   const now = new Date().toISOString();
-  const info = db.prepare("UPDATE agent_keys SET is_active = 0, revoked_at = ?, revoked_by = ? WHERE id = ? AND user_uuid = ?").run(now, req.userUuid, req.userUuid, req.params.id, req.userUuid);
+  const info = db.prepare("UPDATE agent_keys SET is_active = 0, revoked_at = ?, revoked_by = ? WHERE id = ? AND user_uuid = ?").run(now, req.userUuid, req.params.id, req.userUuid);
   if (info.changes === 0) return res.status(404).json({ success: false, error: "Agent key not found" });
   audit.log("AGENT_KEY_REVOKED", { actor: req.userUuid, actor_type: "human", resource: req.params.id, action: "revoke", outcome: "success", ip_address: req.ip, user_agent: req.headers["user-agent"] });
   res.json({ success: true });
@@ -781,9 +795,13 @@ app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
-app.listen(PORT, () => {
-  console.log(`\n🦞 ClawChives API (SQLite - Multi-User) running on port ${PORT}`);
-  console.log(`   Health:       http://localhost:${PORT}/api/health`);
-  console.log(`   Issue token:  POST http://localhost:${PORT}/api/auth/token`);
-  console.log(`   Database:     ${DB_PATH}\n`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`\n🦞 ClawChives API (SQLite - Multi-User) running on port ${PORT}`);
+    console.log(`   Health:       http://localhost:${PORT}/api/health`);
+    console.log(`   Issue token:  POST http://localhost:${PORT}/api/auth/token`);
+    console.log(`   Database:     ${DB_PATH}\n`);
+  });
+}
+
+export { app, db, generateString };

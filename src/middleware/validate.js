@@ -9,7 +9,7 @@ export const validateBody = (schema) => async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: "Validation Error: Your request form is malformed",
-        details: error.errors.map(e => ({ path: e.path.join('.'), message: e.message }))
+        details: error.errors ? error.errors.map(e => ({ path: e.path.join('.'), message: e.message })) : []
       });
     }
     next(error);
