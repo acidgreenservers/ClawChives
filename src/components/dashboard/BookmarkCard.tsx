@@ -97,7 +97,6 @@ export function BookmarkCard({
           </h3>
           <span
             className="text-sm text-slate-500 dark:text-slate-400 truncate hover:text-cyan-600 flex items-center gap-1 max-w-full"
-            onClick={(e) => e.stopPropagation()}
           >
             <a
               href={bookmark.url}
@@ -114,16 +113,13 @@ export function BookmarkCard({
       </div>
 
       {bookmark.description && (
-        <p
-          className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-3"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-3">
           {bookmark.description}
         </p>
       )}
 
       {bookmark.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-3" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {bookmark.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
