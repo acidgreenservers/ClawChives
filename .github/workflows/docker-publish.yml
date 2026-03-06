@@ -1,10 +1,8 @@
-name: Publish Docker Image 🐳
+name: Publish Docker Images 🐳
 
 on:
   push:
     branches: [ "main" ]
-  # release:
-  #   types: [published]
   workflow_dispatch:
 
 env:
@@ -32,17 +30,42 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker 🏷️
-        id: meta
+      # ─── API Container ────────────────────────────────────────────────────────
+
+      - name: Extract metadata for API 🏷️
+        id: meta-api
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api
+          tags: |
+            type=ref,event=branch
+            type=raw,value=latest
 
-      - name: Build and push Docker image 🏗️
+      - name: Build and push API Docker image 🏗️
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.api
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+
+      # ─── UI Container ────────────────────────────────────────────────────────
+
+      - name: Extract metadata for UI 🏷️
+        id: meta-ui
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=raw,value=latest
+
+      - name: Build and push UI Docker image 🏗️
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta-ui.outputs.tags }}
+          labels: ${{ steps.meta-ui.outputs.labels }}
