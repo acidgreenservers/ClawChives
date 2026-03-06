@@ -612,6 +612,19 @@ app.delete("/api/bookmarks/:id", requireAuth, requirePermission("canDelete"), (r
   res.json({ success: true });
 });
 
+app.delete("/api/bookmarks", requireAuth, requirePermission("canDelete"), (req, res) => {
+  const info = db.prepare("DELETE FROM bookmarks WHERE user_uuid = ?").run(req.userUuid);
+  audit.log("BOOKMARKS_PURGED", {
+    actor: req.userUuid,
+    actor_type: req.keyType,
+    action: "delete",
+    outcome: "success",
+    resource: "bookmark",
+    details: { count: info.changes },
+  });
+  res.json({ success: true, count: info.changes });
+});
+
 app.patch("/api/bookmarks/:id/star", requireAuth, requirePermission("canEdit"), (req, res) => {
   const row = db.prepare("SELECT starred FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid);
   if (!row) return res.status(404).json({ success: false, error: "Bookmark not found" });

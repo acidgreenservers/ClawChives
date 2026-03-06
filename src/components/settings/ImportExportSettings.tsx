@@ -250,8 +250,7 @@ ${bookmarks.map((b: any) => `  <DT><A HREF="${b.url}" ADD_DATE="${new Date(b.cre
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={async () => {
-          const allBookmarks = await db.getBookmarks();
-          for (const b of allBookmarks) { await db.deleteBookmark(b.id); }
+          await db.deleteAllBookmarks();
           setShowPurgedAlert(true);
         }}
         title="Purge All Pinchmarks?"
