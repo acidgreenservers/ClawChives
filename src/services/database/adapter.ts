@@ -17,6 +17,7 @@ export interface IDatabaseAdapter {
   saveBookmark(bookmark: Bookmark): Promise<Bookmark>;
   updateBookmark(bookmark: Bookmark): Promise<Bookmark>;
   deleteBookmark(id: string): Promise<void>;
+  deleteAllBookmarks(): Promise<void>;
 
   // ── Folders ────────────────────────────────────────────────────────────────
   getFolders(): Promise<Folder[]>;

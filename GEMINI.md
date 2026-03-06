@@ -21,8 +21,9 @@ ClawChives is a **Local-First Sovereign Pinchmarking** engine. Its architecture 
 3. **The Carapace (UI/Theme):** A react-based Liquid Metal UI heavily branded with Lobster semantics (cyan, amber, red).
 
 > [!CAUTION]
-> **HARD CONSTRAINT: LOBSTERIZED**
-> Everything that gets made moving forward MUST have our 'Lobster' essence in it. UI elements, terminology, error messages, and logs should all align with the nautical/crustacean theme (e.g., "The Reef is crowded", "Pinchmarks", "Scuttle"). Do not output generic code when it can be Lobsterized.
+> **HARD CONSTRAINT: LOBSTERIZED & VISUALLY LOCKED**
+> Everything that gets made moving forward MUST have our 'Lobster' essence in it. UI elements, terminology, error messages, and logs should all align with the nautical/crustacean theme. 
+> **Visual Placement is Frozen:** The current layout, spatial positioning, and component hierarchy are locked. New features must integrate into existing spaces without shifting established UI elements. Do not output generic code when it can be Lobsterized.
 
 ---
 

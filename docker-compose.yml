@@ -28,6 +28,7 @@ services:
       - NODE_ENV=production
       - PORT=4242
       - DATA_DIR=/app/data
+      - TRUST_PROXY=false
       # CORS_ORIGIN: leave unset to allow all origins, or set to restrict (e.g. http://yourdomain.com)
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4242/api/health"]

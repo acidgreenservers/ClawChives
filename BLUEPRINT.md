@@ -137,6 +137,7 @@ graph LR
 5. **Auth is Always Client-Side** — Identity key validation always occurs in the browser memory (`sessionStorage`) and `SetupWizard`. The server never holds the raw identity tokens.
 6. **Explicit State** — Navigation state and auth state are persisted in `sessionStorage` using namespaced keys (`cc_authenticated`, `cc_view`).
 7. **Sovereign Reading** — `r.jina.ai` integration allows human-only conversion of Pinchmarks to LLM-friendly markdown.
+8. **Visual UI Lock-in** — The current interface layout is final. All future primitives, modals, and views must adhere to the established spatial hierarchy. No element moves; we only expand within the Shell.
 
 </details>
 

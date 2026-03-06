@@ -193,7 +193,11 @@ const app = express();
 const PORT = parseInt(process.env.PORT ?? "4242", 10);
 
 // Trust proxy (behind Docker/LB)
-app.set("trust proxy", 1);
+// Only enable if explicitly configured via environment variable
+const trustProxy = process.env.TRUST_PROXY === "true" || process.env.TRUST_PROXY === "1";
+if (trustProxy) {
+  app.set("trust proxy", 1);
+}
 
 app.use(httpsRedirect);
 
@@ -624,6 +628,19 @@ app.delete("/api/bookmarks/:id", requireAuth, requirePermission("canDelete"), (r
     details: { bookmark_id: req.params.id },
   });
   res.json({ success: true });
+});
+
+app.delete("/api/bookmarks", requireAuth, requirePermission("canDelete"), (req, res) => {
+  const info = db.prepare("DELETE FROM bookmarks WHERE user_uuid = ?").run(req.userUuid);
+  audit.log("BOOKMARKS_PURGED", {
+    actor: req.userUuid,
+    actor_type: req.keyType,
+    action: "delete",
+    outcome: "success",
+    resource: "bookmark",
+    details: { count: info.changes },
+  });
+  res.json({ success: true, count: info.changes });
 });
 
 app.patch("/api/bookmarks/:id/star", requireAuth, requirePermission("canEdit"), (req, res) => {

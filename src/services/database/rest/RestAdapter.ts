@@ -81,6 +81,10 @@ export class RestAdapter implements IDatabaseAdapter {
     await request<void>(`/api/bookmarks/${id}`, { method: "DELETE" });
   }
 
+  async deleteAllBookmarks(): Promise<void> {
+    await request<void>("/api/bookmarks", { method: "DELETE" });
+  }
+
   // ── Folders ────────────────────────────────────────────────────────────────
 
   getFolders(): Promise<Folder[]> {

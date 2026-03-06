@@ -5,8 +5,6 @@ export function getCorsConfig() {
 
   // Development mode: Allow all local origins (localhost + LAN IPs)
   if (isDevelopment) {
-    console.log("🔧 CORS: Development mode - allowing localhost + LAN origins");
-
     return {
       origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, curl, Postman)
@@ -51,9 +49,6 @@ export function getCorsConfig() {
 
   // LAN mode: If CORS_ORIGIN not set, allow local network access
   if (!corsOrigin) {
-    console.log("🏠 CORS: LAN mode - allowing local network origins");
-    console.log("   Set CORS_ORIGIN for strict origin control (reverse proxy/CF tunnel)");
-
     return {
       origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, curl, Postman)
@@ -100,9 +95,6 @@ export function getCorsConfig() {
 
   // Strict mode: CORS_ORIGIN is set (for reverse proxy/CF tunnel)
   const allowedOrigins = corsOrigin.split(",").map((origin) => origin.trim());
-
-  console.log("🔒 CORS: Strict mode - enforcing allowed origins:");
-  allowedOrigins.forEach(origin => console.log(`   ✓ ${origin}`));
 
   return {
     origin: (origin, callback) => {

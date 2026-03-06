@@ -62,6 +62,7 @@ No cloud. No landlords. Your reef, your rules.
 - 🐳 **Docker-First** — fully containerized with named volume mounts for seamless self-hosting.
 - 🌊 **Liquid Metal Theming** — a stunning circular-reveal View Transition on every theme switch.
 - 🦞 **r.jina.ai Reading Mode** — transform Pinchmarks to LLM-friendly markdown on-demand.
+- 🐚 **Locked Shell UI** — A rigid, consistent interface layout that never shifts, ensuring a familiar "Reef" for both Humans and Agents.
 
 ---
 
@@ -162,6 +163,10 @@ npm run preview
 UI_PORT=4545
 API_PORT=4242
 CORS_ORIGIN=http://localhost:4545
+
+# Security: Enable if behind a trusted proxy (Nginx, Docker, LB)
+# Required for correct IP detection in audit logs and rate limiting.
+TRUST_PROXY=false
 
 # Optional: Match database file permissions to your host user
 PUID=1000

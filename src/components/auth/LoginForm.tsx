@@ -107,6 +107,15 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
           {/* File drop zone */}
           <div>
             <Label htmlFor="key-file">Your Identity File</Label>
+            
+            {/* Error moved down closer to box */}
+            {error && (
+              <div className="mt-2 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+
             <div className="mt-2">
               <input
                 id="key-file"
@@ -139,14 +148,6 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
               </label>
             </div>
           </div>
-
-          {/* Error */}
-          {error && (
-            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
 
           {/* Info */}
           <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl p-4">
