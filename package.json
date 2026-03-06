@@ -10,6 +10,7 @@
     "stop:api": "pkill -f 'node server.js' || true",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "bun test",
     "preview": "vite preview"
   },
   "dependencies": {
