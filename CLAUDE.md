@@ -69,6 +69,44 @@ Server: requireAuth → validates(api-token) → injects(req.userUuid, req.keyTy
 - ✅ Constant-time comparison for keyHash verification (timing attack prevention)
 - ✅ User isolation via `user_uuid` in ALL queries
 
+### 🔧 Critical Auth Fixes (DO NOT REVERT)
+
+#### Fix #1: Vite Environment Variable Replacement (2026-03-05)
+**Problem:** Vite's build-time string replacement only works with the **exact literal string** `import.meta.env.VITE_API_URL`.
+- ❌ **WRONG:** `((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL)`
+  - TypeScript happy, Vite confused → replacement skipped → permanently hardcoded to localhost:4242
+- ✅ **CORRECT:** `import.meta.env.VITE_API_URL` with `// @ts-ignore`
+  - Vite sees exact string → replaces at build time
+  - TypeScript bypassed but intentional
+
+**Affected Files:**
+- [App.tsx:62](src/App.tsx#L62) — Auth validation fetch
+- [LoginForm.tsx:57](src/components/auth/LoginForm.tsx#L57) — Token exchange
+- [RestAdapter.ts:20](src/services/database/rest/RestAdapter.ts#L20) — API base URL
+
+**Why This Matters:**
+When deployed to GHCR with a LAN IP in `VITE_API_URL`, Vite was ignoring the env var and defaulting to `localhost:4242`. Result: Browser on 192.168.x.x trying to reach its own 4242 → `net::ERR_CONNECTION_REFUSED`.
+
+**Future-Proofing:** If security hardening adds TypeScript strict mode or environment utilities, DO NOT refactor these three lines. The `// @ts-ignore` is intentional and required for Vite to work correctly.
+
+---
+
+#### Fix #2: Docker Healthcheck Timing (2026-03-05)
+**Problem:** API container failing healthcheck during startup because `start_period: 5s` was too aggressive.
+- better-sqlite3 native module needs time to compile/initialize
+- Table creation and schema migration takes ~8-12 seconds
+- Healthcheck was killing container before it finished initializing
+
+**Solution:** Increased timing across both docker-compose.yml and Dockerfile.api:
+```yaml
+healthcheck:
+  start_period: 15s  # ← Min time before first health check
+  timeout: 10s       # ← Max time for health check to respond
+  retries: 5         # ← Allow 5 consecutive failures before marking unhealthy
+```
+
+**Why This Matters:** On Unraid with volumes, SQLite initialization can take longer. Too-aggressive healthchecks mark the container unhealthy before it's ready, causing startup cascade failures.
+
 ---
 
 ## 🦞 Lobster Key System (lb- keys)
@@ -381,35 +419,100 @@ docker-compose -f docker-compose.yml up -d
 
 ### 1. CORS Hell
 ```
-Problem: Frontend can't reach API
-Solution: Set CORS_ORIGIN in docker-compose.yml
-  environment:
-    - CORS_ORIGIN=http://localhost:5173,http://localhost:8080
+Problem: Frontend can't reach API (net::ERR_CONNECTION_REFUSED or CORS error)
+Solution: Set CORS_ORIGIN in docker-compose.yml to match UI origin
+  LAN:     CORS_ORIGIN=http://192.168.1.5:8080
+  Reverse: CORS_ORIGIN=https://bookmarks.yourdomain.com
+  Dev:     CORS_ORIGIN=http://localhost:5173
+
+DO NOT use wildcard (*) in production!
 ```
 
-### 2. IndexedDB Version Conflicts
+### 2. Vite Env Replacement Not Working
+```
+Problem: Browser tries to connect to localhost:4242 instead of LAN IP
+Symptom: net::ERR_CONNECTION_REFUSED when testing on different machine
+Root Cause: Type-casting in import.meta.env.VITE_API_URL prevents Vite from seeing the exact string
+
+✅ CORRECT (Required for Vite):
+   const apiUrl = (import.meta.env.VITE_API_URL || "http://localhost:4242")
+   // ^ WITH // @ts-ignore above it
+
+❌ WRONG (Breaks Vite's string replacement):
+   const apiUrl = ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL)
+   // ^ Vite never sees the exact string, defaults to localhost:4242
+
+Files to Check: App.tsx:62, LoginForm.tsx:57, RestAdapter.ts:20
+```
+
+### 3. Docker Healthcheck Failures
+```
+Problem: "dependency failed to start: container clawchives-api is unhealthy"
+Symptom: API container exits immediately or UI won't start (depends_on service_healthy)
+
+Root Cause: start_period too short for SQLite initialization
+Solution: Ensure healthcheck has start_period >= 15s
+
+Files to Check:
+  - docker-compose.yml: healthcheck section
+  - Dockerfile.api: HEALTHCHECK command
+
+Minimum settings:
+  start_period: 15s
+  timeout: 10s
+  retries: 5
+```
+
+### 4. IndexedDB Version Conflicts
 ```
 Problem: "VersionError: Database version conflict"
 Solution: Close all browser tabs with ClawChives open, clear IndexedDB in dev tools
 ```
 
-### 3. Agent Key Not Found
+### 5. Agent Key Not Found
 ```
 Problem: lb- key works in Postman but not in app
 Solution: Check is_active=1 and expiration_date hasn't passed
 ```
 
-### 4. SessionStorage Lost on Refresh
+### 6. SessionStorage Lost on Refresh
 ```
 Problem: User logged out after F5
 Current: Expected behavior (sessionStorage clears on navigation)
 Planned: Persist api- token with expiry, or use refresh tokens
 ```
 
-### 5. Docker Volume Permissions
+### 7. Docker Volume Permissions
 ```
 Problem: SQLite file not writable in container
 Solution: chown -R node:node /app/data in Dockerfile
+```
+
+### 8. Security Updates Breaking Auth (CRITICAL)
+```
+⚠️ COMMON DURING SECURITY HARDENING:
+
+Problem: After adding Helmet.js / input validation / rate limiting,
+         auth endpoints start failing
+
+Why This Happens:
+  - /api/auth/token and /api/auth/register are **special**
+  - They don't require a bearer token (requireAuth)
+  - Some security middleware (rate limiting, validation) may be too strict
+  - Refactoring might accidentally change the exact import.meta.env.VITE_API_URL string
+
+Before Merging Security Changes:
+  ✅ Test /api/auth/register with SetupWizard
+  ✅ Test /api/auth/token with LoginForm
+  ✅ Test POST http://192.168.1.5:4242/api/auth/token with Postman
+  ✅ Verify browser console has no import.meta.env.VITE_API_URL related errors
+  ✅ Check docker-compose logs for server startup errors
+
+Red Flags:
+  - "failed to fetch" in LoginForm.tsx:58
+  - :4242/api/auth/token shows ERR_CONNECTION_REFUSED
+  - API container marked unhealthy
+  - Vite not injecting CORS_ORIGIN into HTML/JS
 ```
 
 ---
@@ -474,38 +577,100 @@ docker-compose.yml     → Deployment config (env vars, volumes)
 3. hu- keys never sent plaintext to server
 4. Constant-time comparison for auth tokens
 5. sessionStorage for api- tokens (never localStorage)
+6. Vite env replacement: MUST use exact string import.meta.env.VITE_API_URL with // @ts-ignore
+7. CORS_ORIGIN must allow BOTH LAN IPs and reverse proxy domains
+8. Healthcheck start_period >= 15s (SQLite initialization time)
 ```
 
 ---
 
-## 🔄 Deployment Configurations
+## 🔄 Deployment Configurations & CORS Strategy
 
-### LAN Deployment (Default)
+### Why CORS Matters in ClawChives
+ClawChives separates the UI (Vite on port 4545/8080) from the API (Express on port 4242). They live in **different origins** even on localhost:
+```
+UI:  http://localhost:4545     (or 192.168.1.5:8080 on LAN)
+API: http://localhost:4242     (or 192.168.1.5:4242 on LAN)
+```
+Browsers enforce **Same-Origin Policy** → API must explicitly allow UI via CORS_ORIGIN.
+
+### 🏠 LAN Deployment (Default / Unraid)
 ```yaml
 environment:
   NODE_ENV: production
-  CORS_ORIGIN: http://192.168.1.100:8080
+  PORT: 4242
+  DATA_DIR: /app/data
+  VITE_API_URL: http://192.168.1.5:4242    # ← Frontend uses this to reach API
+  CORS_ORIGIN: http://192.168.1.5:8080     # ← API allows this origin only
   ENFORCE_HTTPS: false
   TOKEN_TTL_DEFAULT: 30
 ```
 
-### Public Self-Hosted (Reverse Proxy)
+**How It Works:**
+1. UI container (Vite) serves on http://192.168.1.5:8080 (bound from 4545 internally)
+2. Browser loads UI from http://192.168.1.5:8080
+3. UI reads `VITE_API_URL` at build time → replaced to http://192.168.1.5:4242
+4. Browser requests to /api/bookmarks on 192.168.1.5:4242
+5. Express checks Origin header matches CORS_ORIGIN → ✅ Allows request
+
+**Critical Detail:** The `VITE_API_URL` env var is **injected into the Docker image at build time**. The GitHub Actions workflow passes this from docker-compose.yml to the Dockerfile. If you change docker-compose.yml CORS_ORIGIN, you MUST rebuild the image.
+
+### 🌐 Public Self-Hosted (Reverse Proxy)
 ```yaml
 environment:
   NODE_ENV: production
-  CORS_ORIGIN: https://bookmarks.yourdomain.com
+  PORT: 4242
+  DATA_DIR: /app/data
+  VITE_API_URL: https://bookmarks.yourdomain.com  # ← Built into image
+  CORS_ORIGIN: https://bookmarks.yourdomain.com   # ← Allow reverse proxy origin
   ENFORCE_HTTPS: true
-  TRUST_PROXY: true
+  TRUST_PROXY: true          # ← Tell Express to trust X-Forwarded-* headers
   TOKEN_TTL_DEFAULT: 30
 ```
 
-### Dev (Local)
+**How It Works (with nginx reverse proxy):**
+```
+User Browser
+     ↓
+     └─→ https://bookmarks.yourdomain.com (nginx)
+         ├─ /api/*          → reverse proxies to http://localhost:4242 (Express)
+         └─ /* (static)     → serves UI dist from http://localhost:8080 (Vite)
+```
+Both UI and API requests appear to come from `https://bookmarks.yourdomain.com` (the proxy's origin), so CORS_ORIGIN matches.
+
+**TRUST_PROXY is Critical:** Without it, Express sees the request coming from `127.0.0.1` (the proxy), not the user. This breaks:
+- Authentication (wrong IP in logs)
+- HTTPS redirect detection
+- Rate limiting (penalizes proxy instead of users)
+
+### 💻 Dev (Local)
 ```yaml
 environment:
   NODE_ENV: development
-  CORS_ORIGIN: http://localhost:5173
+  PORT: 4242
+  DATA_DIR: ./data
+  VITE_API_URL: http://localhost:4242    # ← Dev server
+  CORS_ORIGIN: http://localhost:5173     # ← Vite dev server port
   ENFORCE_HTTPS: false
 ```
+
+### ⚠️ CORS Security Notes
+
+**DO NOT** use `CORS_ORIGIN=*` in production:
+- ❌ `*` allows requests from ANY origin (e.g., evil.com)
+- ❌ Credentials (sessionStorage tokens) are exposed if origin is wildcard
+- ✅ Always specify exact origins, comma-separated if needed
+
+**Multiple Origins Example:**
+```yaml
+CORS_ORIGIN: http://192.168.1.5:8080,https://bookmarks.yourdomain.com
+```
+
+### 🏗️ CORS Configuration Code Location
+See [src/config/corsConfig.js](src/config/corsConfig.js) for implementation details. The config:
+1. Parses CORS_ORIGIN env var (single or comma-separated)
+2. Returns a CORS middleware with `credentials: true` (allows cookies/auth headers)
+3. Is applied globally to all /api/* routes in server.js:303
 
 ---
 
@@ -627,6 +792,14 @@ Docs: SECURITY.md, ROADMAP.md, this file
             - Security posture mapped
             - Lobsterization terminology established
             - Ready for agent handoffs
+
+2026-03-05: Auth System Hardening Documentation
+            - Added Vite env replacement fix (import.meta.env.VITE_API_URL invariant)
+            - Documented Docker healthcheck timing (start_period >= 15s requirement)
+            - Comprehensive CORS strategy (LAN + Reverse Proxy configurations)
+            - Added critical pitfalls during security updates
+            - Updated invariants with Vite, CORS, and healthcheck constraints
+            - Future-proofed against accidental auth system breakage
 ```
 
 ---
