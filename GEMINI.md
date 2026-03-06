@@ -3,7 +3,7 @@
 [![Sovereign](https://img.shields.io/badge/Status-Sovereign-red?style=for-the-badge)](#)
 [![Lobster-First](https://img.shields.io/badge/Theme-Lobster_Branding-cyan?style=for-the-badge)](#)
 [![SQLite](https://img.shields.io/badge/Storage-SQLite_REST-amber?style=for-the-badge)](#)
-[![Phase](https://img.shields.io/badge/Phase-2_Polish_Complete-green?style=for-the-badge)](#)
+[![Phase](https://img.shields.io/badge/Phase-3_Feature_Expansion-blue?style=for-the-badge)](#)
 
 > [!IMPORTANT]
 > **This is the primary intelligence handshake for future agents.**
@@ -39,7 +39,7 @@ Authentication is built on an asymmetric trust structure:
    - **Strict Mode**: `CORS_ORIGIN` defines public explicit boundaries.
 * `requireAuth`: Validates `api-` token and attaches `req.agentPermissions`. (Tokens are synced from `sessionStorage` in the UI).
 * `requirePermission(action)`: Geometrically locks CRUD endpoints. A `lb-` token without `canDelete` hits a 403 wall on DELETE routes.
-* `requireHuman`: Locks settings and key generation (`/api/settings`, `/api/agent-keys`) preventing Agent-escalation.
+* `requireHuman`: Locks settings, key generation, and master metadata fields like `jinaUrl`. Prevents Agent-escalation and ensures sovereign curation.
 
 > [!NOTE]
 > **Historical Intel (Theme Toggle & CORS incident):**
@@ -59,7 +59,7 @@ Authentication is built on an asymmetric trust structure:
 
 ---
 
-## 📊 Current State (Phase 2 — Polish Complete)
+## 📊 Current State (Phase 3 — Feature Expansion)
 
 ```mermaid
 graph TD
@@ -90,6 +90,8 @@ graph TD
 - [x] **Agent System:** `lb-` keys with Granular CUSTOM permissions.
 - [x] **API Security:** All routes protected by `requirePermission` middleware. Identites and keys downloadable locally. Custom `helmet`, `corsConfig`, and `rateLimiter`.
 - [x] **Liquid Metal Toggle:** Circular reveal animations (State synced via API).
+- [x] **r.jina.ai Integration:** LLM-friendly reading mode with human-only conversion and dual-click context menu.
+
 
 ---
 
@@ -113,8 +115,8 @@ Skills are in `.agents/skills/`:
 ## 🗺️ Future Horizon
 
 - [ ] **Shell-Sidecar**: A browser extension for one-click pinching.
+- [ ] **Coral-AI**: Integrated local LLM for automatic pinchmark summarization (Utilizing r.jina.ai streams).
 - [ ] **Molt-Sync**: Encrypted p2p synchronization between browser and remote SQLite.
-- [ ] **Coral-AI**: Integrated local LLM for automatic pinchmark summarization.
 
 ---
 

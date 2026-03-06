@@ -30,7 +30,7 @@ ClawChives/
 ├── 🌐 server.js                     # Express REST API + SQLite backend
 │                                      Endpoints: bookmarks, folders, agent-keys
 │                                      Auth: hu- / lb- / api- key enforcement
-│                                      DB: better-sqlite3 → /app/data/db.sqlite
+│                                      DB: better-sqlite3 → /app/data/db.sqlite (jina_url)
 │
 └── src/
     │
@@ -136,6 +136,7 @@ graph LR
 4. **Adapter Pattern** — The `IDatabaseAdapter` interface decouples the UI from storage.
 5. **Auth is Always Client-Side** — Identity key validation always occurs in the browser memory (`sessionStorage`) and `SetupWizard`. The server never holds the raw identity tokens.
 6. **Explicit State** — Navigation state and auth state are persisted in `sessionStorage` using namespaced keys (`cc_authenticated`, `cc_view`).
+7. **Sovereign Reading** — `r.jina.ai` integration allows human-only conversion of Pinchmarks to LLM-friendly markdown.
 
 </details>
 

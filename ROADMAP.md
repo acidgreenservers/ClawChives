@@ -1,6 +1,6 @@
 # 🗺️ ClawChives — Roadmap
 
-[![Phase](https://img.shields.io/badge/Phase-2%20Active-00cc66?style=for-the-badge)](#)
+[![Phase](https://img.shields.io/badge/Phase-3%20Active-00cc66?style=for-the-badge)](#)
 [![Status](https://img.shields.io/badge/Status-In_Development-orange?style=for-the-badge)](#)
 
 This document tracks where ClawChives has been, where it is now, and where it's going.
@@ -67,6 +67,7 @@ gantt
 - [x] **Docker Dual-Profile** — `dev` and `api` compose profiles mapped to local volumes
 - [ ] Export/Import UI for bookmarks (JSON & CSV)
 - [x] Liquid Metal Dark mode toggle via View Transitions
+- [x] **r.jina.ai Reading Mode** — LLM-friendly markdown conversion with dual-click context menu
 
 </details>
 

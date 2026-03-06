@@ -24,7 +24,7 @@
 [![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![Phase](https://img.shields.io/badge/Phase-2_Polish_Complete-red?style=for-the-badge)](#)
+[![Phase](https://img.shields.io/badge/Phase-3_Feature_Expansion-blue?style=for-the-badge)](#)
 
 ---
 
@@ -61,6 +61,7 @@ No cloud. No landlords. Your reef, your rules.
 - 🗄️ **SQLite Bedrock** — a fast, reliable, zero-dependency backend for persistent local storage.
 - 🐳 **Docker-First** — fully containerized with named volume mounts for seamless self-hosting.
 - 🌊 **Liquid Metal Theming** — a stunning circular-reveal View Transition on every theme switch.
+- 🦞 **r.jina.ai Reading Mode** — transform Pinchmarks to LLM-friendly markdown on-demand.
 
 ---
 
