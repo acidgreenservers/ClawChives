@@ -164,6 +164,10 @@ UI_PORT=4545
 API_PORT=4242
 CORS_ORIGIN=http://localhost:4545
 
+# Security: Enable if behind a trusted proxy (Nginx, Docker, LB)
+# Required for correct IP detection in audit logs and rate limiting.
+TRUST_PROXY=false
+
 # Optional: Match database file permissions to your host user
 PUID=1000
 PGID=1000

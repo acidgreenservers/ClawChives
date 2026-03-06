@@ -193,7 +193,11 @@ const app = express();
 const PORT = parseInt(process.env.PORT ?? "4242", 10);
 
 // Trust proxy (behind Docker/LB)
-app.set("trust proxy", 1);
+// Only enable if explicitly configured via environment variable
+const trustProxy = process.env.TRUST_PROXY === "true" || process.env.TRUST_PROXY === "1";
+if (trustProxy) {
+  app.set("trust proxy", 1);
+}
 
 app.use(httpsRedirect);
 

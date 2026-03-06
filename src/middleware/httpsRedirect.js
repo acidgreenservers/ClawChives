@@ -1,7 +1,7 @@
 export const httpsRedirect = (req, res, next) => {
   if (process.env.ENFORCE_HTTPS === "true") {
-    // Check if behind proxy (e.g. Nginx) sending forwarded protocol
-    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    // Rely on req.secure (populated by Express if "trust proxy" is enabled)
+    const isSecure = req.secure;
     if (!isSecure) {
       const port = process.env.HTTPS_PORT || 443;
       const host = req.hostname;
