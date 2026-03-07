@@ -7,7 +7,7 @@ import { FolderModal } from "./FolderModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { BookmarkCard } from "./BookmarkCard";
 import { Plus, Search, Grid, LayoutGrid, FolderPlus, List } from "lucide-react";
-import type { Bookmark, Folder } from "../../services/types";
+import type { Bookmark, Folder, IconSize } from "../../services/types";
 
 const MOCK_FOLDERS: Folder[] = [
   { id: "1", name: "Development", color: "#E63946", createdAt: new Date().toISOString() },
@@ -70,7 +70,7 @@ export function BookmarkDashboard() {
   // View settings
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [gridStyle, setGridStyle] = useState<"symmetrical" | "bento">("symmetrical");
-  const [iconSize, setIconSize] = useState<"small" | "medium" | "large">("medium");
+  const [iconSize, setIconSize] = useState<IconSize>("medium");
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const filteredBookmarks = bookmarks.filter((b) => {
@@ -294,7 +294,7 @@ export function BookmarkDashboard() {
             <Label className="text-sm">Icon Size:</Label>
             <select
               value={iconSize}
-              onChange={(e) => setIconSize(e.target.value as any)}
+              onChange={(e) => setIconSize(e.target.value as IconSize)}
               className="border rounded px-2 py-1 text-sm"
             >
               <option value="small">S</option>
