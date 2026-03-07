@@ -130,33 +130,9 @@ db.exec(`
     user_agent  TEXT,
     details     TEXT
   );
-
-  CREATE TABLE IF NOT EXISTS bookmark_folders (
-    bookmark_id TEXT NOT NULL,
-    folder_id   TEXT NOT NULL,
-    user_uuid   TEXT NOT NULL,
-    PRIMARY KEY (bookmark_id, folder_id),
-    FOREIGN KEY (bookmark_id) REFERENCES bookmarks(id) ON DELETE CASCADE,
-    FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE CASCADE
-  );
 `);
 
-// Step 2: Migrate existing folder_id data to bookmark_folders table if needed
-try {
-  // Check if there are bookmarks with a folder_id that haven't been migrated
-  const needsMigration = db.prepare("SELECT 1 FROM bookmarks WHERE folder_id IS NOT NULL LIMIT 1").get();
-  if (needsMigration) {
-    db.prepare(`
-      INSERT OR IGNORE INTO bookmark_folders (bookmark_id, folder_id, user_uuid)
-      SELECT id, folder_id, user_uuid FROM bookmarks WHERE folder_id IS NOT NULL
-    `).run();
-    console.log("[DB Migration] ✅ Migrated folder_id from bookmarks to bookmark_folders");
-  }
-} catch (e) {
-  console.error("Migration error:", e.message);
-}
-
-// Step 3: Additive column migrations — safe to re-run on any schema version
+// Step 2: Additive column migrations — safe to re-run on any schema version
 const runColumnMigration = (sql, desc) => {
   try { db.exec(sql); console.log(`[DB Migration] ✅  ${desc}`); }
   catch (e) { if (!e.message.includes("duplicate column")) throw e; }
@@ -188,10 +164,8 @@ runColumnMigration("ALTER TABLE agent_keys ADD COLUMN revoked_by TEXT", "agent_k
 runColumnMigration("ALTER TABLE agent_keys ADD COLUMN revoke_reason TEXT", "agent_keys.revoke_reason");
 runColumnMigration("ALTER TABLE bookmarks ADD COLUMN jina_url TEXT", "bookmarks.jina_url");
 
-// Step 4: Ensure composite unique index on bookmarks and settings (user_uuid scoping)
+// Step 3: Ensure composite unique index on bookmarks and settings (user_uuid scoping)
 db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_bookmark_folders_bookmark_id ON bookmark_folders(bookmark_id);
-  CREATE INDEX IF NOT EXISTS idx_bookmark_folders_folder_id ON bookmark_folders(folder_id);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_bookmarks_user_url ON bookmarks(user_uuid, url);
   CREATE INDEX IF NOT EXISTS idx_bookmarks_jina_url ON bookmarks(jina_url) WHERE jina_url IS NOT NULL;
   CREATE UNIQUE INDEX IF NOT EXISTS idx_settings_user_key  ON settings(user_uuid, key);
@@ -269,14 +243,14 @@ function detectKeyType(key) {
   return null;
 }
 
-function parseBookmark(row, folderIds = []) {
+function parseBookmark(row) {
   if (!row) return null;
   return {
     ...row,
     tags: JSON.parse(row.tags ?? "[]"),
     starred: Boolean(row.starred),
     archived: Boolean(row.archived),
-    folderIds: folderIds,
+    folderId: row.folder_id,
     jinaUrl: row.jina_url ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -497,10 +471,7 @@ app.get("/api/bookmarks", requireAuth, requirePermission("canRead"), (req, res) 
 
   if (req.query.starred === "true")  { sql += " AND starred = 1"; }
   if (req.query.archived === "true") { sql += " AND archived = 1"; }
-  if (req.query.folderId)            {
-    sql += " AND id IN (SELECT bookmark_id FROM bookmark_folders WHERE folder_id = ? AND user_uuid = ?)";
-    params.push(req.query.folderId, req.userUuid);
-  }
+  if (req.query.folderId)            { sql += " AND folder_id = ?"; params.push(req.query.folderId); }
   if (req.query.search) {
     const q = `%${req.query.search}%`;
     sql += " AND (title LIKE ? OR url LIKE ? OR description LIKE ?)";
@@ -509,26 +480,13 @@ app.get("/api/bookmarks", requireAuth, requirePermission("canRead"), (req, res) 
 
   sql += " ORDER BY created_at DESC";
   const rows = db.prepare(sql).all(...params);
-
-  // Fetch all folder links for these bookmarks
-  const allFolderLinks = db.prepare("SELECT bookmark_id, folder_id FROM bookmark_folders WHERE user_uuid = ?").all(req.userUuid);
-  const folderMap = {};
-  for (const link of allFolderLinks) {
-    if (!folderMap[link.bookmark_id]) folderMap[link.bookmark_id] = [];
-    folderMap[link.bookmark_id].push(link.folder_id);
-  }
-
-  res.json({ success: true, data: rows.map(r => parseBookmark(r, folderMap[r.id] || [])) });
+  res.json({ success: true, data: rows.map(parseBookmark) });
 });
 
 app.get("/api/bookmarks/:id", requireAuth, requirePermission("canRead"), (req, res) => {
   const row = db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid);
   if (!row) return res.status(404).json({ success: false, error: "Bookmark not found" });
-
-  const folderLinks = db.prepare("SELECT folder_id FROM bookmark_folders WHERE bookmark_id = ? AND user_uuid = ?").all(req.params.id, req.userUuid);
-  const folderIds = folderLinks.map(l => l.folder_id);
-
-  res.json({ success: true, data: parseBookmark(row, folderIds) });
+  res.json({ success: true, data: parseBookmark(row) });
 });
 
 app.post("/api/bookmarks", requireAuth, requirePermission("canWrite"), validateBody(BookmarkSchemas.create), (req, res) => {
@@ -547,16 +505,15 @@ app.post("/api/bookmarks", requireAuth, requirePermission("canWrite"), validateB
   }
 
   const now = new Date().toISOString();
-  const bookmarkId = req.body.id ?? generateId();
   const bookmark = {
-    id:          bookmarkId,
+    id:          req.body.id ?? generateId(),
     user_uuid:   req.userUuid,
     url,
     title,
     description: req.body.description ?? "",
     favicon:     req.body.favicon ?? "",
     tags:        JSON.stringify(req.body.tags ?? []),
-    folder_id:   null, // Legacy column, ignored now
+    folder_id:   req.body.folderId ?? null,
     starred:     req.body.starred ? 1 : 0,
     archived:    req.body.archived ? 1 : 0,
     color:       req.body.color ?? null,
@@ -565,22 +522,8 @@ app.post("/api/bookmarks", requireAuth, requirePermission("canWrite"), validateB
     updated_at:  now,
   };
 
-  const insertBookmark = db.prepare(`INSERT INTO bookmarks (id,user_uuid,url,title,description,favicon,tags,folder_id,starred,archived,color,jina_url,created_at,updated_at)
-    VALUES (@id,@user_uuid,@url,@title,@description,@favicon,@tags,@folder_id,@starred,@archived,@color,@jina_url,@created_at,@updated_at)`);
-
-  const insertFolderLink = db.prepare(`INSERT INTO bookmark_folders (bookmark_id, folder_id, user_uuid) VALUES (?, ?, ?)`);
-
-  db.transaction(() => {
-    insertBookmark.run(bookmark);
-    if (req.body.folderIds && Array.isArray(req.body.folderIds)) {
-      for (const fId of req.body.folderIds) {
-        insertFolderLink.run(bookmarkId, fId, req.userUuid);
-      }
-    } else if (req.body.folderId) {
-      // Backwards compatibility
-      insertFolderLink.run(bookmarkId, req.body.folderId, req.userUuid);
-    }
-  })();
+  db.prepare(`INSERT INTO bookmarks (id,user_uuid,url,title,description,favicon,tags,folder_id,starred,archived,color,jina_url,created_at,updated_at)
+    VALUES (@id,@user_uuid,@url,@title,@description,@favicon,@tags,@folder_id,@starred,@archived,@color,@jina_url,@created_at,@updated_at)`).run(bookmark);
 
   audit.log("BOOKMARK_CREATED", {
     actor: req.userUuid,
@@ -602,10 +545,7 @@ app.post("/api/bookmarks", requireAuth, requirePermission("canWrite"), validateB
     });
   }
 
-  const folderLinks = db.prepare("SELECT folder_id FROM bookmark_folders WHERE bookmark_id = ? AND user_uuid = ?").all(bookmarkId, req.userUuid);
-  const folderIds = folderLinks.map(l => l.folder_id);
-
-  res.status(201).json({ success: true, data: parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(bookmark.id, req.userUuid), folderIds) });
+  res.status(201).json({ success: true, data: parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(bookmark.id, req.userUuid)) });
 });
 
 app.put("/api/bookmarks/:id", requireAuth, requirePermission("canEdit"), validateBody(BookmarkSchemas.update), (req, res) => {
@@ -625,7 +565,7 @@ app.put("/api/bookmarks/:id", requireAuth, requirePermission("canEdit"), validat
     description: req.body.description ?? row.description,
     favicon:     req.body.favicon     ?? row.favicon,
     tags:        JSON.stringify(req.body.tags ?? JSON.parse(row.tags)),
-    folder_id:   null, // Legacy
+    folder_id:   req.body.folderId    !== undefined ? req.body.folderId : row.folder_id,
     starred:     req.body.starred     !== undefined ? (req.body.starred ? 1 : 0) : row.starred,
     archived:    req.body.archived    !== undefined ? (req.body.archived ? 1 : 0) : row.archived,
     color:       req.body.color       !== undefined ? req.body.color : row.color,
@@ -635,25 +575,9 @@ app.put("/api/bookmarks/:id", requireAuth, requirePermission("canEdit"), validat
     user_uuid:   req.userUuid,
   };
 
-  db.transaction(() => {
-    db.prepare(`UPDATE bookmarks SET url=@url, title=@title, description=@description, favicon=@favicon, tags=@tags,
-      folder_id=@folder_id, starred=@starred, archived=@archived, color=@color, jina_url=@jina_url, updated_at=@updated_at WHERE id=@id AND user_uuid=@user_uuid`)
-      .run(updated);
-
-    if (req.body.folderIds !== undefined) {
-      db.prepare(`DELETE FROM bookmark_folders WHERE bookmark_id = ? AND user_uuid = ?`).run(req.params.id, req.userUuid);
-      const insertFolderLink = db.prepare(`INSERT INTO bookmark_folders (bookmark_id, folder_id, user_uuid) VALUES (?, ?, ?)`);
-      for (const fId of req.body.folderIds) {
-        if (fId) insertFolderLink.run(req.params.id, fId, req.userUuid);
-      }
-    } else if (req.body.folderId !== undefined) {
-      // Legacy compatibility
-      db.prepare(`DELETE FROM bookmark_folders WHERE bookmark_id = ? AND user_uuid = ?`).run(req.params.id, req.userUuid);
-      if (req.body.folderId) {
-        db.prepare(`INSERT INTO bookmark_folders (bookmark_id, folder_id, user_uuid) VALUES (?, ?, ?)`).run(req.params.id, req.body.folderId, req.userUuid);
-      }
-    }
-  })();
+  db.prepare(`UPDATE bookmarks SET url=@url, title=@title, description=@description, favicon=@favicon, tags=@tags,
+    folder_id=@folder_id, starred=@starred, archived=@archived, color=@color, jina_url=@jina_url, updated_at=@updated_at WHERE id=@id AND user_uuid=@user_uuid`)
+    .run(updated);
 
   audit.log("BOOKMARK_UPDATED", {
     actor: req.userUuid,
@@ -675,10 +599,7 @@ app.put("/api/bookmarks/:id", requireAuth, requirePermission("canEdit"), validat
     });
   }
 
-  const folderLinks = db.prepare("SELECT folder_id FROM bookmark_folders WHERE bookmark_id = ? AND user_uuid = ?").all(req.params.id, req.userUuid);
-  const folderIds = folderLinks.map(l => l.folder_id);
-
-  res.json({ success: true, data: parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid), folderIds) });
+  res.json({ success: true, data: parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid)) });
 });
 
 app.delete("/api/bookmarks/:id", requireAuth, requirePermission("canDelete"), (req, res) => {
@@ -714,9 +635,7 @@ app.patch("/api/bookmarks/:id/star", requireAuth, requirePermission("canEdit"), 
   const newStarred = row.starred ? 0 : 1;
   db.prepare("UPDATE bookmarks SET starred = ?, updated_at = ? WHERE id = ? AND user_uuid = ?")
     .run(newStarred, new Date().toISOString(), req.params.id, req.userUuid);
-  const folderLinks = db.prepare("SELECT folder_id FROM bookmark_folders WHERE bookmark_id = ? AND user_uuid = ?").all(req.params.id, req.userUuid);
-  const folderIds = folderLinks.map(l => l.folder_id);
-  const result = parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid), folderIds);
+  const result = parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid));
   audit.log("BOOKMARK_STARRED", {
     actor: req.userUuid,
     actor_type: req.keyType,
@@ -734,9 +653,7 @@ app.patch("/api/bookmarks/:id/archive", requireAuth, requirePermission("canEdit"
   const newArchived = row.archived ? 0 : 1;
   db.prepare("UPDATE bookmarks SET archived = ?, updated_at = ? WHERE id = ? AND user_uuid = ?")
     .run(newArchived, new Date().toISOString(), req.params.id, req.userUuid);
-  const folderLinks = db.prepare("SELECT folder_id FROM bookmark_folders WHERE bookmark_id = ? AND user_uuid = ?").all(req.params.id, req.userUuid);
-  const folderIds = folderLinks.map(l => l.folder_id);
-  const result = parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid), folderIds);
+  const result = parseBookmark(db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid));
   audit.log("BOOKMARK_ARCHIVED", {
     actor: req.userUuid,
     actor_type: req.keyType,

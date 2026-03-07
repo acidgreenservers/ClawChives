@@ -8,8 +8,6 @@ interface BookmarkGridProps {
   onDelete: (id: string) => void;
   onToggleStar: (bookmark: Bookmark) => void;
   onToggleArchive: (bookmark: Bookmark) => void;
-  onTogglePin: (bookmark: Bookmark) => void;
-  pinnedFolderId?: string;
 }
 
 export function BookmarkGrid({ 
@@ -17,9 +15,7 @@ export function BookmarkGrid({
   onEdit, 
   onDelete, 
   onToggleStar, 
-  onToggleArchive,
-  onTogglePin,
-  pinnedFolderId
+  onToggleArchive 
 }: BookmarkGridProps) {
   if (bookmarks.length === 0) {
     return (
@@ -44,8 +40,6 @@ export function BookmarkGrid({
           onDelete={onDelete}
           onToggleStar={onToggleStar}
           onToggleArchive={onToggleArchive}
-          onTogglePin={onTogglePin}
-          pinnedFolderId={pinnedFolderId}
         />
       ))}
     </div>

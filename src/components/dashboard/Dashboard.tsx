@@ -92,35 +92,6 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
     catch (error) { console.error("Failed to toggle archive:", error); }
   };
 
-  const handleTogglePin = async (bookmark: Bookmark) => {
-    if (!db) return;
-    try {
-      let pinnedFolder = folders.find(f => f.name === "Pinned");
-      if (!pinnedFolder) {
-        // Create it if it doesn't exist
-        const newFolder = { id: generateUUID(), name: "Pinned", color: "#ef4444", createdAt: new Date().toISOString() };
-        await db.saveFolder(newFolder);
-        pinnedFolder = newFolder;
-        setFolders([...folders, newFolder]);
-      }
-
-      const isCurrentlyPinned = bookmark.folderIds?.includes(pinnedFolder.id);
-      let newFolderIds = [...(bookmark.folderIds || [])];
-
-      if (isCurrentlyPinned) {
-        newFolderIds = newFolderIds.filter(id => id !== pinnedFolder.id);
-      } else {
-        newFolderIds.push(pinnedFolder.id);
-      }
-
-      await db.updateBookmark({ ...bookmark, folderIds: newFolderIds, updatedAt: new Date().toISOString() });
-      await loadData();
-    } catch (error) {
-      console.error("Failed to toggle pin:", error);
-      showAlert("Pin Failed", "Failed to pin/unpin pinchmark.");
-    }
-  };
-
   /** ── Folder handlers ── */
   const handleAddFolder = async (name: string) => {
     if (!db) return;
@@ -190,7 +161,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
       bookmark.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bookmark.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesFolder = selectedFolder ? bookmark.folderIds?.includes(selectedFolder) : true;
+    const matchesFolder = selectedFolder ? bookmark.folderId === selectedFolder : true;
     const matchesFilter =
       activeTab === "all" ||
       (activeTab === "starred" && bookmark.starred) ||
@@ -341,8 +312,6 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
                 onDelete={handleDeleteBookmark}
                 onToggleStar={handleToggleStar}
                 onToggleArchive={handleToggleArchive}
-                onTogglePin={handleTogglePin}
-                pinnedFolderId={folders.find(f => f.name === "Pinned")?.id}
               />
             </div>
           )}

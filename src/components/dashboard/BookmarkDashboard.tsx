@@ -23,7 +23,7 @@ const MOCK_BOOKMARKS: Bookmark[] = [
     description: "The official React documentation for building user interfaces.",
     favicon: "https://react.dev/favicon.ico",
     tags: ["dev", "frontend", "javascript"],
-    folderIds: ["1"],
+    folderId: "1",
     starred: true,
     archived: false,
     createdAt: new Date().toISOString(),
@@ -36,7 +36,7 @@ const MOCK_BOOKMARKS: Bookmark[] = [
     description: "Rapidly build modern websites without ever leaving your HTML.",
     favicon: "https://tailwindcss.com/favicon.ico",
     tags: ["css", "design", "utility"],
-    folderIds: ["2"],
+    folderId: "2",
     starred: false,
     archived: false,
     createdAt: new Date(Date.now() - 86400000).toISOString(),
@@ -49,7 +49,7 @@ const MOCK_BOOKMARKS: Bookmark[] = [
     description: "Where the world builds software. Millions of developers and companies build, ship, and maintain their software on GitHub.",
     favicon: "https://github.com/favicon.ico",
     tags: ["dev", "git", "collaboration"],
-    folderIds: ["1"],
+    folderId: "1",
     starred: true,
     archived: false,
     createdAt: new Date(Date.now() - 172800000).toISOString(),
@@ -79,7 +79,7 @@ export function BookmarkDashboard() {
       b.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       b.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesFolder = !selectedFolder || b.folderIds?.includes(selectedFolder);
+    const matchesFolder = !selectedFolder || b.folderId === selectedFolder;
 
     return matchesSearch && matchesFolder;
   });
@@ -206,7 +206,7 @@ export function BookmarkDashboard() {
                 />
                 <span className="truncate">{folder.name}</span>
                 <span className="ml-auto text-xs text-gray-400">
-                  {bookmarks.filter((b) => b.folderIds?.includes(folder.id)).length}
+                  {bookmarks.filter((b) => b.folderId === folder.id).length}
                 </span>
               </div>
             ))}

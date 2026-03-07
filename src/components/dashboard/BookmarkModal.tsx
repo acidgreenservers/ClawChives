@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { X, Plus, Tag, Star, Archive } from "lucide-react";
+import { X, Plus, Tag, Folder, Star, Archive } from "lucide-react";
 import { generateUUID } from "../../lib/crypto";
 import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
 
@@ -52,7 +52,7 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<string>("");
   const [starred, setStarred] = useState(false);
   const [archived, setArchived] = useState(false);
   const [pinned, setPinned] = useState(false);
@@ -65,13 +65,13 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
       setTitle(bookmark.title);
       setDescription(bookmark.description || "");
       setTags(bookmark.tags);
-      setSelectedFolders(bookmark.folderIds || []);
+      setSelectedFolder(bookmark.folderId || "");
       setStarred(bookmark.starred);
       setArchived(bookmark.archived);
       setJinaConversion(!!bookmark.jinaUrl);
       // Detect if currently in Pinned folder
-      const pinnedFolder = folders.find((f) => f.name === "Pinned");
-      setPinned(pinnedFolder ? (bookmark.folderIds || []).includes(pinnedFolder.id) : false);
+      const isPinnedFolder = folders.find((f) => f.name === "Pinned" && f.id === bookmark.folderId);
+      setPinned(!!isPinnedFolder);
     } else {
       resetForm();
     }
@@ -83,7 +83,7 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
     setDescription("");
     setTags([]);
     setTagInput("");
-    setSelectedFolders([]);
+    setSelectedFolder("");
     setStarred(false);
     setArchived(false);
     setPinned(false);
@@ -123,16 +123,11 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
     if (!db) return;
 
     const now = new Date().toISOString();
-    let finalFolderIds = [...selectedFolders];
+    let finalFolderId = selectedFolder || undefined;
 
-    // Remove the Pinned folder ID from the list initially, we'll add it back if it's pinned
-    let pinnedFolder = folders.find((f) => f.name === "Pinned");
-    if (pinnedFolder) {
-      finalFolderIds = finalFolderIds.filter(id => id !== pinnedFolder.id);
-    }
-
-    // Pin logic: if pinned, ensure "Pinned" pod exists and is in the array
+    // Pin logic: if pinned, ensure "Pinned" pod exists
     if (pinned) {
+      let pinnedFolder = folders.find((f) => f.name === "Pinned");
       if (!pinnedFolder) {
         const newFolder: FolderType = {
           id: generateUUID(),
@@ -142,9 +137,9 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
         };
         await db.saveFolder(newFolder);
         onFoldersRefresh?.();
-        finalFolderIds.push(newFolder.id);
+        finalFolderId = newFolder.id;
       } else {
-        finalFolderIds.push(pinnedFolder.id);
+        finalFolderId = pinnedFolder.id;
       }
     }
 
@@ -164,7 +159,7 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
       title: title.trim() || "Untitled",
       description: description.trim() || undefined,
       tags,
-      folderIds: finalFolderIds,
+      folderId: finalFolderId,
       starred,
       archived,
       jinaUrl: finalJinaUrl !== undefined ? finalJinaUrl : bookmark?.jinaUrl,
@@ -175,7 +170,7 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
       title: title.trim() || "Untitled",
       description: description.trim() || undefined,
       tags,
-      folderIds: finalFolderIds,
+      folderId: finalFolderId,
       starred,
       archived,
       jinaUrl: finalJinaUrl,
@@ -263,38 +258,24 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
             />
           </div>
 
-          {/* Folders */}
+          {/* Folder */}
           <div>
-            <Label className="text-slate-700 dark:text-slate-300">Pods</Label>
-            <div className="mt-2 flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-              {folders.filter(f => f.name !== "Pinned").length === 0 ? (
-                <span className="text-xs text-slate-400 italic">No pods created yet.</span>
-              ) : (
-                folders.filter(f => f.name !== "Pinned").map((folder) => {
-                  const isSelected = selectedFolders.includes(folder.id);
-                  return (
-                    <button
-                      key={folder.id}
-                      type="button"
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedFolders(selectedFolders.filter(id => id !== folder.id));
-                        } else {
-                          setSelectedFolders([...selectedFolders, folder.id]);
-                        }
-                      }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                        isSelected
-                          ? "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300 ring-1 ring-cyan-300 dark:ring-cyan-700"
-                          : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-cyan-300 dark:hover:border-cyan-600"
-                      }`}
-                    >
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: folder.color || "#06b6d4" }} />
-                      {folder.name}
-                    </button>
-                  );
-                })
-              )}
+            <Label htmlFor="folder" className="text-slate-700 dark:text-slate-300">Pod</Label>
+            <div className="relative mt-1">
+              <select
+                id="folder"
+                value={selectedFolder}
+                onChange={(e) => setSelectedFolder(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 appearance-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+              >
+                <option value="">No Pod</option>
+                {folders.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </option>
+                ))}
+              </select>
+              <Folder className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
 

@@ -35,14 +35,11 @@ export function FolderEditModal({
   const isPinnedPod = folder?.name === "Pinned";
   const hasPins = isPinnedPod && bookmarkCount > 0;
 
-  const [showLobsterError, setShowLobsterError] = useState(false);
-
   useEffect(() => {
     if (!isOpen) return;
     setName(folder?.name ?? "");
     setColor(folder?.color ?? "#06b6d4");
     setConfirmDelete(false);
-    setShowLobsterError(false);
   }, [isOpen, folder]);
 
   const handleSave = () => {
@@ -52,10 +49,7 @@ export function FolderEditModal({
   };
 
   const handleDeleteClick = () => {
-    if (hasPins) {
-      setShowLobsterError(true);
-      return;
-    }
+    if (hasPins) return; // protected
     if (bookmarkCount > 0) {
       setConfirmDelete(true);
     } else {
@@ -157,17 +151,11 @@ export function FolderEditModal({
           )}
 
           {/* Pinned Pod protection notice */}
-          {showLobsterError && hasPins && (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border-2 border-red-500/50 animate-shake">
-              <div className="flex gap-3 items-start">
-                <span className="text-2xl mt-0.5">🦞</span>
-                <div>
-                  <h4 className="text-red-700 dark:text-red-400 font-bold mb-1">Claws off!</h4>
-                  <p className="text-sm text-red-600 dark:text-red-300">
-                    You can't delete the <strong>Pinned</strong> Pod while it holds pinchmarks! Unpin them first.
-                  </p>
-                </div>
-              </div>
+          {hasPins && (
+            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-500/40">
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                📌 Remove all pins from your Pinchmarks first before deleting the <strong>Pinned</strong> Pod.
+              </p>
             </div>
           )}
         </div>
@@ -179,7 +167,8 @@ export function FolderEditModal({
               variant="ghost"
               size="sm"
               onClick={handleDeleteClick}
-              className={`gap-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20`}
+              disabled={hasPins}
+              className={`gap-1.5 ${hasPins ? "text-slate-300 dark:text-slate-600 cursor-not-allowed" : "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"}`}
             >
               <Trash2 className="w-4 h-4" />
               Delete Pod

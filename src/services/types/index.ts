@@ -7,7 +7,7 @@ export interface Bookmark {
   description?: string;
   favicon?: string;
   tags: string[];
-  folderIds?: string[];
+  folderId?: string;
   starred: boolean;
   archived: boolean;
   color?: string;

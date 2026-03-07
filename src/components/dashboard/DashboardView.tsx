@@ -105,7 +105,7 @@ export function DashboardView({ bookmarks, folders }: DashboardViewProps) {
 
   const recent = [...bookmarks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10);
   const pins = pinnedFolder
-    ? bookmarks.filter((b) => b.folderIds?.includes(pinnedFolder.id)).slice(0, 10)
+    ? bookmarks.filter((b) => b.folderId === pinnedFolder.id).slice(0, 10)
     : [];
   const favorites = bookmarks.filter((b) => b.starred).slice(0, 10);
 
