@@ -231,7 +231,14 @@ const humanOnly = requireHuman(db);
 
 export function generateString(length) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from(crypto.randomBytes(length), (b) => chars[b % chars.length]).join("");
+  let result = "";
+  // 🛡️ Sentinel Security Fix:
+  // Using crypto.randomInt(chars.length) avoids modulo bias that occurs
+  // when mapping crypto.randomBytes(length) values (0-255) to a 62-character set.
+  for (let i = 0; i < length; i++) {
+    result += chars[crypto.randomInt(chars.length)];
+  }
+  return result;
 }
 
 export function generateId() { return crypto.randomUUID(); }
