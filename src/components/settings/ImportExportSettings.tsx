@@ -86,12 +86,13 @@ export function ImportExportSettings() {
       filename = "clawchives_bookmarks.json";
       mimeType = "application/json";
     } else if (format === "csv") {
+      const csvEscape = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
       const headers = ["Title", "URL", "Description", "Tags", "Starred", "Archived", "Created"];
       const rows = bookmarks.map((b: any) => [
-        `"${b.title}"`,
-        `"${b.url}"`,
-        `"${b.description}"`,
-        `"${b.tags.join(", ")}"`,
+        csvEscape(b.title),
+        csvEscape(b.url),
+        csvEscape(b.description),
+        csvEscape(b.tags.join(", ")),
         b.starred,
         b.archived,
         b.createdAt,
@@ -100,12 +101,13 @@ export function ImportExportSettings() {
       filename = "clawchives_bookmarks.csv";
       mimeType = "text/csv";
     } else if (format === "html") {
+      const htmlEscape = (s: string) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
       content = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 <TITLE>Bookmarks</TITLE>
 <H1>Bookmarks</H1>
 <DL><p>
-${bookmarks.map((b: any) => `  <DT><A HREF="${b.url}" ADD_DATE="${new Date(b.createdAt || "").getTime() / 1000}">${b.title}</A>`).join("\n")}
+${bookmarks.map((b: any) => `  <DT><A HREF="${htmlEscape(b.url)}" ADD_DATE="${new Date(b.createdAt || "").getTime() / 1000}">${htmlEscape(b.title)}</A>`).join("\n")}
 </DL><p>`;
       filename = "clawchives_bookmarks.html";
       mimeType = "text/html";

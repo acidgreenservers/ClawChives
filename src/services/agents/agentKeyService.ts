@@ -10,7 +10,8 @@ export interface AgentConfig {
 }
 
 const getApiUrl = () => {
-  return (import.meta as unknown as { env: Record<string, string | boolean> }).env.PROD ? "" : ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
+  // @ts-ignore: Vite replaces import.meta.env.VITE_API_URL at build-time — do NOT refactor this line
+  return import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
 };
 
 const getToken = () => {

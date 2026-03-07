@@ -344,6 +344,9 @@ function requireAuth(req, res, next) {
       if (!agent.is_active) {
           return res.status(401).json({ success: false, error: "Lobster Key Revoked, Are you art of this reef?" });
       }
+      if (agent.expiration_date && new Date(agent.expiration_date) < new Date()) {
+        return res.status(401).json({ success: false, error: "Lobster Key expired" });
+      }
       finalUserUuid = agent.user_uuid;
       finalPermissions = JSON.parse(agent.permissions || "{}");
       actualKeyType = "agent";
@@ -355,6 +358,9 @@ function requireAuth(req, res, next) {
     const row = db.prepare("SELECT * FROM agent_keys WHERE api_key = ? AND is_active = 1").get(key);
     if (!row) {
       return res.status(401).json({ success: false, error: "Lobster Key Revoked, Are you art of this reef?" });
+    }
+    if (row.expiration_date && new Date(row.expiration_date) < new Date()) {
+      return res.status(401).json({ success: false, error: "Lobster Key expired" });
     }
     // Update last_used
     db.prepare("UPDATE agent_keys SET last_used = ? WHERE api_key = ?")
@@ -424,7 +430,13 @@ app.post("/api/auth/token", authLimiter, validateBody(AuthSchemas.token), (req, 
       audit.log("AUTH_FAILURE", { action: "login", outcome: "failure", actor_type: "human", ip_address: req.ip, user_agent: req.headers["user-agent"] });
       return res.status(404).json({ success: false, error: "Identity not registered on this node" });
     }
-    if (user.key_hash !== keyHash) {
+    let keyMatch = false;
+    try {
+      keyMatch = crypto.timingSafeEqual(Buffer.from(user.key_hash), Buffer.from(keyHash));
+    } catch {
+      keyMatch = false;
+    }
+    if (!keyMatch) {
       audit.log("AUTH_FAILURE", { action: "login", outcome: "failure", actor_type: "human", ip_address: req.ip, user_agent: req.headers["user-agent"], details: { user_uuid: uuid } });
       return res.status(401).json({ success: false, error: "Invalid identity key" });
     }
@@ -480,13 +492,24 @@ app.get("/api/bookmarks", requireAuth, requirePermission("canRead"), (req, res) 
 
   sql += " ORDER BY created_at DESC";
   const rows = db.prepare(sql).all(...params);
-  res.json({ success: true, data: rows.map(parseBookmark) });
+  const results = rows.map(parseBookmark);
+  // Strip r.jina.ai fields from agent responses (human-only feature)
+  if (req.keyType === "agent") {
+    res.json({ success: true, data: results.map(({ jinaUrl, ...b }) => b) });
+  } else {
+    res.json({ success: true, data: results });
+  }
 });
 
 app.get("/api/bookmarks/:id", requireAuth, requirePermission("canRead"), (req, res) => {
   const row = db.prepare("SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?").get(req.params.id, req.userUuid);
   if (!row) return res.status(404).json({ success: false, error: "Bookmark not found" });
-  res.json({ success: true, data: parseBookmark(row) });
+  const bookmark = parseBookmark(row);
+  if (req.keyType === "agent") {
+    const { jinaUrl, ...agentBookmark } = bookmark;
+    return res.json({ success: true, data: agentBookmark });
+  }
+  res.json({ success: true, data: bookmark });
 });
 
 app.post("/api/bookmarks", requireAuth, requirePermission("canWrite"), validateBody(BookmarkSchemas.create), (req, res) => {

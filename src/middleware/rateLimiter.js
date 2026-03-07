@@ -31,36 +31,45 @@ export const apiLimiter = rateLimit({
 });
 
 export const createAgentKeyRateLimiter = (db) => {
+  // Cache limiters per agent api_key so each key gets a persistent window counter
+  const limiterCache = new Map();
+
   return async (req, res, next) => {
     // Skip if no rate limiting info is expected
     if (req.keyType === "human" || !req.apiKey) {
        return next();
     }
-    
+
     let limit = null;
+    let agentApiKey = null;
+
     if (req.keyType === "agent") {
-      const agent = db.prepare("SELECT rate_limit FROM agent_keys WHERE api_key = ? AND is_active = 1").get(req.apiKey);
-      if (agent && agent.rate_limit) limit = agent.rate_limit;
+      const agent = db.prepare("SELECT api_key, rate_limit FROM agent_keys WHERE api_key = ? AND is_active = 1").get(req.apiKey);
+      if (agent && agent.rate_limit) { limit = agent.rate_limit; agentApiKey = agent.api_key; }
     } else if (req.keyType === "api") {
        const token = db.prepare("SELECT owner_key, owner_type FROM api_tokens WHERE key = ?").get(req.apiKey);
        if (token && token.owner_type === "agent") {
-         const agent = db.prepare("SELECT rate_limit FROM agent_keys WHERE api_key = ? AND is_active = 1").get(token.owner_key);
-         if (agent && agent.rate_limit) limit = agent.rate_limit;
+         const agent = db.prepare("SELECT api_key, rate_limit FROM agent_keys WHERE api_key = ? AND is_active = 1").get(token.owner_key);
+         if (agent && agent.rate_limit) { limit = agent.rate_limit; agentApiKey = agent.api_key; }
        }
     }
 
-    if (!limit) return next();
+    if (!limit || !agentApiKey) return next();
 
-    const limiter = rateLimit({
-      windowMs: 60 * 1000,
-      max: limit,
-      keyGenerator: (req) => req.apiKey || req.ip,
-      message: {
-        success: false,
-        error: "Your carapace lacks the capacity! Agent rate limit exceeded."
-      }
-    });
+    // Reuse existing limiter for this agent key, or create one and cache it
+    if (!limiterCache.has(agentApiKey)) {
+      const cacheKey = agentApiKey;
+      limiterCache.set(cacheKey, rateLimit({
+        windowMs: 60 * 1000,
+        max: limit,
+        keyGenerator: () => cacheKey,
+        message: {
+          success: false,
+          error: "Your carapace lacks the capacity! Agent rate limit exceeded."
+        }
+      }));
+    }
 
-    limiter(req, res, next);
+    limiterCache.get(agentApiKey)(req, res, next);
   };
 };

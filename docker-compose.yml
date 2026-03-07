@@ -12,7 +12,10 @@ services:
       - NODE_ENV=production
       - PORT=4545
       - DATA_DIR=/app/data
-      # CORS_ORIGIN: leave unset to allow all origins, or set to restrict (e.g. http://yourdomain.com)
+      # CORS_ORIGIN restricts which origins can access the API. Set this to your deployment origin.
+      # Examples: http://192.168.1.5:4545  |  https://bookmarks.yourdomain.com
+      # NEVER leave unset in production — defaults to allow-all if omitted.
+      - CORS_ORIGIN=http://localhost:4545
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:4545/api/health"]
       interval: 15s
