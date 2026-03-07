@@ -6,7 +6,7 @@
  * Database file: /app/data/db.sqlite (Docker) or ./data/db.sqlite (local)
  *
  * Key prefixes:
- *   hu-  Human identity keys   (login — validated client-side against IndexedDB)
+ *   hu-  Human identity keys   (login — validated server-side against SQLite)
  *   lb-  Agent keys            (generated in Settings → Agent Permissions)
  *   api- REST API tokens       (issued by POST /api/auth/token)
  *
