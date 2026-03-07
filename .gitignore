@@ -32,6 +32,7 @@ clawchives_identity_key.json
 .trunk/
 
 docker-compose.dev.yml
+docker-compose.dev-refactor.yml
 
 security-audit-implementation/
 r.jina-feature-implementation/
