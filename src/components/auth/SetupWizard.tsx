@@ -68,7 +68,7 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
       const keyHash = await hashToken(generatedKey);
 
       // 2. Register identity on server 
-      const apiUrl = ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
+      const apiUrl = (import.meta as unknown as { env: Record<string, string | boolean> }).env.PROD ? "" : ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
       
       const registerResponse = await fetch(`${apiUrl}/api/auth/register`, {
         method: "POST",

@@ -1,36 +1,20 @@
 services:
-  # ─── Frontend (Vite + React) ───────────────────────────────────────────────
+  # ─── ClawChives (API + UI Single Container) ─────────────────────────────────
   claw-chives:
-    image: ghcr.io/acidgreenservers/clawchives:latest
-    container_name: clawchives-ui
+    image: ghcr.io/acidgreenservers/clawchives:main
+    container_name: clawchives
     ports:
       - "4545:4545"
-    environment:
-      - NODE_ENV=development # Still dev for now as no prod UI Dockerfile exists
-      - CHOKIDAR_USEPOLLING=true
-      # VITE_API_URL: Set to your LAN IP for network access (e.g., http://192.168.1.6:4242)
-      # Leave as localhost for same-machine access only
-      - VITE_API_URL=http://[IP_ADDRESS]:4242
-    depends_on:
-      claw-chives-api:
-        condition: service_healthy
-
-  # ─── API Server (Express + SQLite) ────────────────────────────────────────
-  claw-chives-api:
-    image: ghcr.io/acidgreenservers/clawchives-api:latest
-    container_name: clawchives-api
-    ports:
-      - "4242:4242"
   # ─── Docker Bind Mount for SQLite Database ───────
     volumes:
       - ./data:/app/data
     environment:
       - NODE_ENV=production
-      - PORT=4242
+      - PORT=4545
       - DATA_DIR=/app/data
       # CORS_ORIGIN: leave unset to allow all origins, or set to restrict (e.g. http://yourdomain.com)
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:4242/api/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:4545/api/health"]
       interval: 15s
       timeout: 10s
       retries: 5

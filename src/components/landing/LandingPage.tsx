@@ -76,7 +76,7 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
             <img
-              src="/src/assets/main-logo.png"
+              src="/assets/main-logo.png"
               alt="ClawChives Logo"
               className="w-72 h-72 object-contain mx-auto -mb-12 mix-blend-multiply dark:mix-blend-screen dark:invert brightness-[1.1] contrast-[1.1]"
             />

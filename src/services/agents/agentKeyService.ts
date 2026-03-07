@@ -10,7 +10,7 @@ export interface AgentConfig {
 }
 
 const getApiUrl = () => {
-  return ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
+  return (import.meta as unknown as { env: Record<string, string | boolean> }).env.PROD ? "" : ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
 };
 
 const getToken = () => {

@@ -80,7 +80,8 @@ export const BookmarkSchemas = {
     description: z.string().max(1000).optional(),
     favicon: z.string().url().optional().or(z.literal("")),
     tags: z.array(z.string()).max(20).optional(),
-    folderId: z.string().uuid().optional().nullable(),
+    folderIds: z.array(z.string().uuid()).max(20).optional(),
+    folderId: z.string().uuid().optional().nullable(), // Legacy backwards-compat
     starred: z.boolean().optional(),
     archived: z.boolean().optional(),
     color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().nullable(),

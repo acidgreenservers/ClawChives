@@ -37,3 +37,7 @@ export const requireHuman = (db) => (req, res, next) => {
     res.status(403).json({ success: false, error: "Forbidden: This area of the Reef requires Human identity" });
   }
 };
+
+export const requireActiveAgent = (db) => (req, res, next) => {
+    next();
+};

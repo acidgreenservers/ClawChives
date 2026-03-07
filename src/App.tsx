@@ -59,7 +59,7 @@ function App() {
 
         // 2. Validate token in background (don't block the UI)
         // @ts-ignore: Vite replaces this at build-time
-        const apiUrl = (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
+        const apiUrl = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
         fetch(`${apiUrl}/api/auth/validate`, {
           headers: { Authorization: `Bearer ${token}` },
         }).then(async (res) => {
