@@ -227,9 +227,6 @@ class ApiClient {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    // Log the request (for debugging)
-    console.log(`[API Mock] ${method} ${this.baseUrl}${endpoint}`, body || "");
-
     // In a real implementation, this would be:
     // const response = await fetch(`${this.baseUrl}${endpoint}`, {
     //   method,
