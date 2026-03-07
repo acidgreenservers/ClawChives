@@ -49,7 +49,7 @@ export function ImportExportSettings() {
           description: bookmark.description || "",
           favicon: bookmark.favicon || "",
           tags: bookmark.tags || [],
-          folderId: bookmark.folderId,
+          folderIds: bookmark.folderIds || (bookmark.folderId ? [bookmark.folderId] : []),
           starred: bookmark.starred || false,
           archived: bookmark.archived || false,
           createdAt: bookmark.createdAt || new Date().toISOString(),

@@ -26,7 +26,7 @@ interface SidebarProps {
     starred: number;
     archived: number;
   };
-  bookmarks: { folderId?: string }[];
+  bookmarks: { folderIds?: string[] }[];
 }
 
 export function Sidebar({
@@ -124,7 +124,7 @@ export function Sidebar({
   };
 
   const folderBookmarkCount = (folderId: string) =>
-    bookmarks.filter((b) => b.folderId === folderId).length;
+    bookmarks.filter((b) => b.folderIds?.includes(folderId)).length;
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900">

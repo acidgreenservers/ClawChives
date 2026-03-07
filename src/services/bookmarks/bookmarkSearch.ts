@@ -60,7 +60,7 @@ export async function advancedSearch(filters: {
   }
   
   if (filters.folderId) {
-    bookmarks = bookmarks.filter(b => b.folderId === filters.folderId);
+    bookmarks = bookmarks.filter(b => b.folderIds?.includes(filters.folderId as string));
   }
   
   if (filters.starred !== undefined) {

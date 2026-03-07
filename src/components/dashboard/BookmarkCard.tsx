@@ -13,6 +13,8 @@ interface BookmarkCardProps {
   onDelete: (id: string) => void;
   onToggleStar: (bookmark: Bookmark) => void;
   onToggleArchive: (bookmark: Bookmark) => void;
+  onTogglePin?: (bookmark: Bookmark) => void;
+  pinnedFolderId?: string;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
 }
 
@@ -63,9 +65,12 @@ export function BookmarkCard({
   onDelete,
   onToggleStar,
   onToggleArchive,
+  onTogglePin,
+  pinnedFolderId,
   onDragStart,
 }: BookmarkCardProps) {
   const faviconUrl = getFaviconUrl(bookmark.url);
+  const isPinned = pinnedFolderId ? bookmark.folderIds?.includes(pinnedFolderId) : false;
   const userKeyType = sessionStorage.getItem("cc_key_type") || "unknown";
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -123,6 +128,11 @@ export function BookmarkCard({
             )}
           </div>
         </>
+      )}
+      {isPinned && (
+        <div className="absolute top-[-10px] right-[-10px] w-6 h-6 bg-red-100 dark:bg-red-900/40 rounded-full border border-red-300 dark:border-red-700/50 flex items-center justify-center shadow-sm z-10" title="Pinned">
+          <span className="text-xs">🦞</span>
+        </div>
       )}
       <div className="flex items-start gap-3 mb-3">
         <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -188,6 +198,22 @@ export function BookmarkCard({
         </div>
 
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Pin */}
+          {onTogglePin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-8 w-8 p-0 ${isPinned ? "text-red-500" : "text-slate-400 hover:text-red-500"}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePin(bookmark);
+              }}
+              title={isPinned ? "Unpin" : "Pin"}
+            >
+              <span className={`text-base leading-none ${isPinned ? "grayscale-0" : "grayscale opacity-50"}`}>📌</span>
+            </Button>
+          )}
+
           {/* Edit */}
           <Button
             variant="ghost"
