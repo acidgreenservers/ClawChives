@@ -193,12 +193,16 @@ export const app = express();
 export { db };
 const PORT = parseInt(process.env.PORT ?? "4242", 10);
 
-// Trust proxy (behind Docker/LB)
-app.set("trust proxy", 1);
+// Trust proxy (behind Docker/LB) — only enable when actually behind a reverse proxy
+if (process.env.TRUST_PROXY === "true") {
+  app.set("trust proxy", 1);
+}
 
 app.use(httpsRedirect);
 
 app.use(helmet({
+  // Only enable HSTS (Strict-Transport-Security) when actually serving HTTPS.
+  strictTransportSecurity: process.env.ENFORCE_HTTPS === "true" ? undefined : false,
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
@@ -207,9 +211,18 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'", "wss:", "ws:", "https://r.jina.ai"],
+      // Disable upgrade-insecure-requests on plain HTTP LAN deployments.
+      // Helmet injects this by default; null removes it from the header entirely.
+      // On HTTP, this directive causes ERR_SSL_PROTOCOL_ERROR for all assets.
+      upgradeInsecureRequests: process.env.ENFORCE_HTTPS === "true" ? [] : null,
     },
   },
   crossOriginEmbedderPolicy: false,
+  // Disable CORP and COOP on HTTP LAN — ensures assets load and removes warnings
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
+  // Match Origin-Agent-Cluster behavior to avoid browser conflicts
+  originAgentCluster: false,
 }));
 
 app.use(cors(getCorsConfig()));
@@ -821,12 +834,29 @@ console.log("🦞 [Server] Serving static files from:", distPath);
 console.log("🦞 [Server] dist/ exists:", fs.existsSync(distPath));
 console.log("🦞 [Server] index.html exists:", fs.existsSync(path.join(distPath, "index.html")));
 
-app.use(express.static(distPath));
+// Serve static assets with default caching (hashed filenames — safe to cache).
+// Force no-cache on index.html so the browser always fetches the latest asset
+// hashes after a Docker rebuild, preventing stale hash mismatches.
+app.use(express.static(distPath, {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith("index.html")) {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+    }
+  },
+}));
 
-// For any non-API route, send index.html (React Router)
-app.get(/^(?!\/api\/).*/, (req, res, next) => {
+// For any non-API, non-asset route, send index.html (React Router SPA fallback).
+// Explicitly exclude /assets/ so CSS/JS/images are never served as index.html.
+app.get(/^(?!\/api\/)(?!\/assets\/).*/, (req, res, next) => {
   const indexPath = path.join(distPath, "index.html");
-  console.log("🦞 [Server] SPA Fallback:", req.path, "→", indexPath);
+  
+  // Aggressive cache-busting for the SPA entry point to prevent "Stale Hash" CSS issues
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  
   res.sendFile(indexPath);
 });
 

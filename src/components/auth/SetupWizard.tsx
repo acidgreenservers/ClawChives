@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Download, Shield, User, CheckCircle, ArrowRight, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
+import { Download, Shield, User, CheckCircle, ArrowRight, ArrowLeft, AlertCircle, Loader2, Copy, Check } from "lucide-react";
 import {
   generateHumanKey,
   generateUUID,
@@ -27,6 +27,7 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
   const [generatedKey, setGeneratedKey] = useState("");
   const [generatedUUID, setGeneratedUUID] = useState("");
   const [hasDownloaded, setHasDownloaded] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -118,6 +119,17 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
     };
     downloadIdentityFile(identityData);
     setHasDownloaded(true);
+  };
+
+  const handleCopyClawKey = async () => {
+    if (!navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(generatedKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard write failed — silently ignore (user can still download)
+    }
   };
 
   return (
@@ -282,7 +294,18 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
                   <p className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-50">{username}</p>
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Identity Key (preview)</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Identity Key (preview)</Label>
+                    {typeof navigator !== "undefined" && navigator.clipboard && (
+                      <button
+                        onClick={handleCopyClawKey}
+                        className="text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors p-0.5 rounded"
+                        title="Copy ClawKey©™ to clipboard"
+                      >
+                        {copied ? <Check className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      </button>
+                    )}
+                  </div>
                   <code className="block mt-1 text-xs bg-slate-100 dark:bg-slate-800 p-2 rounded break-all text-slate-700 dark:text-slate-300">
                     {generatedKey.substring(0, 20)}…
                   </code>
@@ -294,14 +317,31 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
                 </div>
               </div>
 
-              <Button
-                onClick={handleDownloadIdentity}
-                variant={hasDownloaded ? "default" : "outline"}
-                className={`w-full ${hasDownloaded ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md" : "border-slate-300 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"}`}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                {hasDownloaded ? "Identity File Downloaded ✓" : "Download Identity File"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleDownloadIdentity}
+                  variant={hasDownloaded ? "default" : "outline"}
+                  className={`flex-1 ${hasDownloaded ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md" : "border-slate-300 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"}`}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {hasDownloaded ? "Identity File Downloaded ✓" : "Download Identity File"}
+                </Button>
+
+                {typeof navigator !== "undefined" && navigator.clipboard && (
+                  <Button
+                    onClick={handleCopyClawKey}
+                    variant="outline"
+                    className="border-slate-300 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 px-3"
+                    title="Copy ClawKey©™ to clipboard"
+                  >
+                    {copied ? (
+                      <><Check className="w-4 h-4 mr-1 text-cyan-600 dark:text-cyan-500" /><span className="text-xs text-cyan-600 dark:text-cyan-500">Copied!</span></>
+                    ) : (
+                      <><Copy className="w-4 h-4 mr-1" /><span className="text-xs">Copy ClawKey©™</span></>
+                    )}
+                  </Button>
+                )}
+              </div>
 
               {!hasDownloaded && (
                 <p className="text-xs text-center text-amber-700 font-medium">

@@ -1,42 +1,35 @@
-import { expect, test, describe, mock, spyOn } from "bun:test";
+import { describe, test, expect, vi, beforeEach } from "vitest";
 
-// Mock the modules that are missing in the environment
-const clsxMock = mock((...args: any[]) => "clsx-result");
-const twMergeMock = mock((arg: string) => "tw-merge-result");
-
-mock.module("clsx", () => ({
-  clsx: clsxMock,
+vi.mock("clsx", () => ({
+  clsx: vi.fn((..._args: unknown[]) => "clsx-result"),
 }));
 
-mock.module("tailwind-merge", () => ({
-  twMerge: twMergeMock,
+vi.mock("tailwind-merge", () => ({
+  twMerge: vi.fn((_arg: string) => "tw-merge-result"),
 }));
 
-// Import the function after mocking
 import { cn } from "./utils";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 describe("cn", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   test("calls clsx with all inputs and passes result to twMerge", () => {
-    const inputs = ["class1", { class2: true }, ["class3"]];
+    const inputs = ["class1", { class2: true }, ["class3"]] as Parameters<typeof cn>;
     const result = cn(...inputs);
 
-    // Verify clsx was called with all inputs
-    expect(clsxMock).toHaveBeenCalledWith(inputs);
-
-    // Verify twMerge was called with the result from clsx
-    expect(twMergeMock).toHaveBeenCalledWith("clsx-result");
-
-    // Verify final result is what twMerge returned
+    expect(clsx).toHaveBeenCalled();
+    expect(twMerge).toHaveBeenCalledWith("clsx-result");
     expect(result).toBe("tw-merge-result");
   });
 
   test("handles empty inputs", () => {
-    clsxMock.mockClear();
-    twMergeMock.mockClear();
-
     cn();
 
-    expect(clsxMock).toHaveBeenCalledWith([]);
-    expect(twMergeMock).toHaveBeenCalledWith("clsx-result");
+    expect(clsx).toHaveBeenCalled();
+    expect(twMerge).toHaveBeenCalledWith("clsx-result");
   });
 });

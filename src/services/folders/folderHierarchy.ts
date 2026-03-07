@@ -1,7 +1,7 @@
 // Folder hierarchy management
 
 import { getAllFolders, updateFolder } from "./folderService";
-import type { Folder } from "../../types";
+import type { Folder } from "../types";
 
 export async function getFoldersByParent(parentId?: string): Promise<Folder[]> {
   const folders = await getAllFolders();

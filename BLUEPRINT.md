@@ -24,13 +24,13 @@ ClawChives/
 │
 ├── 🐳 Dockerfile                    # Frontend container (Vite dev/build)
 ├── 🐳 Dockerfile.api                # API server container (Express + SQLite)
-├── 🐳 docker-compose.yml            # Dual-profile orchestration
-│                                      (--profile indexeddb | --profile sqlite)
+├── 🐳 docker-compose.yml            # Single-container stack (UI + API)
+│                                      Volume mount: ./data → /app/data
 │
 ├── 🌐 server.js                     # Express REST API + SQLite backend
 │                                      Endpoints: bookmarks, folders, agent-keys
 │                                      Auth: hu- / lb- / api- key enforcement
-│                                      DB: better-sqlite3 → /app/data/db.sqlite (jina_url)
+│                                      DB: better-sqlite3 → ./data/db.sqlite
 │
 └── src/
     │
@@ -189,9 +189,6 @@ classDiagram
         +useDatabaseAdapter() hook
         +useDatabaseMode() hook
     }
-    class IndexedDBAdapter {
-        +implements IDatabaseAdapter
-    }
     class RestAdapter {
         +implements IDatabaseAdapter
         +API_BASE string
@@ -199,6 +196,5 @@ classDiagram
     }
 
     App --> DatabaseProvider
-    DatabaseProvider --> IndexedDBAdapter
     DatabaseProvider --> RestAdapter
 ```

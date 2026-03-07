@@ -30,6 +30,7 @@ clawchives_identity_key.json
 *.sw?
 .claude/
 .trunk/
+.vibecheck/
 
 docker-compose.dev.yml
 

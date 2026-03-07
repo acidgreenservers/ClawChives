@@ -12,7 +12,7 @@
 ```
 ClawChives := SovereignIdentity × BookmarkManager × AgentAPI
   where SovereignIdentity = KeyFileAuth(no_passwords, no_accounts)
-        BookmarkManager = LocalFirst(IndexedDB) + ServerSync(SQLite)
+        BookmarkManager = SQLiteBedrock (REST Proxy)
         AgentAPI = RESTful(bearer_tokens) + Permissions(granular)
 ```
 
@@ -22,8 +22,8 @@ ClawChives := SovereignIdentity × BookmarkManager × AgentAPI
 ```
 Frontend: React 18 + TypeScript + Vite + Tailwind
 Backend:  Node 20 + Express 5 + better-sqlite3
-Storage:  IndexedDB (client) + SQLite3 (server)
-Deploy:   Docker Compose (UI + API containers)
+Storage:  SQLite3 (Persistent Volume)
+Deploy:   Docker Compose (Single Container)
 Auth:     Cryptographic keys (hu-, lb-, api-)
 ```
 
@@ -106,6 +106,63 @@ healthcheck:
 ```
 
 **Why This Matters:** On Unraid with volumes, SQLite initialization can take longer. Too-aggressive healthchecks mark the container unhealthy before it's ready, causing startup cascade failures.
+
+---
+
+#### Fix #3: Docker Deployment API URL Configuration (2026-03-07)
+**Problem:** When deploying via Docker GHCR, frontend displayed white screen with:
+```
+net::ERR_CONNECTION_REFUSED on http://localhost:4242/api/auth/register
+```
+
+Root causes:
+- Dockerfile copied entire directory including stale `dist/` folder with hardcoded localhost
+- API URL logic scattered across 5 files with complex ternaries
+- GitHub Actions workflow referenced non-existent `Dockerfile.api`
+
+**Solution:** Three-part fix:
+
+1. **Created centralized API config** (`src/config/apiConfig.ts`) with priority-based URL resolution:
+   - Priority 1: Explicit override via `VITE_API_URL` env var (custom domains)
+   - Priority 2: Production builds use relative paths `""` (Docker, LAN, proxies)
+   - Priority 3: Dev fallback to `http://localhost:4242` (separate ports)
+
+2. **Refactored 5 API client files** to use `getApiBaseUrl()`:
+   - [src/services/database/rest/RestAdapter.ts:20](src/services/database/rest/RestAdapter.ts#L20)
+   - [src/components/auth/SetupWizard.tsx:72](src/components/auth/SetupWizard.tsx#L72)
+   - [src/components/auth/LoginForm.tsx:57](src/components/auth/LoginForm.tsx#L57)
+   - [src/App.tsx:62](src/App.tsx#L62)
+   - [src/services/agents/agentKeyService.ts:14](src/services/agents/agentKeyService.ts#L14)
+
+3. **Fixed Dockerfile** to only copy source files and always rebuild `dist/`:
+   ```dockerfile
+   # ✅ Copy only source needed for build (exclude dist/)
+   COPY index.html vite.config.ts tsconfig.json tsconfig.node.json ./
+   COPY src ./src
+   COPY public ./public
+   RUN npm run build  # ← Fresh build every time, never uses stale dist/
+   ```
+
+4. **Fixed GitHub Actions workflow** (single container build):
+   ```yaml
+   file: ./Dockerfile    # ← Removed reference to non-existent Dockerfile.api
+   ```
+
+**Why This Matters:** Single-container architecture serves both UI + API on port 4545. Production builds need relative paths (`/api/*`) not hardcoded localhost. Centralized config ensures all deployment scenarios work:
+- **Local dev:** `http://localhost:4242` (separate ports)
+- **Docker/LAN:** `""` (relative paths, same-origin)
+- **Custom domain:** `https://your-domain.com` (via VITE_API_URL env var)
+
+**Verification:**
+```bash
+✅ npm run build       — Clean production build (4.88s)
+✅ npm test            — All 10 tests pass
+✅ dist/ bundle        — NO hardcoded localhost:4242
+✅ Dockerfile          — Rebuilds dist/ fresh every time
+✅ GitHub Actions      — Fixed workflow, single container
+```
+
+**Future-Proofing:** All API URL resolution must go through `getApiBaseUrl()` from `src/config/apiConfig.ts`. Do not hardcode localhost:4242 or custom domains in individual components. This is the single source of truth for API connectivity across all deployment scenarios.
 
 ---
 
@@ -803,16 +860,17 @@ Red Flags:
 - Dark mode theme
 - Docker deployment
 
-### ✅ Phase 2 In Progress: Security Hardening + r.jina Integration
+### ✅ Phase 2 Complete: Security Hardening + r.jina Integration + Docker Fix
 ```
 [security-audit-implementation/]
 ├── Planning: Complete (skill files created)
 ├── Review: Complete (comprehensive OWASP audit)
-└── Implementation: Complete (all 4 critical fixes merged)
+└── Implementation: Complete (all 5 critical fixes merged)
     ├── Fix 1: Frontend keyType context (sessionStorage + React context)
     ├── Fix 2: SSRF protection (Zod .refine() with IP blocking)
     ├── Fix 3: Conditional UI rendering (human-only checkbox/menu)
-    └── Fix 4: Helmet CSP (connectSrc includes https://r.jina.ai)
+    ├── Fix 4: Helmet CSP (connectSrc includes https://r.jina.ai)
+    └── Fix 5: Docker Deployment API URL (centralized config, fresh builds)
 
 [r.jina.ai Integration - Phase 2 Feature]
 ├── Backend API: POST /api/proxy/r.jina, config management, caching
@@ -851,12 +909,14 @@ ThemePattern := Lobster(Red) + Ocean(Dark) + Shell(Light)
 
 ### Critical Files (Change These = High Impact)
 ```
-server.js              → All backend logic (monolithic)
-src/lib/crypto.ts      → Core auth primitives (SHA-256, constant-time)
+server.js                             → All backend logic (monolithic)
+src/config/apiConfig.ts               → API URL resolution (DO NOT scatter logic)
+src/lib/crypto.ts                     → Core auth primitives (SHA-256, constant-time)
 src/services/database/rest/RestAdapter.ts → API client wrapper (stability lock)
 src/services/agents/agentKeyService.ts    → Lobster key CRUD (stability lock)
-SECURITY.md            → Security policy (update with each hardening)
-docker-compose.yml     → Deployment config (env vars, volumes)
+SECURITY.md                           → Security policy (update with each hardening)
+docker-compose.yml                    → Deployment config (env vars, volumes)
+Dockerfile                            → Build config (DO NOT include stale dist/)
 ```
 
 ### Frontend Code Reference
@@ -882,6 +942,13 @@ component patterns, and type locations.
    Agents legitimately need r.jina.ai content for automated processing.
    Only WRITE operations (POST/PUT jinaUrl) are blocked for agents.
    DO NOT strip jina fields from GET responses.
+10. Dockerfile must NOT copy entire directory (COPY . .) — only copy source
+    files needed for build. This prevents stale dist/ from being included.
+    Always rebuild frontend fresh from source in Docker.
+    Files: index.html, vite.config.ts, tsconfig*.json, src/, public/
+11. All API URL resolution must go through getApiBaseUrl() from
+    src/config/apiConfig.ts. Do not hardcode localhost:4242 or custom
+    domains in individual components. One source of truth for API connectivity.
 ```
 
 ---
@@ -1115,6 +1182,16 @@ Docs: SECURITY.md, ROADMAP.md, this file
               * Conditional UI rendering (human vs agent visibility)
               * Helmet CSP (connectSrc includes r.jina.ai domain)
             - Ready for Docker deployment and user testing
+
+2026-03-07: Docker Deployment Fix Documentation & Implementation
+            - Added Fix #3: Docker Deployment API URL Configuration
+            - Created src/config/apiConfig.ts with centralized getApiBaseUrl()
+            - Refactored 5 API client files to use centralized config (DRY principle)
+            - Fixed Dockerfile to prevent stale dist/ inclusion
+            - Fixed GitHub Actions workflow (single Dockerfile, no Dockerfile.api ref)
+            - All 10 tests passing, production bundle clean of hardcoded localhost
+            - Docker deployment verified across dev, LAN, and proxy scenarios
+            - Added new invariants for Dockerfile build strategy and API config centralization
 ```
 
 ---
@@ -1126,3 +1203,56 @@ Docs: SECURITY.md, ROADMAP.md, this file
 **Lobster Wisdom:** "A lobster never looks back at its old shell." Keep molting, keep improving.
 
 🦞 **Stay Clawed, Stay Sovereign** 🦞
+
+---
+
+<!-- vibe-flow:start -->
+# Vibe Flow — Workflow Guide
+
+Use `/vibe-help` anytime for context-aware guidance on what to do next.
+
+## Analysis
+
+- **`CB`** Create Product Brief — A guided experience to nail down your product idea into an executive brief *(Radar)*
+- **`MR`** Market Research — Market analysis, competitive landscape, customer needs and trends *(Radar)*
+- **`DR`** Domain Research — Industry domain deep dive, subject matter expertise and terminology *(Radar)*
+- **`TR`** Technical Research — Technical feasibility, architecture options and implementation approaches *(Radar)*
+
+## Planning
+
+- **`CP`** Create PRD — Expert led facilitation to produce your Product Requirements Document *(Rhythm)*
+- **`VP`** Validate PRD — Validate a Product Requirements Document is comprehensive, lean, well organized and cohesive *(Rhythm)*
+- **`EP`** Edit PRD — Update an existing Product Requirements Document *(Rhythm)*
+- **`CU`** Create UX Design — Guidance through realizing the plan for your UX to inform architecture and implementation *(Prism)*
+
+## Architecture
+
+- **`CA`** Create Architecture — Guided workflow to document technical decisions to keep implementation on track *(Blueprint)*
+- **`CE`** Create Epics & Stories — Create the Epics and Stories Listing — the specs that will drive development *(Rhythm)*
+- **`IR`** Implementation Readiness — Ensure the PRD, UX, Architecture, and Epics/Stories are all aligned *(Blueprint)*
+
+## Implementation
+
+- **`DS`** Dev Story — Write the next or specified story's tests and code *(Pulse)*
+- **`CR`** Code Review — Comprehensive code review across multiple quality facets *(Pulse)*
+- **`SP`** Sprint Planning — Generate or update the record that sequences tasks for the full project *(Tempo)*
+- **`CS`** Context Story — Prepare a story with all required context for implementation *(Tempo)*
+- **`ER`** Epic Retrospective — Multi-agent review of all work completed across an epic *(Tempo)*
+- **`CC`** Course Correction — Determine how to proceed if major need for change is discovered mid implementation *(Tempo)*
+- **`SS`** Sprint Status — Review and update sprint progress *(Tempo)*
+- **`QA`** Generate Tests — Generate API and E2E tests for existing features *(Signal)*
+
+## Quick Flow
+
+- **`QS`** Quick Spec — Architect a quick but complete technical spec with implementation-ready stories *(Dash)*
+- **`QD`** Quick Dev — Implement a story tech spec end-to-end (core of Quick Flow) *(Dash)*
+- **`QQ`** Quick Dev New — Unified quick flow — clarify intent, plan, implement, review, present *(Dash)*
+
+## Utility
+
+- **`BP`** Brainstorm — Expert guided facilitation through single or multiple brainstorming techniques *(Radar)*
+- **`DP`** Document Project — Analyze an existing project to produce useful documentation for both human and LLM *(Echo)*
+- **`GC`** Generate Project Context — Analyze the project and produce a context document for AI agents *(Echo)*
+- **`SM`** Squad Mode — Bring multiple agent personas into one session to collaborate and discuss *(Maestro)*
+
+<!-- vibe-flow:end -->
