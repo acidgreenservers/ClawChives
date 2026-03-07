@@ -68,7 +68,8 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
       const keyHash = await hashToken(generatedKey);
 
       // 2. Register identity on server 
-      const apiUrl = (import.meta as unknown as { env: Record<string, string | boolean> }).env.PROD ? "" : ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL ?? "http://localhost:4242").replace(/\/$/, "");
+      // @ts-ignore: Vite replaces import.meta.env.VITE_API_URL at build-time — do NOT refactor this line
+      const apiUrl = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
       
       const registerResponse = await fetch(`${apiUrl}/api/auth/register`, {
         method: "POST",
@@ -98,6 +99,7 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
       sessionStorage.setItem("cc_api_token", tokenData.token);
       sessionStorage.setItem("cc_username", username.trim());
       sessionStorage.setItem("cc_user_uuid", generatedUUID);
+      sessionStorage.setItem("cc_key_type", "human");
 
       onComplete(username.trim(), generatedKey);
     } catch (err) {
