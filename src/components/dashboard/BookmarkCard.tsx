@@ -3,12 +3,12 @@ import { useState } from "react";
 import { Star, Archive, Trash2, Pencil, ExternalLink, Clock } from "lucide-react";
 import { Button } from "../ui/button";
 import { ConfirmModal } from "../ui/LobsterModal";
-import type { Bookmark } from "../../services/types";
+import type { Bookmark, IconSize } from "../../services/types";
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
   layout?: "grid" | "list";
-  iconSize?: "small" | "medium" | "large";
+  iconSize?: IconSize;
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleStar: (bookmark: Bookmark) => void;

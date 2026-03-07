@@ -1,5 +1,7 @@
 // Shared type definitions
 
+export type IconSize = "small" | "medium" | "large";
+
 export interface Bookmark {
   id: string;
   url: string;
