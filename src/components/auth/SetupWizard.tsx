@@ -11,6 +11,7 @@ import {
   hashToken,
   type IdentityData,
 } from "../../lib/crypto";
+import { getApiBaseUrl } from "@/config/apiConfig";
 
 type Step = "welcome" | "profile" | "generating" | "complete";
 
@@ -67,10 +68,9 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
       // 1. Hash the key client side to securely identify to the server
       const keyHash = await hashToken(generatedKey);
 
-      // 2. Register identity on server 
-      // @ts-ignore: Vite replaces import.meta.env.VITE_API_URL at build-time — do NOT refactor this line
-      const apiUrl = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
-      
+      // 2. Register identity on server
+      const apiUrl = getApiBaseUrl();
+
       const registerResponse = await fetch(`${apiUrl}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

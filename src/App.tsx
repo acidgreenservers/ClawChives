@@ -7,6 +7,7 @@ import { SettingsPanel } from "./components/settings/SettingsPanel";
 import { DatabaseStatsModal } from "./components/dashboard/DatabaseStatsModal";
 import { useDatabaseAdapter } from "./services/database/DatabaseProvider";
 import { useTheme, type Theme } from "./components/theme-provider";
+import { getApiBaseUrl } from "./config/apiConfig";
 
 // Simplified user type
 export interface User {
@@ -58,8 +59,7 @@ function App() {
         }
 
         // 2. Validate token in background (don't block the UI)
-        // @ts-ignore: Vite replaces this at build-time
-        const apiUrl = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
+        const apiUrl = getApiBaseUrl();
         fetch(`${apiUrl}/api/auth/validate`, {
           headers: { Authorization: `Bearer ${token}` },
         }).then(async (res) => {

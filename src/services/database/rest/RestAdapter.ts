@@ -9,15 +9,15 @@
  * Authentication: Every request attaches the user's api- token from
  * sessionStorage as `Authorization: Bearer <token>`.
  *
- * The API base URL is read from VITE_API_URL (default: http://localhost:4242).
+ * The API base URL is determined by getApiBaseUrl() from config/apiConfig.ts
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import type { IDatabaseAdapter } from "../adapter";
 import type { Bookmark, Folder, AgentKey, AppearanceSettings, ProfileSettings } from "../../types";
+import { getApiBaseUrl } from "@/config/apiConfig";
 
-// @ts-ignore: Vite replaces this at build-time
-const API_BASE = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
+const API_BASE = getApiBaseUrl();
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {

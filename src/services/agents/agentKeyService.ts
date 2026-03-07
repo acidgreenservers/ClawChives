@@ -1,4 +1,5 @@
 import type { AgentKey } from "../../types/agent";
+import { getApiBaseUrl } from "@/config/apiConfig";
 
 export interface AgentConfig {
   name: string;
@@ -10,8 +11,7 @@ export interface AgentConfig {
 }
 
 const getApiUrl = () => {
-  // @ts-ignore: Vite replaces import.meta.env.VITE_API_URL at build-time — do NOT refactor this line
-  return import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
+  return getApiBaseUrl();
 };
 
 const getToken = () => {

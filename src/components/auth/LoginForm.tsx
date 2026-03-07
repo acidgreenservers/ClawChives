@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Key, Lock, AlertCircle, Upload, ArrowLeft, CheckCircle } from "lucide-react";
 import { validateIdentityFile, hashToken } from "../../lib/crypto";
+import { getApiBaseUrl } from "@/config/apiConfig";
 
 interface LoginFormProps {
   onSuccess: (uuid: string) => void;
@@ -53,8 +54,7 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
       const keyHash = await hashToken(token);
 
       // 4. Exchange for API Token
-      // @ts-ignore: Vite replaces this at build-time
-      const apiUrl = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
+      const apiUrl = getApiBaseUrl();
       const tokenResponse = await fetch(`${apiUrl}/api/auth/token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
