@@ -1,7 +1,7 @@
 // Folder hierarchy management
 
 import { getAllFolders, updateFolder } from "./folderService";
-import type { Folder } from "../types";
+import type { Folder } from "../../types";
 
 export async function getFoldersByParent(parentId?: string): Promise<Folder[]> {
   const folders = await getAllFolders();
@@ -34,13 +34,18 @@ export async function getFolderTree(): Promise<Folder[]> {
 
 export async function getFolderPath(folderId: string): Promise<Folder[]> {
   const folders = await getAllFolders();
+  const folderMap = new Map<string, Folder>();
+  for (const f of folders) {
+    folderMap.set(f.id, f);
+  }
+
   const path: Folder[] = [];
-  let currentFolder = folders.find(f => f.id === folderId);
+  let currentFolder = folderMap.get(folderId);
   
   while (currentFolder) {
     path.unshift(currentFolder);
-    currentFolder = currentFolder.parentId 
-      ? folders.find(f => f.id === currentFolder!.parentId)
+    currentFolder = (currentFolder.parentId && folderMap.has(currentFolder.parentId))
+      ? folderMap.get(currentFolder.parentId)
       : undefined;
   }
   
