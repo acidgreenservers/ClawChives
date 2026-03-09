@@ -90,6 +90,40 @@ graph TD
     REST -->|"fetch + Bearer token"| API
     API --> DB
 ```
+---
+## Screenshots
+<details>
+<summary>Expand To View Screenshots</summary>
+
+![Landing Page](src/assets/landing-light.png)
+
+![Landing Page](src/assets/landing-dark.png)
+
+![Gateway](src/assets/gateway-light.png)
+
+![Gateway](src/assets/gateway-dark.png)
+
+![Dashboard](src/assets/dashboard-light.png)
+
+![Dashboard](src/assets/dashboard-dark.png)
+
+![Add Pinchmark](src/assets/add-light.png)
+
+![Add Pinchmark](src/assets/add-dark.png)
+
+![Settings](src/assets/settings-light.png)
+
+![Settings](src/assets/settings-dark.png)
+
+![Login](src/assets/login-light.png)
+
+![Login](src/assets/login-dark.png)
+
+![Setup Wizard](src/assets/wizard-light.png)
+
+![Setup Wizard](src/assets/wizard-dark.png)
+
+</details>
 
 ---
 
