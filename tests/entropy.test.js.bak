@@ -1,0 +1,43 @@
+import { describe, it, expect } from 'vitest';
+import { generateString } from '../server.js';
+
+describe('Cryptographic Uniformity: generateString', () => {
+  it('should produce a uniform distribution of characters (No Modulo Bias)', () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charCounts = {};
+    for (const char of chars) charCounts[char] = 0;
+
+    const iterations = 100000;
+    const length = 1; // Single char generation to isolate the loop
+
+    for (let i = 0; i < iterations; i++) {
+        const char = generateString(length);
+        charCounts[char]++;
+    }
+
+    const expectedCount = iterations / chars.length;
+    // We allow a reasonable statistical variance (e.g., 15% from mean)
+    // The original modulo bias was 25% (5/256 vs 4/256)
+    // Characters 0-7 appeared 25% more often.
+    const tolerance = expectedCount * 0.15;
+
+    console.log(`[Entropy Test] Iterations: ${iterations}, Expected per char: ${expectedCount.toFixed(2)}`);
+    
+    let maxStats = { char: '', count: 0 };
+    let minStats = { char: '', count: iterations };
+
+    for (const char of chars) {
+      const count = charCounts[char];
+      if (count > maxStats.count) maxStats = { char, count };
+      if (count < minStats.count) minStats = { char, count };
+      
+      // Strict check: No character should be outside the tolerance.
+      // Modulo bias would consistently push the first 8 characters above this.
+      expect(count).toBeGreaterThan(expectedCount - tolerance);
+      expect(count).toBeLessThan(expectedCount + tolerance);
+    }
+
+    console.log(`[Entropy Test] Max: '${maxStats.char}' (${maxStats.count}), Min: '${minStats.char}' (${minStats.count})`);
+    console.log(`[Entropy Test] Variance: +${((maxStats.count - expectedCount)/expectedCount*100).toFixed(2)}%, -${((expectedCount - minStats.count)/expectedCount*100).toFixed(2)}%`);
+  });
+});
