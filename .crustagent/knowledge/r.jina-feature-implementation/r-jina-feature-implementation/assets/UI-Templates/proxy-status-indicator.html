@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r.jina Proxy Status Indicator</title>
+    <style>
+        /* Tailwind CSS base styles for demonstration */
+        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        
+        /* Custom styles for the proxy status indicator */
+        .proxy-status-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .proxy-status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8) inset;
+            transition: all 0.3s ease;
+        }
+        
+        .proxy-status-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        /* Status states */
+        .status-online {
+            background: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) inset;
+        }
+        
+        .status-online::after {
+            background: #059669;
+        }
+        
+        .status-offline {
+            background: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3) inset;
+        }
+        
+        .status-offline::after {
+            background: #dc2626;
+        }
+        
+        .status-loading {
+            background: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) inset;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-loading::after {
+            background: #2563eb;
+            animation: pulse-inner 1.5s infinite;
+        }
+        
+        .status-error {
+            background: #f59e0b;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3) inset;
+        }
+        
+        .status-error::after {
+            background: #d97706;
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3) inset;
+            animation: blink 1s infinite;
+        }
+        
+        .status-warning::after {
+            background: #d97706;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        @keyframes pulse-inner {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .proxy-status-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .proxy-status-details {
+            font-size: 12px;
+            color: #6b7280;
+            margin-left: auto;
+        }
+        
+        .proxy-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: 12px;
+        }
+        
+        .proxy-btn {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .proxy-btn:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+        }
+        
+        .proxy-btn.primary {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .proxy-btn.primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+        
+        .proxy-btn.danger {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+        
+        .proxy-btn.danger:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+        
+        /* Detailed status panel */
+        .status-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            display: none;
+        }
+        
+        .status-panel.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .status-metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .metric-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .metric-value.error {
+            color: #ef4444;
+        }
+        
+        .metric-value.warning {
+            color: #f59e0b;
+        }
+        
+        .metric-value.success {
+            color: #10b981;
+        }
+        
+        /* Connection test animation */
+        .connection-test {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #0369a1;
+            margin-left: 12px;
+        }
+        
+        .test-dot {
+            width: 8px;
+            height: 8px;
+            background: #0369a1;
+            border-radius: 50%;
+            display: inline-block;
+            animation: testPulse 1s infinite;
+        }
+        
+        @keyframes testPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Proxy Status Indicator -->
+    <div class="proxy-status-container" id="proxy-status-main">
+        <div class="proxy-status-indicator status-loading" id="proxy-indicator"></div>
+        <span class="proxy-status-text" id="proxy-status-text">Testing r.jina.ai Connection...</span>
+        <span class="proxy-status-details" id="proxy-details">Last check: Never</span>
+        <div class="proxy-actions">
+            <button class="proxy-btn primary" id="test-connection">Test Connection</button>
+            <button class="proxy-btn" id="toggle-details">Details</button>
+        </div>
+        <div class="connection-test hidden" id="connection-test">
+            <span class="test-dot"></span>
+            <span>Testing connection...</span>
+        </div>
+    </div>
+
+    <!-- Detailed Status Panel -->
+    <div class="status-panel" id="status-panel">
+        <div class="flex justify-between items-center mb-4">
+            <h4 class="font-semibold text-gray-900">r.jina.ai Proxy Status</h4>
+            <button class="proxy-btn" id="refresh-status">Refresh</button>
+        </div>
+        
+        <div class="space-y-3">
+            <div class="status-metric">
+                <span class="metric-label">Connection Status</span>
+                <span class="metric-value success" id="connection-status">Online</span>
+            </div>
+            
+            <div class="status-metric">
+                <span class="metric-label">Response Time</span>
+                <span class="metric-value" id="response-time">120ms</span>
+            </div>
+            
+            <div class="status-metric">
+                <span class="metric-label">Last Check</span>
+                <span class="metric-value" id="last-check">2 minutes ago</span>
+            </div>
+            
+            <div class="status-metric">
+                <span class="metric-label">Uptime</span>
+                <span class="metric-value success" id="uptime">99.8%</span>
+            </div>
+            
+            <div class="status-metric">
+                <span class="metric-label">Rate Limit</span>
+                <span class="metric-value" id="rate-limit">1000/24h</span>
+            </div>
+            
+            <div class="status-metric">
+                <span class="metric-label">Error Rate</span>
+                <span class="metric-value success" id="error-rate">0.2%</span>
+            </div>
+        </div>
+        
+        <div class="mt-4 flex gap-2">
+            <button class="proxy-btn primary" id="test-proxy">Test Proxy</button>
+            <button class="proxy-btn" id="clear-cache">Clear Cache</button>
+            <button class="proxy-btn danger" id="reset-proxy">Reset Proxy</button>
+        </div>
+    </div>
+
+    <!-- Usage Examples -->
+    <div class="mt-8 space-y-6">
+        <div class="p-6 bg-white rounded-lg shadow-sm border">
+            <h3 class="text-lg font-semibold mb-4">Usage Examples</h3>
+            
+            <!-- Example 1: Simple Status Indicator -->
+            <div class="mb-6">
+                <h4 class="font-medium text-gray-900 mb-2">1. Simple Status Indicator</h4>
+                <div class="proxy-status-container">
+                    <div class="proxy-status-indicator status-online"></div>
+                    <span class="proxy-status-text">r.jina.ai Proxy Online</span>
+                    <span class="proxy-status-details">Response time: 120ms</span>
+                </div>
+            </div>
+            
+            <!-- Example 2: With Actions -->
+            <div class="mb-6">
+                <h4 class="font-medium text-gray-900 mb-2">2. With Action Buttons</h4>
+                <div class="proxy-status-container">
+                    <div class="proxy-status-indicator status-offline"></div>
+                    <span class="proxy-status-text">r.jina.ai Proxy Offline</span>
+                    <span class="proxy-status-details">Last check: 5 minutes ago</span>
+                    <div class="proxy-actions">
+                        <button class="proxy-btn primary">Retry</button>
+                        <button class="proxy-btn">Settings</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Example 3: Loading State -->
+            <div class="mb-6">
+                <h4 class="font-medium text-gray-900 mb-2">3. Loading State</h4>
+                <div class="proxy-status-container">
+                    <div class="proxy-status-indicator status-loading"></div>
+                    <span class="proxy-status-text">Testing Connection...</span>
+                    <span class="proxy-status-details">Please wait</span>
+                    <div class="connection-test">
+                        <span class="test-dot"></span>
+                        <span>Testing connection...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Example 4: Error State -->
+            <div class="mb-6">
+                <h4 class="font-medium text-gray-900 mb-2">4. Error State</h4>
+                <div class="proxy-status-container">
+                    <div class="proxy-status-indicator status-error"></div>
+                    <span class="proxy-status-text">Connection Error</span>
+                    <span class="proxy-status-details">API limit exceeded</span>
+                    <div class="proxy-actions">
+                        <button class="proxy-btn danger">Reset</button>
+                        <button class="proxy-btn">Help</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Example 5: Warning State -->
+            <div class="mb-6">
+                <h4 class="font-medium text-gray-900 mb-2">5. Warning State</h4>
+                <div class="proxy-status-container">
+                    <div class="proxy-status-indicator status-warning"></div>
+                    <span class="proxy-status-text">Rate Limit Warning</span>
+                    <span class="proxy-status-details">80% of daily limit used</span>
+                    <div class="proxy-actions">
+                        <button class="proxy-btn">Upgrade</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Integration Example -->
+        <div class="p-6 bg-white rounded-lg shadow-sm border">
+            <h3 class="text-lg font-semibold mb-4">Integration Example</h3>
+            <div class="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto">
+                <pre><code>// JavaScript integration example
+class JinaProxyStatus {
+    constructor() {
+        this.indicator = document.getElementById('proxy-indicator');
+        this.statusText = document.getElementById('proxy-status-text');
+        this.details = document.getElementById('proxy-details');
+        this.panel = document.getElementById('status-panel');
+        
+        this.checkConnection();
+        setInterval(() => this.checkConnection(), 60000); // Check every minute
+    }
+    
+    async checkConnection() {
+        this.setLoading();
+        
+        try {
+            const response = await fetch('/api/proxy/r.jina/status');
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.setOnline(data);
+            } else {
+                this.setOffline(data.error);
+            }
+        } catch (error) {
+            this.setOffline(error.message);
+        }
+    }
+    
+    setLoading() {
+        this.indicator.className = 'proxy-status-indicator status-loading';
+        this.statusText.textContent = 'Testing r.jina.ai Connection...';
+        this.details.textContent = 'Checking...';
+    }
+    
+    setOnline(data) {
+        this.indicator.className = 'proxy-status-indicator status-online';
+        this.statusText.textContent = 'r.jina.ai Proxy Online';
+        this.details.textContent = `Response time: ${data.responseTime}ms`;
+        
+        // Update detailed panel
+        document.getElementById('connection-status').textContent = 'Online';
+        document.getElementById('connection-status').className = 'metric-value success';
+        document.getElementById('response-time').textContent = `${data.responseTime}ms`;
+        document.getElementById('last-check').textContent = 'Just now';
+    }
+    
+    setOffline(error) {
+        this.indicator.className = 'proxy-status-indicator status-offline';
+        this.statusText.textContent = 'r.jina.ai Proxy Offline';
+        this.details.textContent = error || 'Connection failed';
+        
+        // Update detailed panel
+        document.getElementById('connection-status').textContent = 'Offline';
+        document.getElementById('connection-status').className = 'metric-value error';
+        document.getElementById('last-check').textContent = 'Just now';
+    }
+}
+
+// Initialize
+const proxyStatus = new JinaProxyStatus();</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for proxy status indicator functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const indicator = document.getElementById('proxy-indicator');
+            const statusText = document.getElementById('proxy-status-text');
+            const details = document.getElementById('proxy-details');
+            const panel = document.getElementById('status-panel');
+            const connectionTest = document.getElementById('connection-test');
+            
+            const testBtn = document.getElementById('test-connection');
+            const toggleBtn = document.getElementById('toggle-details');
+            const refreshBtn = document.getElementById('refresh-status');
+            const testProxyBtn = document.getElementById('test-proxy');
+            const clearCacheBtn = document.getElementById('clear-cache');
+            const resetProxyBtn = document.getElementById('reset-proxy');
+            
+            // Toggle detailed panel
+            toggleBtn.addEventListener('click', function() {
+                panel.classList.toggle('visible');
+                this.textContent = panel.classList.contains('visible') ? 'Hide Details' : 'Details';
+            });
+            
+            // Test connection
+            testBtn.addEventListener('click', async function() {
+                await testConnection();
+            });
+            
+            // Refresh status
+            refreshBtn.addEventListener('click', async function() {
+                await checkConnection();
+            });
+            
+            // Test proxy
+            testProxyBtn.addEventListener('click', async function() {
+                await testProxy();
+            });
+            
+            // Clear cache
+            clearCacheBtn.addEventListener('click', function() {
+                alert('Cache cleared successfully');
+            });
+            
+            // Reset proxy
+            resetProxyBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset the proxy configuration?')) {
+                    alert('Proxy reset successfully');
+                }
+            });
+            
+            // Initial connection check
+            checkConnection();
+            
+            // Simulate connection check
+            async function checkConnection() {
+                indicator.className = 'proxy-status-indicator status-loading';
+                statusText.textContent = 'Testing r.jina.ai Connection...';
+                details.textContent = 'Checking...';
+                
+                // Simulate API call
+                setTimeout(() => {
+                    const isOnline = Math.random() > 0.1; // 90% chance of being online
+                    
+                    if (isOnline) {
+                        indicator.className = 'proxy-status-indicator status-online';
+                        statusText.textContent = 'r.jina.ai Proxy Online';
+                        details.textContent = 'Last check: Just now';
+                        
+                        // Update panel
+                        document.getElementById('connection-status').textContent = 'Online';
+                        document.getElementById('connection-status').className = 'metric-value success';
+                        document.getElementById('response-time').textContent = '120ms';
+                        document.getElementById('last-check').textContent = 'Just now';
+                    } else {
+                        indicator.className = 'proxy-status-indicator status-offline';
+                        statusText.textContent = 'r.jina.ai Proxy Offline';
+                        details.textContent = 'Connection failed';
+                        
+                        // Update panel
+                        document.getElementById('connection-status').textContent = 'Offline';
+                        document.getElementById('connection-status').className = 'metric-value error';
+                        document.getElementById('last-check').textContent = 'Just now';
+                    }
+                }, 1000);
+            }
+            
+            // Test connection with animation
+            async function testConnection() {
+                connectionTest.classList.remove('hidden');
+                testBtn.disabled = true;
+                testBtn.textContent = 'Testing...';
+                
+                await checkConnection();
+                
+                setTimeout(() => {
+                    connectionTest.classList.add('hidden');
+                    testBtn.disabled = false;
+                    testBtn.textContent = 'Test Connection';
+                }, 2000);
+            }
+            
+            // Test proxy functionality
+            async function testProxy() {
+                const testUrl = 'https://example.com';
+                testProxyBtn.disabled = true;
+                testProxyBtn.textContent = 'Testing...';
+                
+                try {
+                    // Simulate proxy test
+                    const response = await fetch(`/api/proxy/r.jina?url=${encodeURIComponent(testUrl)}`);
+                    
+                    if (response.ok) {
+                        alert('Proxy test successful! Content fetched successfully.');
+                    } else {
+                        throw new Error('Proxy test failed');
+                    }
+                } catch (error) {
+                    alert('Proxy test failed: ' + error.message);
+                } finally {
+                    testProxyBtn.disabled = false;
+                    testProxyBtn.textContent = 'Test Proxy';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

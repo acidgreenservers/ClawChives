@@ -1,23 +1,24 @@
-import { expect, test, describe, vi } from "vitest";
-
-// Mock the modules that are missing in the environment
+import { describe, test, expect, vi, beforeEach } from "vitest";
 
 vi.mock("clsx", () => ({
-  clsx: vi.fn((...args: any[]) => "clsx-result"),
+  clsx: vi.fn((..._args: unknown[]) => "clsx-result"),
 }));
 
 vi.mock("tailwind-merge", () => ({
-  twMerge: vi.fn((arg: string) => "tw-merge-result"),
+  twMerge: vi.fn((_arg: string) => "tw-merge-result"),
 }));
 
-// Import the function after mocking
 import { cn } from "./utils";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 describe("cn", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   test("calls clsx with all inputs and passes result to twMerge", () => {
-    const inputs = ["class1", { class2: true }, ["class3"]];
+    const inputs = ["class1", { class2: true }, ["class3"]] as Parameters<typeof cn>;
     const result = cn(...inputs);
 
     // Verify clsx was called with all inputs
@@ -31,9 +32,6 @@ describe("cn", () => {
   });
 
   test("handles empty inputs", () => {
-    vi.mocked(clsx).mockClear();
-    vi.mocked(twMerge).mockClear();
-
     cn();
 
     expect(clsx).toHaveBeenCalledWith([]);

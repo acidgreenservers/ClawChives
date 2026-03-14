@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Bookmark Modal with r.jina Conversion</title>
+    <style>
+        /* Tailwind CSS base styles for demonstration */
+        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        
+        /* Custom styles for the r.jina feature */
+        .jina-checkbox {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .jina-checkbox:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+        }
+        
+        .jina-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #06b6d4;
+        }
+        
+        .jina-status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+        
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #22c55e;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        
+        .jina-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Bookmark Modal with r.jina Conversion Feature -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 border-2 border-red-500/50 dark:border-red-500/70 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-red-500/30 dark:border-red-500/50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-slate-50">
+                        Add Pinchmark
+                    </h2>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                        Pinch a URL into your collection
+                    </p>
+                </div>
+                <button class="h-8 w-8 p-0 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <!-- URL Input -->
+                <div>
+                    <label for="url" class="text-slate-700 dark:text-white">URL</label>
+                    <input
+                        id="url"
+                        type="url"
+                        placeholder="https://example.com"
+                        class="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    />
+                </div>
+
+                <!-- Title Input -->
+                <div>
+                    <label for="title" class="text-slate-700 dark:text-white">Title</label>
+                    <input
+                        id="title"
+                        type="text"
+                        placeholder="Pinchmark title"
+                        class="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    />
+                </div>
+
+                <!-- Description Input -->
+                <div>
+                    <label for="description" class="text-slate-700 dark:text-slate-300">Description</label>
+                    <textarea
+                        id="description"
+                        placeholder="Add a description..."
+                        rows="3"
+                        class="mt-1 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 text-sm resize-none"
+                    ></textarea>
+                </div>
+
+                <!-- r.jina Conversion Feature -->
+                <div class="jina-checkbox border border-cyan-200 dark:border-cyan-700/50 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20">
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" id="jina-conversion" class="mt-1" />
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <label for="jina-conversion" class="font-semibold text-slate-900 dark:text-slate-100">
+                                    🦞 r.jina.ai Conversion
+                                </label>
+                                <span class="text-xs text-cyan-600 dark:text-cyan-400 font-medium">AI-Powered</span>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                Automatically fetch and convert content using r.jina.ai proxy. 
+                                This will enhance your bookmark with AI-processed content.
+                            </p>
+                            
+                            <!-- Status Indicator -->
+                            <div id="jina-status" class="jina-status-indicator status-pending hidden mt-2">
+                                <span class="animate-spin w-3 h-3 border-2 border-cyan-500 border-t-transparent rounded-full"></span>
+                                <span>Processing...</span>
+                            </div>
+                            
+                            <!-- Preview Section -->
+                            <div id="jina-preview" class="jina-preview hidden mt-3">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Content Preview</span>
+                                    <button class="text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-200">
+                                        View Full Content
+                                    </button>
+                                </div>
+                                <div class="text-xs text-slate-700 dark:text-slate-300 line-clamp-4">
+                                    <!-- Content will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Folder Selection -->
+                <div>
+                    <label for="folder" class="text-slate-700 dark:text-slate-300">Pod</label>
+                    <div class="relative mt-1">
+                        <select
+                            id="folder"
+                            class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 appearance-none bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                        >
+                            <option value="">No Pod</option>
+                            <option value="work">Work</option>
+                            <option value="personal">Personal</option>
+                            <option value="learning">Learning</option>
+                        </select>
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div>
+                    <label class="text-slate-700 dark:text-white">Tags</label>
+                    <div class="flex gap-2 mt-1">
+                        <div class="relative flex-1">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Add tags..."
+                                class="pl-10 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                            />
+                        </div>
+                        <button type="button" class="px-3 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Checkboxes: Starred / Archived / Pinned -->
+                <div class="flex flex-wrap gap-4 pt-4 border-t border-red-500/20 dark:border-red-500/30">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500" />
+                        <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                            </svg>
+                            Starred
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 text-cyan-600 rounded focus:ring-cyan-500" />
+                        <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                            </svg>
+                            Archived
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 text-red-500 rounded focus:ring-red-500" />
+                        <div class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <span class="text-base leading-none">📌</span>
+                            Pinned
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex gap-3 p-6 border-t border-red-500/20 dark:border-red-500/30">
+                <button class="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+                    Cancel
+                </button>
+                <button class="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                    Pinch It! 🦞
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for r.jina.ai functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const jinaCheckbox = document.getElementById('jina-conversion');
+            const jinaStatus = document.getElementById('jina-status');
+            const jinaPreview = document.getElementById('jina-preview');
+            const urlInput = document.getElementById('url');
+            
+            jinaCheckbox.addEventListener('change', async function() {
+                if (this.checked) {
+                    const url = urlInput.value.trim();
+                    if (!url) {
+                        alert('Please enter a URL first');
+                        this.checked = false;
+                        return;
+                    }
+                    
+                    // Show processing status
+                    jinaStatus.classList.remove('hidden');
+                    jinaStatus.classList.remove('status-success', 'status-error');
+                    jinaStatus.classList.add('status-pending');
+                    jinaStatus.innerHTML = '<span class="animate-spin w-3 h-3 border-2 border-cyan-500 border-t-transparent rounded-full"></span><span>Processing...</span>';
+                    
+                    try {
+                        // Call the r.jina.ai proxy endpoint
+                        const response = await fetch(`/api/proxy/r.jina?url=${encodeURIComponent(url)}`);
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            // Show success status
+                            jinaStatus.classList.remove('status-pending');
+                            jinaStatus.classList.add('status-success');
+                            jinaStatus.innerHTML = '<span class="w-3 h-3 bg-green-500 rounded-full"></span><span>Content fetched successfully</span>';
+                            
+                            // Show preview
+                            jinaPreview.classList.remove('hidden');
+                            jinaPreview.querySelector('div.text-xs').innerHTML = data.content.substring(0, 300) + '...';
+                            
+                            // Update description with fetched content
+                            document.getElementById('description').value = data.content.substring(0, 500);
+                        } else {
+                            throw new Error(data.error || 'Failed to fetch content');
+                        }
+                    } catch (error) {
+                        // Show error status
+                        jinaStatus.classList.remove('status-pending');
+                        jinaStatus.classList.add('status-error');
+                        jinaStatus.innerHTML = '<span class="w-3 h-3 bg-red-500 rounded-full"></span><span>Failed: ' + error.message + '</span>';
+                        
+                        // Uncheck the checkbox on error
+                        this.checked = false;
+                    }
+                } else {
+                    // Hide preview when unchecked
+                    jinaPreview.classList.add('hidden');
+                    jinaStatus.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

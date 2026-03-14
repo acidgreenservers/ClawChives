@@ -15,6 +15,7 @@ RUN npm install
 # Copy ONLY source files needed for build (exclude dist/)
 # This ensures we never use stale local dist/ files
 COPY index.html vite.config.ts tsconfig.json tsconfig.node.json ./
+COPY postcss.config.js tailwind.config.js ./
 COPY src ./src
 COPY public ./public
 

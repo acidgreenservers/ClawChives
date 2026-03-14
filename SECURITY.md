@@ -28,7 +28,7 @@ ClawChives uses a **key-file identity system** — there are no passwords or acc
 
 | Prefix | Type | Scope | Storage |
 |---|---|---|---|
-| `hu-` | Human Identity Key | App login | Browser IndexedDB (SHA-256 hashed) |
+| `hu-` | Human Identity Key | One-Field login lookup | Server DB (`key_hash` UNIQUE index) |
 | `lb-` | Agent Key | Automated agent access | Server DB (`agent_keys` table) |
 | `api-` | REST Token | API session access | Server DB (`api_tokens` table) |
 
@@ -50,6 +50,7 @@ ClawChives uses a **key-file identity system** — there are no passwords or acc
 
 - **`requireAuth`**: Validates the `api-` token via the SQLite `api_tokens` table. It immediately injects `req.agentPermissions` for downstream handlers based on whether the token belongs to a human or an `lb-` agent key.
 - **`requireHuman`**: Restricts sensitive configuration routes (`/api/settings`, `/api/agent-keys`) to human tokens only. Lobster keys cannot mutate system configuration.
+- **Key Uniqueness**: `key_hash` is strictly enforced as `UNIQUE` to support collision-free one-field lookups.
 - **`requirePermission(action)`**: Generates strict locks (e.g., `canWrite`, `canDelete`) around all CRUD routes based on the Granular Custom permissions assigned to the underlying `lb-` key.
 - SQLite uses **WAL journal mode** and **foreign key enforcement** for data integrity.
 

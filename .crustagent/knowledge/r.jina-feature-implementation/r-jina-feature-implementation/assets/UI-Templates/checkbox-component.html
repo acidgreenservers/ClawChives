@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r.jina Conversion Checkbox Component</title>
+    <style>
+        /* Tailwind CSS base styles for demonstration */
+        @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+        
+        /* Custom styles for the r.jina checkbox component */
+        .jina-checkbox-component {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .jina-checkbox-component::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.3) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .jina-checkbox-component:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+        }
+        
+        .jina-checkbox-component input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            accent-color: #06b6d4;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .jina-checkbox-component input[type="checkbox"]:hover {
+            transform: scale(1.1);
+        }
+        
+        .jina-checkbox-label {
+            font-weight: 700;
+            font-size: 16px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        
+        .jina-checkbox-subtitle {
+            font-size: 12px;
+            color: #334155;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+        
+        .jina-badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: #06b6d4;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .jina-icon {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .jina-checkbox-component:hover .jina-icon {
+            transform: rotate(15deg) scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Status indicators */
+        .jina-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+        
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #22c55e;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        
+        .status-loading {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #0ea5e9;
+        }
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(6, 182, 212, 0.3);
+            border-top: 2px solid #06b6d4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Preview section */
+        .jina-preview {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+        }
+        
+        .preview-content {
+            font-size: 12px;
+            line-height: 1.5;
+            color: #334155;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            border-left: 3px solid #06b6d4;
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .preview-btn {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .preview-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        .preview-btn.primary {
+            background: #06b6d4;
+            color: white;
+            border-color: #06b6d4;
+        }
+        
+        .preview-btn.primary:hover {
+            background: #0891b2;
+            border-color: #0891b2;
+        }
+    </style>
+</head>
+<body>
+    <!-- Reusable r.jina Conversion Checkbox Component -->
+    <div class="jina-checkbox-component border border-cyan-200 dark:border-cyan-700/50 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20">
+        <div class="flex items-start gap-4">
+            <!-- Checkbox and Label -->
+            <div class="jina-icon">
+                🦞
+            </div>
+            
+            <div class="flex-1">
+                <label class="jina-checkbox-label" for="jina-conversion">
+                    r.jina.ai Conversion
+                    <span class="jina-badge">AI-Powered</span>
+                </label>
+                <p class="jina-checkbox-subtitle">
+                    Automatically fetch and convert content using r.jina.ai proxy. 
+                    This will enhance your bookmark with AI-processed content, extracting 
+                    the main text, removing ads and navigation elements.
+                </p>
+                
+                <!-- Status Indicator -->
+                <div id="jina-status" class="jina-status status-pending hidden">
+                    <div class="spinner"></div>
+                    <span>Processing...</span>
+                </div>
+                
+                <!-- Preview Section -->
+                <div id="jina-preview" class="jina-preview hidden">
+                    <div class="preview-header">
+                        <span>Content Preview</span>
+                        <span class="text-xs text-cyan-600">Showing first 300 characters</span>
+                    </div>
+                    <div class="preview-content" id="jina-preview-content">
+                        <!-- Content will be injected here -->
+                    </div>
+                    <div class="preview-actions">
+                        <button class="preview-btn primary" id="view-full-content">
+                            View Full Content
+                        </button>
+                        <button class="preview-btn" id="copy-content">
+                            Copy to Description
+                        </button>
+                        <button class="preview-btn" id="regenerate-content">
+                            Regenerate
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Checkbox Input -->
+            <input type="checkbox" id="jina-conversion" class="mt-1" />
+        </div>
+    </div>
+
+    <!-- Usage Example in a Form -->
+    <div class="mt-8 p-6 bg-white rounded-lg shadow-sm border">
+        <h3 class="text-lg font-semibold mb-4">Usage Example</h3>
+        <form id="bookmark-form">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">URL</label>
+                    <input type="url" id="url-input" placeholder="https://example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500" />
+                </div>
+                
+                <div class="jina-checkbox-component border border-cyan-200 dark:border-cyan-700/50 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20">
+                    <div class="flex items-start gap-4">
+                        <div class="jina-icon">
+                            🦞
+                        </div>
+                        
+                        <div class="flex-1">
+                            <label class="jina-checkbox-label" for="jina-conversion-form">
+                                r.jina.ai Conversion
+                                <span class="jina-badge">AI-Powered</span>
+                            </label>
+                            <p class="jina-checkbox-subtitle">
+                                Automatically fetch and convert content using r.jina.ai proxy. 
+                                This will enhance your bookmark with AI-processed content.
+                            </p>
+                            
+                            <div id="jina-status-form" class="jina-status status-pending hidden">
+                                <div class="spinner"></div>
+                                <span>Processing...</span>
+                            </div>
+                            
+                            <div id="jina-preview-form" class="jina-preview hidden">
+                                <div class="preview-header">
+                                    <span>Content Preview</span>
+                                    <span class="text-xs text-cyan-600">Showing first 300 characters</span>
+                                </div>
+                                <div class="preview-content" id="jina-preview-content-form">
+                                    <!-- Content will be injected here -->
+                                </div>
+                                <div class="preview-actions">
+                                    <button type="button" class="preview-btn primary" id="copy-to-description">
+                                        Copy to Description
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <input type="checkbox" id="jina-conversion-form" class="mt-1" />
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="description-input" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Description will be auto-filled if r.jina conversion is enabled"></textarea>
+                </div>
+                
+                <div class="flex gap-4">
+                    <button type="submit" class="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700">
+                        Save Bookmark
+                    </button>
+                    <button type="button" id="test-jina" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
+                        Test r.jina Conversion
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // JavaScript for r.jina.ai checkbox component functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const jinaCheckbox = document.getElementById('jina-conversion-form');
+            const jinaStatus = document.getElementById('jina-status-form');
+            const jinaPreview = document.getElementById('jina-preview-form');
+            const jinaPreviewContent = document.getElementById('jina-preview-content-form');
+            const urlInput = document.getElementById('url-input');
+            const descriptionInput = document.getElementById('description-input');
+            const copyToDescriptionBtn = document.getElementById('copy-to-description');
+            const testJinaBtn = document.getElementById('test-jina');
+            
+            // Main checkbox functionality
+            jinaCheckbox.addEventListener('change', async function() {
+                if (this.checked) {
+                    const url = urlInput.value.trim();
+                    if (!url) {
+                        alert('Please enter a URL first');
+                        this.checked = false;
+                        return;
+                    }
+                    
+                    await processJinaConversion(url);
+                } else {
+                    // Hide preview when unchecked
+                    jinaPreview.classList.add('hidden');
+                    jinaStatus.classList.add('hidden');
+                }
+            });
+            
+            // Test button functionality
+            testJinaBtn.addEventListener('click', async function() {
+                const url = urlInput.value.trim();
+                if (!url) {
+                    alert('Please enter a URL first');
+                    return;
+                }
+                
+                await processJinaConversion(url);
+                // Auto-check the checkbox after successful test
+                jinaCheckbox.checked = true;
+            });
+            
+            // Copy to description functionality
+            copyToDescriptionBtn.addEventListener('click', function() {
+                const content = jinaPreviewContent.textContent;
+                if (content) {
+                    descriptionInput.value = content;
+                    // Show success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'jina-status status-success';
+                    successMsg.innerHTML = '✓ Content copied to description';
+                    jinaPreview.appendChild(successMsg);
+                    setTimeout(() => successMsg.remove(), 2000);
+                }
+            });
+            
+            // Process r.jina.ai conversion
+            async function processJinaConversion(url) {
+                // Show processing status
+                jinaStatus.classList.remove('hidden');
+                jinaStatus.classList.remove('status-success', 'status-error', 'status-loading');
+                jinaStatus.classList.add('status-loading');
+                jinaStatus.innerHTML = '<div class="spinner"></div><span>Fetching content...</span>';
+                
+                try {
+                    // Call the r.jina.ai proxy endpoint
+                    const response = await fetch(`/api/proxy/r.jina?url=${encodeURIComponent(url)}`);
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // Show success status
+                        jinaStatus.classList.remove('status-loading');
+                        jinaStatus.classList.add('status-success');
+                        jinaStatus.innerHTML = '✓ Content fetched successfully';
+                        
+                        // Show preview
+                        jinaPreview.classList.remove('hidden');
+                        const previewText = data.content.substring(0, 300);
+                        jinaPreviewContent.textContent = previewText + (data.content.length > 300 ? '...' : '');
+                        
+                        // Auto-fill description if checkbox is checked
+                        if (jinaCheckbox.checked) {
+                            descriptionInput.value = data.content.substring(0, 1000);
+                        }
+                    } else {
+                        throw new Error(data.error || 'Failed to fetch content');
+                    }
+                } catch (error) {
+                    // Show error status
+                    jinaStatus.classList.remove('status-loading');
+                    jinaStatus.classList.add('status-error');
+                    jinaStatus.innerHTML = '✗ Failed: ' + error.message;
+                    
+                    // Uncheck the checkbox on error
+                    jinaCheckbox.checked = false;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

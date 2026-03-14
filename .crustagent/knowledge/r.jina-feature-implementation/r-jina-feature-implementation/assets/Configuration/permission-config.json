@@ -1,0 +1,278 @@
+{
+  "permissions": {
+    "rjina": {
+      "description": "r.jina.ai proxy functionality permissions",
+      "version": "1.0.0",
+      "permissions": {
+        "proxy_access": {
+          "description": "Access to r.jina.ai proxy endpoints",
+          "human_only": true,
+          "default": false,
+          "required": true,
+          "dangerous": false
+        },
+        "proxy_status": {
+          "description": "Access to r.jina.ai proxy status information",
+          "human_only": true,
+          "default": true,
+          "required": false,
+          "dangerous": false
+        },
+        "proxy_test": {
+          "description": "Ability to test r.jina.ai proxy connections",
+          "human_only": true,
+          "default": false,
+          "required": false,
+          "dangerous": false
+        },
+        "proxy_configure": {
+          "description": "Ability to configure r.jina.ai proxy settings",
+          "human_only": true,
+          "default": false,
+          "required": false,
+          "dangerous": true
+        },
+        "proxy_monitor": {
+          "description": "Access to proxy monitoring and analytics",
+          "human_only": true,
+          "default": false,
+          "required": false,
+          "dangerous": false
+        }
+      }
+    },
+    "agent_permissions": {
+      "description": "Agent-specific permissions for r.jina.ai functionality",
+      "version": "1.0.0",
+      "permissions": {
+        "agent_proxy_access": {
+          "description": "Agent access to r.jina.ai proxy (restricted)",
+          "human_only": false,
+          "default": false,
+          "required": false,
+          "dangerous": true,
+          "rate_limit": {
+            "window_ms": 3600000,
+            "max_requests": 1000,
+            "per": "agent_key"
+          }
+        },
+        "agent_proxy_status": {
+          "description": "Agent access to proxy status",
+          "human_only": false,
+          "default": false,
+          "required": false,
+          "dangerous": false
+        }
+      }
+    }
+  },
+  "roles": {
+    "admin": {
+      "description": "Administrator role with full access",
+      "permissions": [
+        "rjina.proxy_access",
+        "rjina.proxy_status", 
+        "rjina.proxy_test",
+        "rjina.proxy_configure",
+        "rjina.proxy_monitor"
+      ],
+      "human_only": true,
+      "inherited_roles": []
+    },
+    "user": {
+      "description": "Standard user role",
+      "permissions": [
+        "rjina.proxy_access",
+        "rjina.proxy_status",
+        "rjina.proxy_test"
+      ],
+      "human_only": true,
+      "inherited_roles": []
+    },
+    "viewer": {
+      "description": "Read-only role",
+      "permissions": [
+        "rjina.proxy_status"
+      ],
+      "human_only": true,
+      "inherited_roles": []
+    },
+    "agent": {
+      "description": "Agent role with limited access",
+      "permissions": [
+        "agent_permissions.agent_proxy_status"
+      ],
+      "human_only": false,
+      "inherited_roles": [],
+      "rate_limits": {
+        "rjina_proxy": {
+          "window_ms": 3600000,
+          "max_requests": 500,
+          "per": "agent_key"
+        }
+      }
+    }
+  },
+  "policies": {
+    "human_only_policy": {
+      "description": "Policy enforcing human-only access for sensitive operations",
+      "rules": [
+        {
+          "action": "deny",
+          "condition": {
+            "key_type": ["agent", "api"],
+            "permission": ["rjina.proxy_access", "rjina.proxy_configure", "rjina.proxy_test"]
+          },
+          "message": "This operation is restricted to human users only"
+        }
+      ]
+    },
+    "rate_limit_policy": {
+      "description": "Rate limiting policy for r.jina.ai endpoints",
+      "rules": [
+        {
+          "action": "limit",
+          "condition": {
+            "endpoint": "/api/proxy/r.jina",
+            "per": "user_uuid"
+          },
+          "limits": {
+            "window_ms": 900000,
+            "max_requests": 100
+          }
+        },
+        {
+          "action": "limit", 
+          "condition": {
+            "endpoint": "/api/proxy/r.jina/status",
+            "per": "ip"
+          },
+          "limits": {
+            "window_ms": 300000,
+            "max_requests": 200
+          }
+        }
+      ]
+    },
+    "audit_policy": {
+      "description": "Audit logging policy for r.jina.ai operations",
+      "rules": [
+        {
+          "action": "log",
+          "condition": {
+            "operation": ["proxy_access", "proxy_configure", "proxy_test"]
+          },
+          "details": {
+            "include_ip": true,
+            "include_user_agent": true,
+            "include_timestamp": true,
+            "include_operation_details": true
+          }
+        }
+      ]
+    }
+  },
+  "security": {
+    "human_verification": {
+      "enabled": true,
+      "method": "indexeddb_validation",
+      "required_for": [
+        "rjina.proxy_access",
+        "rjina.proxy_configure", 
+        "rjina.proxy_test"
+      ]
+    },
+    "agent_validation": {
+      "enabled": true,
+      "required_fields": ["api_key", "user_uuid", "permissions"],
+      "validation_endpoint": "/api/auth/validate"
+    },
+    "rate_limiting": {
+      "enabled": true,
+      "default_window_ms": 900000,
+      "default_max_requests": 100,
+      "burst_protection": true
+    },
+    "audit_logging": {
+      "enabled": true,
+      "log_level": "info",
+      "retention_days": 90
+    }
+  },
+  "deployment": {
+    "environments": {
+      "development": {
+        "human_only_policy": false,
+        "rate_limiting": {
+          "enabled": false
+        },
+        "audit_logging": {
+          "log_level": "debug"
+        }
+      },
+      "staging": {
+        "human_only_policy": true,
+        "rate_limiting": {
+          "enabled": true,
+          "multiplier": 2.0
+        },
+        "audit_logging": {
+          "log_level": "info"
+        }
+      },
+      "production": {
+        "human_only_policy": true,
+        "rate_limiting": {
+          "enabled": true,
+          "multiplier": 1.0
+        },
+        "audit_logging": {
+          "log_level": "warn"
+        }
+      }
+    }
+  },
+  "examples": {
+    "create_agent_key": {
+      "description": "Example of creating an agent key with r.jina permissions",
+      "request": {
+        "method": "POST",
+        "url": "/api/agent-keys",
+        "body": {
+          "name": "content-fetcher-agent",
+          "description": "Agent for fetching content via r.jina.ai",
+          "permissions": {
+            "agent_permissions.agent_proxy_access": true,
+            "agent_permissions.agent_proxy_status": true
+          },
+          "rate_limit": 1000,
+          "expiration_type": "30d"
+        }
+      }
+    },
+    "check_permissions": {
+      "description": "Example of checking user permissions",
+      "request": {
+        "method": "GET", 
+        "url": "/api/auth/validate",
+        "headers": {
+          "Authorization": "Bearer hu-<user_hash>"
+        }
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "valid": true,
+          "key_type": "human",
+          "user_uuid": "<user_uuid>",
+          "permissions": {
+            "rjina.proxy_access": true,
+            "rjina.proxy_status": true,
+            "rjina.proxy_test": false
+          }
+        }
+      }
+    }
+  }
+}

@@ -68,6 +68,8 @@ gantt
 - [ ] Export/Import UI for bookmarks (JSON & CSV)
 - [x] Liquid Metal Dark mode toggle via View Transitions
 - [x] **r.jina.ai Reading Mode** — LLM-friendly markdown conversion with dual-click context menu
+- [x] **One-Field Login** — Simplified authentication via `hu-` key alone
+- [x] **Database Migration Safety** — Automated uniqueness enforcement for `key_hash`
 
 </details>
 

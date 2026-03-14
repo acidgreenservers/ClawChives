@@ -28,11 +28,9 @@ clawchives_identity_key.json
 *.njsproj
 *.sln
 *.sw?
+
+
 .claude/
-.trunk/
+
 
 docker-compose.dev.yml
-
-security-audit-implementation/
-r.jina-feature-implementation/
-skill-creator/
