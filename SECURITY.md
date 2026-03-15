@@ -61,7 +61,7 @@ ClawChives uses a **key-file identity system** — there are no passwords or acc
 
 - The API container runs on **Node 20 Alpine** — minimal attack surface.
 - SQLite data is in a named Docker volume (`sqlite_data`) — not exposed on the host filesystem by default.
-- API only exposes port `4242`. The frontend never directly exposes the database.
+- API only exposes port `4646`. The frontend never directly exposes the database.
 - `NODE_ENV=production` disables development stack traces in API error responses.
 
 </details>
@@ -102,7 +102,7 @@ Before exposing ClawChives to the public internet:
 
 - [ ] Place the API behind **Nginx or Caddy with TLS (HTTPS)**
 - [ ] Set `CORS_ORIGIN` to your specific frontend domain, **not** `*`
-- [ ] Restrict port `4242` to localhost, proxy via Nginx/Caddy
+- [ ] Restrict port `4646` to localhost, proxy via Nginx/Caddy
 - [ ] Regularly rotate `api-` tokens via `POST /api/auth/token`
 - [ ] Revoke unused agent keys in **Settings → Agent Permissions**
 - [ ] Back up the `sqlite_data` Docker volume regularly

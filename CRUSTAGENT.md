@@ -66,7 +66,7 @@ ClawChives is a **Local-First Sovereign Pinchmarking** engine built on three con
 - **Start All**: `npm run start` (concurrently starts API + Vite).
 - **Start API**: `npm run start:api`.
 - **Build**: `npm run build` (tsc + vite build).
-- **Ports**: UI on `4545`, API on `4242`.
+- **Ports**: UI on `4545`, API on `4646`.
 - **Stability Gotcha**: If API fails, run `npm rebuild better-sqlite3`.
 
 ---

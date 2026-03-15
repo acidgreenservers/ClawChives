@@ -27,12 +27,17 @@ ClawChives/
 ├── 🐳 docker-compose.yml            # Single-container stack (UI + API)
 │                                      Volume mount: ./data → /app/data
 │
-├── 🌐 server.js                     # Express REST API + SQLite backend
-│                                      Endpoints: bookmarks, folders, agent-keys
-│                                      Auth: hu- / lb- / api- key enforcement
-│                                      DB: better-sqlite3 → ./data/db.sqlite
+├── 🌐 server.ts                    # TypeScript entrypoint (Express REST API)
+│                                      Wiring: routes, middleware, audit initialization
 │
-└── src/
+├── src/
+│   ├── server/                      # ◀ Backend Source (Refactored v2)
+│   │   ├── db.ts                    # SQLite singleton, schema, & migrations
+│   │   ├── middleware/              # auth, rateLimiter, validate, errorHandler
+│   │   ├── routes/                  # auth, bookmarks, folders, agentKeys, settings
+│   │   ├── utils/                   # auditLogger, crypto, parsers, tokenExpiry
+│   │   └── validation/              # Zod schemas for all endpoints
+│   │
     │
     ├── 📄 main.tsx                  # React mount point (wraps in DatabaseProvider)
     ├── 📄 App.tsx                   # Root view controller + session state manager
@@ -114,13 +119,14 @@ graph LR
     end
 
     subgraph Storage ["Storage Layer"]
-        G[(SQLite server)]
+        G[(Express/SQLite server)]
     end
 
     A --> B
     B --> C
     C -->|SQLITE| E
     E -->|HTTP + Bearer| G
+    G -->|better-sqlite3| H[(db.sqlite)]
 ```
 
 ---

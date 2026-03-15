@@ -3,13 +3,11 @@
   "architecture": "Local-First Sovereign Pinchmarking Engine",
   "root_structure": {
     ".crustagent/": "Project intelligence, skills, memory, and truthpack",
-    "server.js": "Main Express API server and SQLite entry point",
-    "src/": "React frontend carapace built in feature clusters",
+    "server.ts": "Main TypeScript entry point (Express API)",
+    "src/": "Feature-split source code",
+    "src/server/": "Backend feature clusters (db, routes, middleware, utils)",
     "data/": "Persistent SQLite database storage",
-    "scripts/": "One-off feature implementations and migration scripts",
     "tests/": "Vitest and Supertest verification suites",
-    "migrations/": "Database schema migration scripts",
-    "workflows/": "Project automation and vibecheck routines",
     "public/": "Static assets and HTML entry"
   },
   "technical_stack": {
@@ -19,5 +17,6 @@
     "testing": "Vitest + Supertest"
   },
   "verified_by": "antigravity",
-  "last_audit": "2026-03-14"
+  "last_audit": "2026-03-14",
+  "version": "2.0.0"
 }

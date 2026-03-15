@@ -320,25 +320,28 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
               <div className="flex gap-2">
                 <Button
                   onClick={handleDownloadIdentity}
-                  variant={hasDownloaded ? "default" : "outline"}
-                  className={`flex-1 ${hasDownloaded ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md" : "border-slate-300 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800"}`}
+                  variant="outline"
+                  className={`flex-1 inline-flex items-center justify-center px-4 py-2 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-medium rounded-md transition-all bg-transparent ${hasDownloaded ? "text-cyan-600 dark:text-cyan-500 border-cyan-500/50" : ""}`}
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  {hasDownloaded ? "Identity File Downloaded ✓" : "Download Identity File"}
+                  <span>{hasDownloaded ? "Identity File Downloaded ✓" : "Download Identity File"}</span>
                 </Button>
 
                 {typeof navigator !== "undefined" && navigator.clipboard && (
                   <Button
                     onClick={handleCopyClawKey}
                     variant="outline"
-                    className="border-slate-300 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 px-3"
-                    title="Copy ClawKey©™ to clipboard"
+                    className="inline-flex items-center justify-center px-3 py-2 border border-slate-300 dark:border-slate-700 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-medium rounded-md transition-all"
+                    title="Copy ClawKey©™"
                   >
                     {copied ? (
-                      <><Check className="w-4 h-4 mr-1 text-cyan-600 dark:text-cyan-500" /><span className="text-xs text-cyan-600 dark:text-cyan-500">Copied!</span></>
+                      <Check className="w-4 h-4 text-cyan-600 dark:text-cyan-500" />
                     ) : (
-                      <><Copy className="w-4 h-4 mr-1" /><span className="text-xs">Copy ClawKey©™</span></>
+                      <Copy className="w-4 h-4" />
                     )}
+                    <span className={`ml-2 hidden sm:inline ${copied ? "text-cyan-600 dark:text-cyan-500" : ""}`}>
+                      {copied ? "Copied!" : "Copy Key"}
+                    </span>
                   </Button>
                 )}
               </div>

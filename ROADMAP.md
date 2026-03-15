@@ -1,6 +1,6 @@
 # 🗺️ ClawChives — Roadmap
 
-[![Phase](https://img.shields.io/badge/Phase-3%20Active-00cc66?style=for-the-badge)](#)
+[![Phase](https://img.shields.io/badge/Phase-3%20Hardening-00cc66?style=for-the-badge)](#)
 [![Status](https://img.shields.io/badge/Status-In_Development-orange?style=for-the-badge)](#)
 
 This document tracks where ClawChives has been, where it is now, and where it's going.
@@ -70,6 +70,7 @@ gantt
 - [x] **r.jina.ai Reading Mode** — LLM-friendly markdown conversion with dual-click context menu
 - [x] **One-Field Login** — Simplified authentication via `hu-` key alone
 - [x] **Database Migration Safety** — Automated uniqueness enforcement for `key_hash`
+- [x] **V2 Backend Refactor** — Migrated to TypeScript feature-split architecture (`src/server/`) matching PinchPad
 
 </details>
 

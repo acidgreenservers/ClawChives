@@ -74,7 +74,7 @@ Server: requireAuth → validates(api-token) → injects(req.userUuid, req.keyTy
 #### Fix #1: Vite Environment Variable Replacement (2026-03-05)
 **Problem:** Vite's build-time string replacement only works with the **exact literal string** `import.meta.env.VITE_API_URL`.
 - ❌ **WRONG:** `((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL)`
-  - TypeScript happy, Vite confused → replacement skipped → permanently hardcoded to localhost:4242
+  - TypeScript happy, Vite confused → replacement skipped → permanently hardcoded to localhost:4646
 - ✅ **CORRECT:** `import.meta.env.VITE_API_URL` with `// @ts-ignore`
   - Vite sees exact string → replaces at build time
   - TypeScript bypassed but intentional
@@ -85,7 +85,7 @@ Server: requireAuth → validates(api-token) → injects(req.userUuid, req.keyTy
 - [RestAdapter.ts:20](src/services/database/rest/RestAdapter.ts#L20) — API base URL
 
 **Why This Matters:**
-When deployed to GHCR with a LAN IP in `VITE_API_URL`, Vite was ignoring the env var and defaulting to `localhost:4242`. Result: Browser on 192.168.x.x trying to reach its own 4242 → `net::ERR_CONNECTION_REFUSED`.
+When deployed to GHCR with a LAN IP in `VITE_API_URL`, Vite was ignoring the env var and defaulting to `localhost:4646`. Result: Browser on 192.168.x.x trying to reach its own 4646 → `net::ERR_CONNECTION_REFUSED`.
 
 **Future-Proofing:** If security hardening adds TypeScript strict mode or environment utilities, DO NOT refactor these three lines. The `// @ts-ignore` is intentional and required for Vite to work correctly.
 
@@ -112,7 +112,7 @@ healthcheck:
 #### Fix #3: Docker Deployment API URL Configuration (2026-03-07)
 **Problem:** When deploying via Docker GHCR, frontend displayed white screen with:
 ```
-net::ERR_CONNECTION_REFUSED on http://localhost:4242/api/auth/register
+net::ERR_CONNECTION_REFUSED on http://localhost:4646/api/auth/register
 ```
 
 Root causes:
@@ -125,7 +125,7 @@ Root causes:
 1. **Created centralized API config** (`src/config/apiConfig.ts`) with priority-based URL resolution:
    - Priority 1: Explicit override via `VITE_API_URL` env var (custom domains)
    - Priority 2: Production builds use relative paths `""` (Docker, LAN, proxies)
-   - Priority 3: Dev fallback to `http://localhost:4242` (separate ports)
+   - Priority 3: Dev fallback to `http://localhost:4646` (separate ports)
 
 2. **Refactored 5 API client files** to use `getApiBaseUrl()`:
    - [src/services/database/rest/RestAdapter.ts:20](src/services/database/rest/RestAdapter.ts#L20)
@@ -149,7 +149,7 @@ Root causes:
    ```
 
 **Why This Matters:** Single-container architecture serves both UI + API on port 4545. Production builds need relative paths (`/api/*`) not hardcoded localhost. Centralized config ensures all deployment scenarios work:
-- **Local dev:** `http://localhost:4242` (separate ports)
+- **Local dev:** `http://localhost:4646` (separate ports)
 - **Docker/LAN:** `""` (relative paths, same-origin)
 - **Custom domain:** `https://your-domain.com` (via VITE_API_URL env var)
 
@@ -157,12 +157,12 @@ Root causes:
 ```bash
 ✅ npm run build       — Clean production build (4.88s)
 ✅ npm test            — All 10 tests pass
-✅ dist/ bundle        — NO hardcoded localhost:4242
+✅ dist/ bundle        — NO hardcoded localhost:4646
 ✅ Dockerfile          — Rebuilds dist/ fresh every time
 ✅ GitHub Actions      — Fixed workflow, single container
 ```
 
-**Future-Proofing:** All API URL resolution must go through `getApiBaseUrl()` from `src/config/apiConfig.ts`. Do not hardcode localhost:4242 or custom domains in individual components. This is the single source of truth for API connectivity across all deployment scenarios.
+**Future-Proofing:** All API URL resolution must go through `getApiBaseUrl()` from `src/config/apiConfig.ts`. Do not hardcode localhost:4646 or custom domains in individual components. This is the single source of truth for API connectivity across all deployment scenarios.
 
 ---
 
@@ -486,7 +486,7 @@ ClawChives/
 ### Local Dev
 ```bash
 # Terminal 1: API server
-npm run start:api  # node server.js on port 4242
+npm run start:api  # node server.js on port 4646
 
 # Terminal 2: Vite dev server
 npm run dev        # localhost:5173 with HMR
@@ -531,10 +531,10 @@ services:
       CHOKIDAR_USEPOLLING: true  # Required for Docker file watching
 
       # ─ API Connectivity (CRITICAL: Must match your origin) ─
-      # LAN Usage:    http://192.168.1.5:4242  (replace with your LAN IP)
-      # Localhost:    http://localhost:4242
+      # LAN Usage:    http://192.168.1.5:4646  (replace with your LAN IP)
+      # Localhost:    http://localhost:4646
       # Public/HTTPS: https://bookmarks.yourdomain.com
-      VITE_API_URL: http://192.168.1.5:4242
+      VITE_API_URL: http://192.168.1.5:4646
 
     # Wait for API to be healthy before starting UI
     depends_on:
@@ -548,13 +548,13 @@ services:
     image: ghcr.io/acidgreenservers/clawchives-api:latest
     container_name: clawchives-api
     ports:
-      - "4242:4242"              # API runs on 4242 internally
+      - "4646:4646"              # API runs on 4646 internally
     volumes:
       - ./data:/app/data         # Persistent SQLite database + cache
     environment:
       # ─ Node Runtime ─
       NODE_ENV: production        # Use production mode
-      PORT: 4242                  # Internal API port
+      PORT: 4646                  # Internal API port
       DATA_DIR: /app/data         # SQLite database location
 
       # ─ CORS Configuration (CRITICAL: Security) ─
@@ -581,7 +581,7 @@ services:
 
     # Health check: API container must respond to GET /api/health
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:4242/api/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:4646/api/health"]
       interval: 15s               # Check every 15 seconds
       timeout: 10s                # Wait 10 seconds for response
       retries: 5                  # Mark unhealthy after 5 failures
@@ -601,8 +601,8 @@ volumes:
 
 | Scenario | Value | Notes |
 |----------|-------|-------|
-| Local dev | `http://localhost:4242` | Both UI & API on same machine |
-| LAN (Unraid) | `http://192.168.1.5:4242` | Replace `192.168.1.5` with your LAN IP |
+| Local dev | `http://localhost:4646` | Both UI & API on same machine |
+| LAN (Unraid) | `http://192.168.1.5:4646` | Replace `192.168.1.5` with your LAN IP |
 | Public HTTPS | `https://bookmarks.yourdomain.com` | Behind nginx reverse proxy |
 
 **Gotcha:** This is **injected at Docker build time**. If you change it, you must rebuild:
@@ -618,7 +618,7 @@ docker-compose up --build  # Rebuilds the UI image with new VITE_API_URL
 | Scenario | Value | Notes |
 |----------|-------|-------|
 | Local dev | `http://localhost:8080` | Matches UI port |
-| LAN (Unraid) | `http://192.168.1.5:8080` | Must match VITE_API_URL (without :4242) |
+| LAN (Unraid) | `http://192.168.1.5:8080` | Must match VITE_API_URL (without :4646) |
 | Multiple origins | `http://192.168.1.5:8080,https://bookmarks.yourdomain.com` | Comma-separated |
 | ❌ DO NOT use | `*` | Allows requests from ANY origin = security risk |
 
@@ -689,7 +689,7 @@ RJINA_MAX_CONTENT_LENGTH: 5242880  # 5MB
 services:
   claw-chives:
     environment:
-      VITE_API_URL: http://192.168.1.5:4242    # Your Unraid LAN IP
+      VITE_API_URL: http://192.168.1.5:4646    # Your Unraid LAN IP
 
   claw-chives-api:
     environment:
@@ -725,7 +725,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://localhost:4242;
+        proxy_pass http://localhost:4646;
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
@@ -737,7 +737,7 @@ server {
 services:
   claw-chives:
     environment:
-      VITE_API_URL: http://localhost:4242
+      VITE_API_URL: http://localhost:4646
 
   claw-chives-api:
     environment:
@@ -764,17 +764,17 @@ DO NOT use wildcard (*) in production!
 
 ### 2. Vite Env Replacement Not Working
 ```
-Problem: Browser tries to connect to localhost:4242 instead of LAN IP
+Problem: Browser tries to connect to localhost:4646 instead of LAN IP
 Symptom: net::ERR_CONNECTION_REFUSED when testing on different machine
 Root Cause: Type-casting in import.meta.env.VITE_API_URL prevents Vite from seeing the exact string
 
 ✅ CORRECT (Required for Vite):
-   const apiUrl = (import.meta.env.VITE_API_URL || "http://localhost:4242")
+   const apiUrl = (import.meta.env.VITE_API_URL || "http://localhost:4646")
    // ^ WITH // @ts-ignore above it
 
 ❌ WRONG (Breaks Vite's string replacement):
    const apiUrl = ((import.meta as unknown as { env: Record<string, string> }).env.VITE_API_URL)
-   // ^ Vite never sees the exact string, defaults to localhost:4242
+   // ^ Vite never sees the exact string, defaults to localhost:4646
 
 Files to Check: App.tsx:62, LoginForm.tsx:57, RestAdapter.ts:20
 ```
@@ -838,13 +838,13 @@ Why This Happens:
 Before Merging Security Changes:
   ✅ Test /api/auth/register with SetupWizard
   ✅ Test /api/auth/token with LoginForm
-  ✅ Test POST http://192.168.1.5:4242/api/auth/token with Postman
+  ✅ Test POST http://192.168.1.5:4646/api/auth/token with Postman
   ✅ Verify browser console has no import.meta.env.VITE_API_URL related errors
   ✅ Check docker-compose logs for server startup errors
 
 Red Flags:
   - "failed to fetch" in LoginForm.tsx:58
-  - :4242/api/auth/token shows ERR_CONNECTION_REFUSED
+  - :4646/api/auth/token shows ERR_CONNECTION_REFUSED
   - API container marked unhealthy
   - Vite not injecting CORS_ORIGIN into HTML/JS
 ```
@@ -947,7 +947,7 @@ component patterns, and type locations.
     Always rebuild frontend fresh from source in Docker.
     Files: index.html, vite.config.ts, tsconfig*.json, src/, public/
 11. All API URL resolution must go through getApiBaseUrl() from
-    src/config/apiConfig.ts. Do not hardcode localhost:4242 or custom
+    src/config/apiConfig.ts. Do not hardcode localhost:4646 or custom
     domains in individual components. One source of truth for API connectivity.
 ```
 
@@ -956,10 +956,10 @@ component patterns, and type locations.
 ## 🔄 Deployment Configurations & CORS Strategy
 
 ### Why CORS Matters in ClawChives
-ClawChives separates the UI (Vite on port 4545/8080) from the API (Express on port 4242). They live in **different origins** even on localhost:
+ClawChives separates the UI (Vite on port 4545/8080) from the API (Express on port 4646). They live in **different origins** even on localhost:
 ```
 UI:  http://localhost:4545     (or 192.168.1.5:8080 on LAN)
-API: http://localhost:4242     (or 192.168.1.5:4242 on LAN)
+API: http://localhost:4646     (or 192.168.1.5:4646 on LAN)
 ```
 Browsers enforce **Same-Origin Policy** → API must explicitly allow UI via CORS_ORIGIN.
 
@@ -967,9 +967,9 @@ Browsers enforce **Same-Origin Policy** → API must explicitly allow UI via COR
 ```yaml
 environment:
   NODE_ENV: production
-  PORT: 4242
+  PORT: 4646
   DATA_DIR: /app/data
-  VITE_API_URL: http://192.168.1.5:4242    # ← Frontend uses this to reach API
+  VITE_API_URL: http://192.168.1.5:4646    # ← Frontend uses this to reach API
   CORS_ORIGIN: http://192.168.1.5:8080     # ← API allows this origin only
   ENFORCE_HTTPS: false
   TOKEN_TTL_DEFAULT: 30
@@ -978,8 +978,8 @@ environment:
 **How It Works:**
 1. UI container (Vite) serves on http://192.168.1.5:8080 (bound from 4545 internally)
 2. Browser loads UI from http://192.168.1.5:8080
-3. UI reads `VITE_API_URL` at build time → replaced to http://192.168.1.5:4242
-4. Browser requests to /api/bookmarks on 192.168.1.5:4242
+3. UI reads `VITE_API_URL` at build time → replaced to http://192.168.1.5:4646
+4. Browser requests to /api/bookmarks on 192.168.1.5:4646
 5. Express checks Origin header matches CORS_ORIGIN → ✅ Allows request
 
 **Critical Detail:** The `VITE_API_URL` env var is **injected into the Docker image at build time**. The GitHub Actions workflow passes this from docker-compose.yml to the Dockerfile. If you change docker-compose.yml CORS_ORIGIN, you MUST rebuild the image.
@@ -988,7 +988,7 @@ environment:
 ```yaml
 environment:
   NODE_ENV: production
-  PORT: 4242
+  PORT: 4646
   DATA_DIR: /app/data
   VITE_API_URL: https://bookmarks.yourdomain.com  # ← Built into image
   CORS_ORIGIN: https://bookmarks.yourdomain.com   # ← Allow reverse proxy origin
@@ -1002,7 +1002,7 @@ environment:
 User Browser
      ↓
      └─→ https://bookmarks.yourdomain.com (nginx)
-         ├─ /api/*          → reverse proxies to http://localhost:4242 (Express)
+         ├─ /api/*          → reverse proxies to http://localhost:4646 (Express)
          └─ /* (static)     → serves UI dist from http://localhost:8080 (Vite)
 ```
 Both UI and API requests appear to come from `https://bookmarks.yourdomain.com` (the proxy's origin), so CORS_ORIGIN matches.
@@ -1016,9 +1016,9 @@ Both UI and API requests appear to come from `https://bookmarks.yourdomain.com` 
 ```yaml
 environment:
   NODE_ENV: development
-  PORT: 4242
+  PORT: 4646
   DATA_DIR: ./data
-  VITE_API_URL: http://localhost:4242    # ← Dev server
+  VITE_API_URL: http://localhost:4646    # ← Dev server
   CORS_ORIGIN: http://localhost:5173     # ← Vite dev server port
   ENFORCE_HTTPS: false
 ```

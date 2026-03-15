@@ -35,7 +35,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
 
-COPY server.js ./
+COPY server.ts ./
 COPY src ./src
 
 # Copy built frontend assets from the builder stage
@@ -60,4 +60,4 @@ ENV PORT=4545
 ENV DATA_DIR=/app/data
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["node", "server.js"]
+CMD ["tsx", "server.ts"]

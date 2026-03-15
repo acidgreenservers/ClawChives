@@ -105,7 +105,7 @@ graph TD
 - **Start All**: `npm run start` 
 - **Dev Only**: `npm run dev`
 - **Docker Compose**: `docker-compose -f docker-compose.dev.yml up --build`
-- **Port:** Uses `4545` for vite UI, and `4545` proxied to `4242` for API `server.js`.
+- **Port:** Uses `4545` for vite UI, and `4545` proxied to `4646` for API `server.js`.
 
 ---
 

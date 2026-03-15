@@ -6,7 +6,7 @@
   "cryptographic_standards": {
     "hashing": "SHA-256",
     "encryption": "AES-256 (ShellCryption)",
-    "comparison": "Timing-safe (timingSafeHashCompare)"
+    "comparison": "Timing-safe (crypto.timingSafeEqual)"
   },
   "access_control": {
     "middleware": "requireAuth",

@@ -1,6 +1,6 @@
 [
   {
-    "endpoint": "POST /api/agents/keys",
+    "endpoint": "POST /api/agent-keys",
     "payload": {
       "name": "string",
       "permissions": "object",

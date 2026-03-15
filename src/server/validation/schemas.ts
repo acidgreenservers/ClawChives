@@ -1,47 +1,27 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // SSRF-protected jinaUrl validator
 const jinaUrlSchema = z.string()
-  .regex(/^https:\/\/r\.jina\.ai\//, "jinaUrl must start with https://r.jina.ai/")
+  .regex(/^https:\/\/r\.jina\.ai\//, 'jinaUrl must start with https://r.jina.ai/')
   .refine((val) => {
-    if (!val) return true; // Null/undefined allowed
-
+    if (!val) return true;
     try {
-      // Extract the wrapped URL
       const wrappedUrl = val.replace(/^https:\/\/r\.jina\.ai\//, '');
       const parsed = new URL(wrappedUrl);
-
-      // Block non-HTTP(S) protocols
-      if (!['http:', 'https:'].includes(parsed.protocol)) {
-        return false;
-      }
-
+      if (!['http:', 'https:'].includes(parsed.protocol)) return false;
       const hostname = parsed.hostname.toLowerCase();
-
-      // Block localhost variants
-      if (['localhost', '127.0.0.1', '::1', '0.0.0.0'].includes(hostname)) {
-        return false;
-      }
-
-      // Block private IP ranges (RFC 1918)
-      if (hostname.match(/^10\./)) return false;  // 10.0.0.0/8
-      if (hostname.match(/^172\.(1[6-9]|2[0-9]|3[01])\./)) return false;  // 172.16.0.0/12
-      if (hostname.match(/^192\.168\./)) return false;  // 192.168.0.0/16
-
-      // Block link-local (AWS metadata, etc.)
-      if (hostname.match(/^169\.254\./)) return false;  // 169.254.0.0/16
-
-      // Block IPv6 private ranges
-      if (hostname.startsWith('fc') || hostname.startsWith('fd')) return false;  // fc00::/7
-      if (hostname.startsWith('fe80:')) return false;  // fe80::/10
-
+      if (['localhost', '127.0.0.1', '::1', '0.0.0.0'].includes(hostname)) return false;
+      if (hostname.match(/^10\./)) return false;
+      if (hostname.match(/^172\.(1[6-9]|2[0-9]|3[01])\./)) return false;
+      if (hostname.match(/^192\.168\./)) return false;
+      if (hostname.match(/^169\.254\./)) return false;
+      if (hostname.startsWith('fc') || hostname.startsWith('fd')) return false;
+      if (hostname.startsWith('fe80:')) return false;
       return true;
     } catch {
-      return false;  // Invalid URL format
+      return false;
     }
-  }, {
-    message: "jinaUrl wraps an invalid, private, or blocked URL (localhost/internal IPs not allowed)"
-  })
+  }, { message: 'jinaUrl wraps an invalid, private, or blocked URL (localhost/internal IPs not allowed)' })
   .optional()
   .nullable();
 
@@ -52,7 +32,7 @@ export const AuthSchemas = {
     keyHash: z.string().length(64),
   }),
   token: z.object({
-    type: z.enum(["human", "agent"]),
+    type: z.enum(['human', 'agent']),
     uuid: z.string().uuid().optional(),
     keyHash: z.string().length(64).optional(),
     ownerKey: z.string().optional(),
@@ -65,7 +45,7 @@ export const BookmarkSchemas = {
     url: z.string().url(),
     title: z.string().min(1).max(255),
     description: z.string().max(1000).optional(),
-    favicon: z.string().url().optional().or(z.literal("")),
+    favicon: z.string().url().optional().or(z.literal('')),
     tags: z.array(z.string()).max(20).optional(),
     folderId: z.string().uuid().optional().nullable(),
     starred: z.boolean().optional(),
@@ -78,7 +58,7 @@ export const BookmarkSchemas = {
     url: z.string().url().optional(),
     title: z.string().min(1).max(255).optional(),
     description: z.string().max(1000).optional(),
-    favicon: z.string().url().optional().or(z.literal("")),
+    favicon: z.string().url().optional().or(z.literal('')),
     tags: z.array(z.string()).max(20).optional(),
     folderId: z.string().uuid().optional().nullable(),
     starred: z.boolean().optional(),
@@ -116,7 +96,7 @@ export const AgentKeySchemas = {
       canDelete: z.boolean().optional(),
       level: z.string().optional(),
     }).optional(),
-    expirationType: z.enum(["never", "30d", "60d", "90d", "30days", "90days", "1year", "custom"]).optional(),
+    expirationType: z.enum(['never', '30d', '60d', '90d', '30days', '90days', '1year', 'custom']).optional(),
     expirationDate: z.string().datetime().optional().nullable(),
     rateLimit: z.number().int().min(1).max(10000).optional().nullable(),
   }),

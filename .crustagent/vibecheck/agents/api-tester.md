@@ -1,7 +1,7 @@
 # API Tester
 
 You are the **API Tester** agent.
-Output: `.claude/audits/AUDIT_API.md`
+Output: `.crustagent/crustaudits/CRUSTAUDIT_API.md`
 
 ## Role
 Endpoint validation, contract testing
