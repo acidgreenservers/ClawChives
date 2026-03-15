@@ -40,8 +40,11 @@
 
 ## 🏗️ Atomic Component Patterns
 
-- **Lobster-First Aesthetic**: Cyan (`#0891b2`) = Identity, Amber = Keys, Red = Branding.
-- **Glassmorphism**: Use `backdrop-blur` and `bg-white/10` for the Liquid Metal look.
+### 1. The "Lobster-First" UI
+- **Aesthetic**: Use **Cyan** (`#0891b2`) for core actions/identity, **Amber** for keys/security alerts, and **Red** for branding/destructive actions.
+- **Interactive Branding**: Use `InteractiveBrand` from `src/components/Branding/InteractiveBrand.tsx` for premium, animated "ClawChives" identity.
+- **Adaptive Headers**: Header borders match theme: `border-cyan-600` (Light) / `border-red-500` (Dark). Backgrounds: `bg-white` (Light) / `dark:bg-slate-900` (Dark).
+- **Glassmorphism**: Favor `bg-white/10` or `bg-slate-900/10` with `backdrop-blur` for a premium "Liquid Metal" feel.
 - **Gating**: Human-only features (r.jina.ai checkbox) are gated by `sessionStorage.getItem("cc_key_type") === "human"`.
 - **Modals**: Use the `LobsterModal.tsx` wrapper for all framing.
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Folder, Star, Archive, LayoutDashboard, Tag, Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import { FolderEditModal } from "./FolderEditModal";
+import { InteractiveBrand } from "../Branding/InteractiveBrand";
 
 interface FolderItem {
   id: string;
@@ -130,13 +131,13 @@ export function Sidebar({
     <div className="h-full flex flex-col bg-white dark:bg-slate-900">
       {/* Logo */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">🦞</span>
-          <span className="font-bold text-lg">
-            <span className="text-cyan-600 dark:text-cyan-400">Claw</span>
-            <span className="text-red-500 dark:text-red-400">Chives</span>
-          </span>
-        </div>
+        <InteractiveBrand 
+          showIcon={true} 
+          onClick={() => {
+            onSelectFolder(null);
+            onFilterChange("dashboard");
+          }} 
+        />
       </div>
 
       {/* Nav */}

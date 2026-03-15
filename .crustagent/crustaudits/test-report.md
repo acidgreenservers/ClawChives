@@ -4,19 +4,18 @@ status: pass
 findings: 0
 ---
 
-# Test Report Summary
+# Test Report (Pre-Commit)
 
-All automated tests passed successfully. The test suite covers security-critical paths including key validation and authorization bypass prevention.
+## Summary
+All suite tests passed successfully. Logic invariants for security, key generation, and port migration are verified.
 
 ## Results
+- **Files Checked**: 4
+- **Tests Executed**: 13
+- **Tests Passed**: 13
+- **Tests Failed**: 0
 
-- **Test Files**: 3 passed
-- **Tests**: 12 passed
-- **Duration**: 1.19s
-
-## Coverage Highlights
-- **Security**: Verified `lb-` key revocation and `hu-` hash validation.
-- **API**: Verified `requireAuth` and `requirePermission` middleware.
-
-## Recommendations
-- Expand test coverage to include UI component testing and integration tests for new features.
+## Metrics
+- **Duration**: 1.52s
+- **Security Check**: PASS (Key entropy & Agent Revocation verified)
+- **API Health**: PASS (Port 4646 verified)

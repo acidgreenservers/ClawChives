@@ -39,11 +39,9 @@ export interface ApiKeyResponse {
  * In production, this would make actual HTTP requests to your Node.js/Express server
  */
 class ApiClient {
-  private baseUrl: string;
   private apiKey: string | null = null;
 
-  constructor(baseUrl: string = "/api") {
-    this.baseUrl = baseUrl;
+  constructor(_baseUrl: string = "/api") {
   }
 
   /**
@@ -220,8 +218,8 @@ class ApiClient {
    * In production, replace with actual fetch() calls
    */
   private async mockRequest<T>(
-    method: string,
-    endpoint: string,
+    _method: string,
+    _endpoint: string,
     body?: any
   ): Promise<ApiResponse<T>> {
     // Simulate network delay

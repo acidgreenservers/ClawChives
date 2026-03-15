@@ -5,6 +5,7 @@ import { ProfileSettings } from "./ProfileSettings";
 import { AppearanceSettings } from "./AppearanceSettings";
 import { AgentPermissions } from "./AgentPermissions";
 import { ImportExportSettings } from "./ImportExportSettings";
+import { InteractiveBrand } from "../Branding/InteractiveBrand";
 
 type SettingsTab = "profile" | "appearance" | "agents" | "import-export";
 
@@ -27,19 +28,19 @@ export function SettingsPanel({ onBack, onLogout }: SettingsPanelProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <header className="bg-white dark:bg-slate-900 border-b-2 border-red-500 px-6 py-4 sticky top-0 z-10">
+      <header className="bg-white dark:bg-slate-900 border-b-2 border-cyan-600 dark:border-red-500 px-6 py-4 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={onBack} className="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Pinchmarks
             </Button>
-            <h1 className="text-2xl font-bold">
-              <span className="text-cyan-600 dark:text-cyan-400">Claw</span><span className="text-red-500 dark:text-red-400">Chives</span>
+            <div className="flex items-center gap-2">
+              <InteractiveBrand onClick={onBack} />
               <span className="text-slate-500 dark:text-slate-400 font-normal text-lg ml-2">/ Settings</span>
-            </h1>
+            </div>
           </div>
-          <Button variant="outline" onClick={onLogout} className="text-red-600 border-red-300 hover:bg-red-50">
+          <Button variant="outline" onClick={onLogout} className="text-red-600 border-red-300 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-950/30">
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>

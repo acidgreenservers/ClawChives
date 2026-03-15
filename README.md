@@ -147,39 +147,23 @@ graph TD
 npm install
 ```
 
-**Start everything (API + Frontend) concurrently:**
-```bash
-npm run start
-```
-> Fires up `server.js` on `http://localhost:4646` and Vite on `http://localhost:5173` together.
+**Production Commands (The Great Scuttle):**
+- **Start All**: `npm run scuttle:prod-start` (API + Frontend)
+- **Stop All**: `npm run scuttle:prod-stop`
+- **Reset DB**: `npm run scuttle:reset` (DANGER: Deletes prod reef)
 
-**Run just the API:**
-```bash
-npm run start:api
-```
-> Starts only `server.js`. Useful for running alongside a manually launched `npm run dev`.
+**Development Commands (The Coral Nursery):**
+- **Start All**: `npm run scuttle:dev-start` (API + Frontend w/ HMR)
+- **Stop All**: `npm run scuttle:dev-stop`
+- **Reset DB**: `npm run scuttle:reset-dev` (Scuttles dev reef)
 
-**Run just the frontend (dev mode with HMR):**
-```bash
-npm run dev
-```
-> Requires the API to be running separately.
+---
 
-**Stop the API server:**
-```bash
-npm run stop:api
-```
-
-**Build the production bundle:**
-```bash
-npm run build
-```
-> TypeScript check + Vite production bundle → `dist/`
-
-**Preview the production build locally:**
-```bash
-npm run preview
-```
+**Utility Scripts:**
+- **Start API Only**: `npm run start:api`
+- **Frontend Dev Only**: `npm run dev`
+- **Build Bundle**: `npm run build`
+- **Preview Build**: `npm run preview`
 
 </details>
 
@@ -325,11 +309,13 @@ ClawChives/
 
 | Script | Description |
 |---|---|
-| `npm run start` | 🦞 Start both API + UI concurrently (recommended) |
+| `npm run scuttle:prod-start` | 🦞 Start both API + UI concurrently (recommended) |
+| `npm run scuttle:dev-start` | Hatch development environment (API + UI) |
+| `npm run scuttle:prod-stop` | Kill the API and UI server processes |
+| `npm run scuttle:reset` | Scuttle the production database |
+| `npm run scuttle:reset-dev` | Scuttle the development database |
 | `npm run start:api` | Start only the Express API server |
-| `npm run stop:api` | Kill the API server process |
 | `npm run dev` | Vite dev server with HMR on `http://localhost:5173` |
-| `npm run build` | TypeScript check + Vite production bundle → `dist/` |
 | `npm run preview` | Serve the production `dist/` locally |
 | `npm run lint` | ESLint check across all `.ts` / `.tsx` files |
 

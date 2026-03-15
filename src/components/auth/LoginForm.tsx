@@ -5,6 +5,7 @@ import { Label } from "../ui/label";
 import { Key, Lock, AlertCircle, Upload, ArrowLeft, CheckCircle, ClipboardPaste } from "lucide-react";
 import { validateIdentityFile, hashToken } from "../../lib/crypto";
 import { getApiBaseUrl } from "@/config/apiConfig";
+import { InteractiveBrand } from "../Branding/InteractiveBrand";
 
 type LoginMode = "upload" | "paste";
 
@@ -172,10 +173,13 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
           Back to Home
         </Button>
 
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-200 dark:shadow-red-900/20">
-            <span className="text-3xl">🦞</span>
-          </div>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <InteractiveBrand 
+            variant="prominent" 
+            showIcon={true} 
+            className="flex-col gap-4 mb-4" 
+            iconClassName="w-16 h-16"
+          />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-2">Welcome Back</h1>
           <p className="text-slate-600 dark:text-slate-400">Login with your ClawChives©™ identity</p>
         </div>

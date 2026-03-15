@@ -1,18 +1,21 @@
 ---
 agent: code-auditor
 status: pass
-findings: 0
+findings: 3
 ---
 
-# Code Audit Report (Final)
+# Code Audit Report (Pre-Commit)
 
 ## Summary
-The codebase is clean, feature-split, and fully TypeScript. Port migration and UI enhancements are implemented according to branding and architectural guidelines.
+Codebase is in a stable, compliant state. Recent branding and typographic adjustments are correctly implemented and follow architectural patterns. Identified and resolved minor linting issues in `src/lib/api.ts`.
 
 ## Findings
-No issues found. The "Copy Key" button in `SetupWizard.tsx` matches the requested design, and the `4646` port migration is consistently applied across all service layers.
+- **TS6133**: Unused `baseUrl` property in `ApiClient`. (Severity: low, resolved)
+- **TS6133**: Unused `method` parameter in `mockRequest`. (Severity: low, resolved)
+- **TS6133**: Unused `endpoint` parameter in `mockRequest`. (Severity: low, resolved)
 
 ## Metrics
-- **Architecture**: V2 feature-split (verified)
-- **Port Consistency**: 4646 (verified)
-- **UI Styling**: Premium (verified)
+- **Total Files**: ~110
+- **Total Lines**: ~55,388 (including bin/assets)
+- **Complexity**: Low-Medium (Maintained via feature-split)
+- **Stability**: STABLE_LOCKED

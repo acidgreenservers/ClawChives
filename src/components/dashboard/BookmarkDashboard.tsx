@@ -7,6 +7,7 @@ import { FolderModal } from "./FolderModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { BookmarkCard } from "./BookmarkCard";
 import { Plus, Search, Grid, LayoutGrid, FolderPlus, List } from "lucide-react";
+import { InteractiveBrand } from "../Branding/InteractiveBrand";
 import type { Bookmark, Folder, IconSize } from "../../services/types";
 
 const MOCK_FOLDERS: Folder[] = [
@@ -155,12 +156,11 @@ export function BookmarkDashboard() {
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <div className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 p-6 flex flex-col">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">🦞</span>
-          </div>
-          <h1 className="text-xl font-bold text-gray-900">ClawChives</h1>
-        </div>
+        <InteractiveBrand 
+          showIcon={true} 
+          onClick={() => setSelectedFolder(null)} 
+          className="mb-8"
+        />
 
         <div className="space-y-2 mb-6">
           <button

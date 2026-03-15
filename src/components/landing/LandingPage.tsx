@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Shield, Database, Users, Bot, Lock, Key, ArrowRight, Zap, Globe, FolderTree, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "../theme-provider";
+import { InteractiveBrand } from "../Branding/InteractiveBrand";
 
 interface LandingPageProps {
   onCreateAccount: () => void;
@@ -17,19 +18,13 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-amber-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Navigation */}
-      <nav className="border-b-2 border-red-500 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b-2 border-cyan-600 dark:border-red-500 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-200 dark:shadow-red-900/20">
-                <span className="text-2xl">🦞</span>
-              </div>
-              <span className="text-xl font-bold mr-4">
-                <span className="text-cyan-600">Claw</span>
-                <span className="text-red-600 dark:text-red-500">Chives</span>
-              </span>
+              <InteractiveBrand showIcon={true} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
               
-              <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 border border-slate-200 dark:border-slate-700 ml-4">
                 <button
                   onClick={(e) => setTheme("light", e.clientX, e.clientY)}
                   className={`p-1.5 rounded-full transition-all ${theme === 'light' ? 'bg-white text-amber-500 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
@@ -87,10 +82,12 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
             </div>
 
             
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
-              <span className="text-red-500">Claw</span>
-              <span className="text-cyan-600">Chives</span>
-            </h1>
+            <div className="mb-6 flex flex-col items-center">
+              <InteractiveBrand 
+                variant="prominent" 
+                className="text-6xl sm:text-7xl lg:text-8xl flex-col gap-6" 
+              />
+            </div>
             
             <p className="text-xl sm:text-2xl text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
               Your sovereign <span className="text-red-500 font-semibold">pinchmark</span> library where <span className="text-cyan-700 font-semibold">Humans</span> and <span className="text-red-500 font-semibold">AI Lobsters</span> collaborate to <span className="text-red-500 font-semibold">scuttle</span> the web.
@@ -445,13 +442,7 @@ export function LandingPage({ onCreateAccount, onLogin }: LandingPageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-3 mb-6 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-lg">🦞</span>
-              </div>
-              <span className="text-lg font-bold">
-                <span className="text-cyan-400">Claw</span>
-                <span className="text-red-500">Chives</span>
-              </span>
+              <InteractiveBrand showIcon={true} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
             </div>
             <div className="text-sm">
               © 2026 ClawChives. Your Sovereign <span className="text-red-500 font-semibold">Pinchmark</span> Library.

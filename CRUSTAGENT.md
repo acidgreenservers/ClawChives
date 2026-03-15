@@ -64,13 +64,14 @@ ClawChives is a **Local-First Sovereign Pinchmarking** engine built on three con
 
 ## 🚢 Operational Intel
 
-- **Start-Dev**: `npm run start-dev` (concurrently starts API @ 4646 + Vite @ 4545).
-- **Start All**: `npm run start` (Production mode).
+- **Scuttle Prod**: `npm run scuttle:prod-start` (Production mode).
+- **Scuttle Dev**: `npm run scuttle:dev-start` (Concurrently starts API @ 4646 + Vite @ 4545).
+- **Scuttle Reset**: `npm run scuttle:reset-dev` (Scuttles the dev reef).
+- **Scuttle Stop**: `npm run scuttle:prod-stop` (Kills port 4545 and 4646).
 - **API Dev**: `npm run dev:server` (Port 4646).
-- **Stop**: `npm run stop` (Kills port 4545 and 4646).
 - **Build**: `npm run build` (tsc + vite build).
 - **Lint**: `npm run lint` (TypeScript verification).
-- **Ports**: UI on `4545`, API on `4646`.
+- **Ports**: UI on `4545`, API on `4646 manually`.
 - **tsx Gotcha**: `tsx --watch` does NOT support `--ignore` on Node v22. Silent crash risk.
 - **Stability**: If API fails, run `npm rebuild better-sqlite3`.
 
