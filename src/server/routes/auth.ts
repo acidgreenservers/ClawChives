@@ -37,7 +37,7 @@ router.post('/register', authLimiter, validateBody(AuthSchemas.register), (req, 
 /** POST /api/auth/token */
 router.post('/token', authLimiter, validateBody(AuthSchemas.token), (req, res) => {
   const { type, uuid, keyHash, ownerKey } = req.body;
-  const ttl = process.env.TOKEN_TTL_DEFAULT || '30d';
+  const ttl = process.env.TOKEN_TTL_DEFAULT || '24h';
   const expiresAt = calculateExpiry(ttl);
 
   if (type === 'human') {

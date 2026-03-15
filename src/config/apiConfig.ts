@@ -9,7 +9,7 @@
  * 3. Local development defaults to localhost:4242
  *
  * Deployment Scenarios:
- * - Local Dev:        http://localhost:4242 (separate API port)
+ * - Local Dev:        http://localhost:4646 (separate API port)
  * - Docker:           "" (relative paths, single container)
  * - LAN:              "" (relative, works on any LAN IP)
  * - Reverse Proxy:    "" (relative, behind nginx/Caddy)
