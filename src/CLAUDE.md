@@ -207,11 +207,11 @@ the auth pattern must not change.
 
 ```typescript
 // @ts-ignore: Vite replaces import.meta.env.VITE_API_URL at build-time — do NOT refactor this line
-const API_BASE = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4242").replace(/\/$/, "");
+const API_BASE = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_URL || "http://localhost:4646").replace(/\/$/, "");
 ```
 
 `import.meta.env.PROD` must appear as an exact literal — TypeScript casting
-breaks Vite's string replacement and hardcodes `localhost:4242` in the build.
+breaks Vite's string replacement and hardcodes `localhost:4646` in the build.
 
 ### Auth pattern
 
@@ -320,10 +320,10 @@ server-side via `calculateExpiry()`. The server enforces expiry on every request
 ## Dev Workflow
 
 ```bash
-npm start          # Vite dev (port 4545) + API server (port 4242) — use this
+npm start          # Vite dev (port 4545) + API server (port 4646) — use this
 npm run dev        # Vite only — API will be unreachable, use npm start instead
 npm run build      # tsc + vite build (production)
-npm run start:api  # API server only (port 4242)
+npm run start:api  # API server only (port 4646)
 ```
 
 In production Docker, both UI and API run on port 4545 from a single container.

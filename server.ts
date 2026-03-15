@@ -24,7 +24,7 @@ import settingsRoutes  from './src/server/routes/settings.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
-const PORT = parseInt(process.env.PORT ?? '4242', 10);
+const PORT = parseInt(process.env.PORT ?? '4646', 10);
 
 // ─── Export for tests ────────────────────────────────────────────────────────
 const audit = createAuditLogger(db);

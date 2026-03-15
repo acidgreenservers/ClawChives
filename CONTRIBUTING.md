@@ -46,7 +46,7 @@ cp .env.example .env
 # 4. Start the frontend and backend servers together
 npm run start
 # → Frontend: http://localhost:5173
-# → Backend: http://localhost:4242/api/health
+# → Backend: http://localhost:4646/api/health
 ```
 
 ---

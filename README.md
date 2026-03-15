@@ -79,7 +79,7 @@ graph TD
     end
 
     subgraph Server ["🖥️ server.js (Express)"]
-        API["REST API\nPort 4242"]
+        API["REST API\nPort 4646"]
         DB[(SQLite db.sqlite)]
     end
 
@@ -151,7 +151,7 @@ npm install
 ```bash
 npm run start
 ```
-> Fires up `server.js` on `http://localhost:4242` and Vite on `http://localhost:5173` together.
+> Fires up `server.js` on `http://localhost:4646` and Vite on `http://localhost:5173` together.
 
 **Run just the API:**
 ```bash
@@ -195,7 +195,7 @@ npm run preview
 ```bash
 # Default ports (edit in compose files if needed)
 UI_PORT=4545
-API_PORT=4242
+API_PORT=4646
 CORS_ORIGIN=http://localhost:4545
 
 # Optional: Match database file permissions to your host user
