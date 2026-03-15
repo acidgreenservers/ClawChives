@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:server": "tsx --watch --ignore data/** server.ts",
+    "dev:server": "tsx --watch server.ts",
     "start": "NODE_ENV=production tsx server.ts &",
     "start-dev": "npm run dev:server & npm run dev &",
     "stop": "fuser -k 4545/tcp 4646/tcp || true",

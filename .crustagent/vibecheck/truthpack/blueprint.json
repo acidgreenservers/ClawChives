@@ -2,7 +2,7 @@
   "project_name": "ClawChives",
   "architecture": "Local-First Sovereign Pinchmarking Engine",
   "root_structure": {
-    ".crustagent/": "Project intelligence, skills, memory, and truthpack",
+    ".crustagent/": "Project intelligence, skills, memory, truthpack, and stability locks",
     "server.ts": "Main TypeScript entry point (Express API)",
     "src/": "Feature-split source code",
     "src/server/": "Backend feature clusters (db, routes, middleware, utils)",
@@ -16,6 +16,26 @@
     "infrastructure": "Docker + Container volume mounts",
     "testing": "Vitest + Supertest"
   },
+  "ports": {
+    "frontend": 4545,
+    "backend": 4646
+  },
+  "npm_scripts": {
+    "dev": "vite (frontend only, port 4545)",
+    "dev:server": "tsx --watch server.ts (API only, port 4646)",
+    "start-dev": "dev:server + dev concurrently",
+    "stop": "fuser -k clears ports 4545 and 4646",
+    "stop-dev": "alias for stop",
+    "start": "Production: tsx server.ts",
+    "build": "tsc + vite build",
+    "test": "vitest run (12 integration tests)"
+  },
+  "gotchas": [
+    "tsx --watch does NOT support --ignore flag on Node v22 — it will crash silently. Never add --ignore to tsx --watch.",
+    "npm rebuild better-sqlite3 required after Node runtime upgrades (binary mismatch).",
+    "sessionStorage is used for token persistence — NOT IndexedDB. Cleared on browser close.",
+    "DatabaseProvider log says server.js — this is a stale label, the actual target is server.ts on port 4646."
+  ],
   "verified_by": "antigravity",
   "last_audit": "2026-03-14",
   "version": "2.0.0"
