@@ -2,12 +2,24 @@
  * Cryptographic utilities for key generation and file handling
  */
 
-/** Uses Web Crypto's secure RNG to build a URL-safe alphanumeric string */
+/** Uses Web Crypto's secure RNG to build a URL-safe alphanumeric string without modulo bias */
 export function generateRandomString(length: number): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const randomValues = new Uint32Array(length);
-  crypto.getRandomValues(randomValues);
-  return Array.from(randomValues, (v) => chars[v % chars.length]).join("");
+  const result = new Array(length);
+  const maxUint8 = 256;
+  const limit = maxUint8 - (maxUint8 % chars.length); // 256 - (256 % 62) = 248
+  const randomValues = new Uint8Array(1);
+
+  for (let i = 0; i < length; i++) {
+    let r: number;
+    do {
+      crypto.getRandomValues(randomValues);
+      r = randomValues[0];
+    } while (r >= limit); // Reject values that would cause modulo bias
+    result[i] = chars[r % chars.length];
+  }
+
+  return result.join("");
 }
 
 /** Identity key for human users: `hu-<64 chars>` */

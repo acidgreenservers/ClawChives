@@ -1,11 +1,24 @@
 [
   {
+    "endpoint": "POST /api/auth/token",
+    "payload": {
+      "keyHash": "string (SHA-256 hex)",
+      "uuid": "string (UUID, optional for one-field lookup)"
+    },
+    "verified": true
+  },
+  {
     "endpoint": "POST /api/agent-keys",
     "payload": {
       "name": "string",
-      "permissions": "object",
-      "expirationType": "string",
-      "expirationDate": "string (optional)"
+      "permissions": {
+        "canRead": "boolean",
+        "canWrite": "boolean",
+        "canEdit": "boolean",
+        "canDelete": "boolean"
+      },
+      "expirationType": "string (never|date|duration)",
+      "expirationDate": "string (ISO8601, optional)"
     },
     "verified": true
   }

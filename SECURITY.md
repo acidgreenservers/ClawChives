@@ -59,7 +59,7 @@ ClawChives uses a **key-file identity system** — there are no passwords or acc
 <details>
 <summary>Docker Security</summary>
 
-- The API container runs on **Node 20 Alpine** — minimal attack surface.
+- The API container runs on **Node 22** — minimal attack surface.
 - SQLite data is in a named Docker volume (`sqlite_data`) — not exposed on the host filesystem by default.
 - API only exposes port `4646`. The frontend never directly exposes the database.
 - `NODE_ENV=production` disables development stack traces in API error responses.
