@@ -274,6 +274,58 @@ git add .env  # ← NEVER commit
 
 ---
 
+## 16. Docker Build Dependencies
+
+**Invariant:** Dockerfile MUST use `RUN npm install` (NOT `--omit=dev`).
+
+**Why:** Dev dependencies like `tsx` are needed at runtime to execute `npx tsx server.ts`.
+
+**Correct:**
+```dockerfile
+RUN npm install  # Keeps tsx, vite, and other dev deps
+CMD ["npx", "tsx", "server.ts"]
+```
+
+**Wrong:**
+```dockerfile
+RUN npm install --omit=dev  # Removes tsx, breaks CMD
+```
+
+**Consequence:** Container fails with `su-exec: tsx: No such file or directory`
+
+**Check:** Dockerfile line 37 before any changes to npm install command.
+
+---
+
+## 17. Docker Entrypoint Simplicity
+
+**Invariant:** Entrypoint must NOT add extra command logic (like npx). Just handle privilege dropping.
+
+**Why:** CMD already specifies the full command. Entrypoint should only do:
+1. User/group setup (PUID/PGID support)
+2. Directory permission fixes
+3. Privilege drop via `su-exec`
+
+**Correct:**
+```bash
+if [ "$(id -u)" = "0" ]; then
+    exec su-exec node "$@"  # Pass through "$@" unchanged
+else
+    exec "$@"
+fi
+```
+
+**Wrong:**
+```bash
+exec su-exec node npx "$@"  # Adds npx, creates: npx npx tsx server.ts
+```
+
+**Consequence:** Duplicate command invocation breaks execution.
+
+**Check:** docker-entrypoint.sh lines 35-40. Should be pass-through only.
+
+---
+
 **Maintained by CrustAgent©™**
 
 Last Updated: 2026-03-16

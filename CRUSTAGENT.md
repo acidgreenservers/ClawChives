@@ -142,10 +142,11 @@ When working on ClawChives, AI agents should read these files in order:
 - **COMMON-PITFALLS.md** — Known issues, debugging, gotchas, solutions
 - **PROJECT-PHASES.md** — Phase tracking, completed work, roadmap, future vision
 - **LAN-API-URL-Deployment-Fix.md** — Comprehensive guide to LAN deployment configuration
+- **DOCKER-STARTUP-FIX.md** — Root cause analysis and solution for container startup failure (2026-03-16)
 
 ### Rules Directory (`.crustagent/rules/`)
-- **INVARIANTS.md** — 15 critical stability locks (NEVER BREAK THESE)
-- **CRITICAL-FILES.md** — Change impact assessment, tier classification, stability locks per file
+- **INVARIANTS.md** — 17 critical stability locks (NEVER BREAK THESE) — includes Docker build and entrypoint constraints
+- **CRITICAL-FILES.md** — Change impact assessment, tier classification, stability locks per file — includes docker-entrypoint.sh entry
 
 ### Source-Level Documentation
 - **src/CRUSTAGENT.md** — Source-level patterns, component architecture, type locations

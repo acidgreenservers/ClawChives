@@ -149,11 +149,41 @@ These files define core project behavior. Changes here cascade through the syste
 - Copy only source files needed for build (NO `COPY . .`)
 - Always rebuild `dist/` fresh from source
 - healthcheck start_period >= 15s for SQLite init
+- **Line 37:** `RUN npm install` (NOT `--omit=dev`) — keeps tsx at runtime
+- **Line 64:** `CMD ["npx", "tsx", "server.ts"]` — uses npx to locate tsx
 
 **Red Flags:**
 - `COPY . .` (copies stale dist/)
+- `RUN npm install --omit=dev` (removes tsx, breaks container startup)
+- `CMD ["tsx", "server.ts"]` (tsx won't be found without npx)
 - Removing `npm run build`
 - Reducing healthcheck timing
+- Healthcheck error: `su-exec: tsx: No such file or directory` = missing dev dependencies or wrong CMD
+
+---
+
+### `docker-entrypoint.sh`
+**Responsibility:** Container initialization (user setup, privilege dropping, dir permissions).
+
+**Impact:** Entrypoint controls whether container boots successfully.
+
+**Before Editing:**
+- Test privilege dropping: run container as root, verify process drops to node user
+- Test PUID/PGID support: test custom host user mapping
+- Test data directory permissions
+- Verify entrypoint just passes through CMD without adding extra commands
+
+**Stability Locks:**
+- Lines 35-40: Simple pass-through logic only (`exec su-exec node "$@"`)
+- NO command injection or duplication (e.g., don't add npx)
+- User/group setup respects PUID/PGID env vars
+- Directory permission fixes before privilege drop
+
+**Red Flags:**
+- Adding extra command logic (like `npx`) that duplicates CMD
+- Hardcoded paths instead of relying on PATH
+- Privilege drop fails (process doesn't switch to node user)
+- Error: `su-exec: tsx: No such file or directory` = check Dockerfile CMD uses npx
 
 ---
 
