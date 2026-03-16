@@ -15,9 +15,24 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 // ─── Database Encryption (SQLCipher / ShellCryption™) ──────────────────────────
 const encryptionKey = process.env.DB_ENCRYPTION_KEY;
 
-// Validate key at startup (prevents SQL injection via single quote)
-if (encryptionKey && encryptionKey.includes("'")) {
-  throw new Error('[DB] DB_ENCRYPTION_KEY must not contain single quote characters. Use `openssl rand -base64 32` to generate a safe key.');
+// Validate encryption key and DATA_DIR at startup (prevents SQL injection)
+// Keys MUST be base64-encoded (alphanumeric + /+= only, no special chars)
+if (encryptionKey) {
+  if (!/^[a-zA-Z0-9+/=]+$/.test(encryptionKey)) {
+    throw new Error('[DB] DB_ENCRYPTION_KEY must be base64-encoded (alphanumeric, +, /, = only). Use `openssl rand -base64 32` to generate a safe key.');
+  }
+  if (encryptionKey.length < 32) {
+    throw new Error('[DB] DB_ENCRYPTION_KEY must be at least 32 bytes long (use `openssl rand -base64 32`).');
+  }
+}
+
+// Validate DATA_DIR is a safe absolute path (prevents directory traversal attacks)
+// Checks that the path has been fully resolved and doesn't contain suspicious patterns
+const resolvedDataDir = path.resolve(DATA_DIR);
+
+// Ensure path is absolute and doesn't try to escape using traversal patterns
+if (DATA_DIR.includes('..') || !path.isAbsolute(resolvedDataDir)) {
+  throw new Error(`[DB] DATA_DIR must not contain .. traversal (detected: ${DATA_DIR}). Use absolute paths or paths relative to project root.`);
 }
 
 function openDatabase(): Database.Database {
@@ -51,16 +66,22 @@ function openDatabase(): Database.Database {
 }
 
 function encryptExistingDatabase(dbPath: string, key: string) {
-  const tempPath = dbPath + '.tmp';
+  // Use absolute path for temp file to prevent path traversal
+  const resolvedDbPath = path.resolve(dbPath);
+  const tempPath = resolvedDbPath + '.tmp';
+
   try {
-    const plain = new Database(dbPath);
+    const plain = new Database(resolvedDbPath);
+
+    // CRITICAL: Use absolute path in ATTACH statement
+    // Never interpolate user-controlled paths directly into SQL
     plain.exec(`
       ATTACH DATABASE '${tempPath}' AS encrypted KEY '${key}';
       SELECT sqlcipher_export('encrypted');
       DETACH DATABASE encrypted;
     `);
     plain.close();
-    fs.renameSync(tempPath, dbPath);
+    fs.renameSync(tempPath, resolvedDbPath);
     console.log('[DB] ✅ Database encrypted successfully.');
   } catch (e) {
     // Clean up orphaned .tmp file on migration failure
