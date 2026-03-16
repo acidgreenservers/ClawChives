@@ -35,7 +35,12 @@
     "npm rebuild better-sqlite3 required after Node runtime upgrades (binary mismatch).",
     "sessionStorage is used for token persistence — NOT IndexedDB. Cleared on browser close.",
     "Dev server: localhost:4545 (not on LAN). Prod preview: 0.0.0.0:4545 (LAN-accessible).",
-    "scuttle:prod-start builds frontend first (npm run build), then starts Express + vite preview."
+    "scuttle:prod-start builds frontend first (npm run build), then starts Express + vite preview.",
+    "Docker: NEVER use 'npm install --omit=dev' — tsx is needed at runtime. Use 'npm install' only.",
+    "Docker: CMD must use npx (e.g. CMD [\"npx\", \"tsx\", \"server.ts\"]) to locate tsx via npm PATH.",
+    "Docker: Entrypoint is pass-through only (exec su-exec node \"$@\") — don't add command logic like npx.",
+    "Docker: Healthcheck start_period must be >= 15s for better-sqlite3 initialization.",
+    "Docker error 'su-exec: tsx: No such file or directory' = check Dockerfile npm install and CMD format."
   ],
   "verified_by": "CrustAgent©™",
   "last_audit": "2026-03-16",

@@ -41,6 +41,14 @@
       "node_version_target": "22",
       "tsx_watch_no_ignore": true
     },
+    "docker": {
+      "npm_install_strategy": "npm install (NOT --omit=dev) — keeps tsx at runtime",
+      "cmd_format": "CMD [\"npx\", \"tsx\", \"server.ts\"] — uses npx to locate tsx",
+      "entrypoint_logic": "pass-through only — exec su-exec node \"$@\" without adding commands",
+      "healthcheck_start_period": "15s minimum for better-sqlite3 initialization",
+      "image_build": "Copy only source files, never COPY . . (prevents stale dist/)",
+      "failure_signature": "su-exec: tsx: No such file or directory = check npm install and CMD"
+    },
     "ui": {
       "sync_theme_initialization": true,
       "visual_hierarchy_lock": true

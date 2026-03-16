@@ -36,5 +36,20 @@
       "flow": "npm run build && NODE_ENV=production tsx server.ts & vite preview &"
     },
     "verified": true
+  },
+  {
+    "contract": "Docker Build Requirements (Fixed 2026-03-16)",
+    "dockerfile_stage2_npm": "RUN npm install (MUST include dev deps for tsx)",
+    "dockerfile_cmd": "CMD [\"npx\", \"tsx\", \"server.ts\"] (uses npx to locate tsx)",
+    "healthcheck": {
+      "test": "[\"CMD\", \"wget\", \"-qO-\", \"http://localhost:4545/api/health\"]",
+      "start_period": "15s (minimum for better-sqlite3 init)",
+      "timeout": "10s",
+      "retries": 5
+    },
+    "image_copy_strategy": "Only copy source files (index.html, vite.config.ts, src/, public/) — NEVER COPY . .",
+    "entrypoint_contract": "Pass-through only: exec su-exec node \"$@\" — no command logic injection",
+    "verified": true,
+    "error_signature": "su-exec: tsx: No such file or directory = npm install or CMD format issue"
   }
 ]
