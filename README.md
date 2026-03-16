@@ -164,6 +164,29 @@ npm install
 - **Frontend Dev Only**: `npm run dev`
 - **Build Bundle**: `npm run build`
 - **Preview Build**: `npm run preview`
+- **Lint TypeScript**: `npm run lint`
+- **Run Tests**: `npm test`
+
+**Database Encryption (ShellCryption™ Layer 2):**
+
+To enable AES-256 database encryption at rest, set the `DB_ENCRYPTION_KEY` environment variable before starting:
+
+```bash
+# Generate a secure encryption key
+DB_ENCRYPTION_KEY=$(openssl rand -base64 32)
+export DB_ENCRYPTION_KEY
+
+# Then start the app (encryption will be enabled automatically)
+npm run scuttle:dev-start
+```
+
+Or add it to your `.env` file:
+```bash
+DB_ENCRYPTION_KEY=your-generated-key-here
+```
+
+> [!TIP]
+> Without `DB_ENCRYPTION_KEY` set, the database runs in plaintext mode (default). You can add encryption later — existing plaintext databases are automatically migrated when you enable the key.
 
 </details>
 
@@ -177,12 +200,19 @@ npm install
 **Environment Variables:**
 
 ```bash
-# Default ports (edit in compose files if needed)
-UI_PORT=4545
-API_PORT=4646
-CORS_ORIGIN=http://localhost:4545
+# ── Network & API ────────────────────────────────────────────────────────
+UI_PORT=4545                                    # UI container port
+API_PORT=4646                                   # API container port
+CORS_ORIGIN=http://localhost:4545               # Set this to your UI origin (or leave unset for LAN)
 
-# Optional: Match database file permissions to your host user
+# ── Database Encryption (SQLCipher / ShellCryption™ Layer 2) ──────────────
+# AES-256 encryption at rest. Generate a key with: openssl rand -base64 32
+# Leave unset for plaintext database (not recommended for production).
+# WARNING: In docker-compose.yml, this env var is visible via 'docker inspect'.
+#          For stronger protection, consider Docker Secrets or systemd services.
+# DB_ENCRYPTION_KEY=your-generated-key-here
+
+# ── Optional: Match database file permissions to your host user ──────────
 PUID=1000
 PGID=1000
 ```
@@ -199,6 +229,31 @@ Use this if you are modifying the source code and want to test changes immediate
 docker compose -f docker-compose.dev.yml up -d --build
 ```
 
+**Database Encryption (ShellCryption™ Layer 2):**
+
+ClawChives supports **AES-256 encryption at rest** via SQLCipher. If the database file is stolen, it's an unreadable encrypted blob without the key.
+
+To enable encryption, generate and set `DB_ENCRYPTION_KEY`:
+
+```bash
+# Generate a secure encryption key
+DB_KEY=$(openssl rand -base64 32)
+echo "Generated key: $DB_KEY"
+
+# Option 1: Set in docker-compose.yml (comment line 22-23 and uncomment line 23):
+# - DB_ENCRYPTION_KEY=$DB_KEY
+
+# Option 2: Set in .env file (if using env_file in compose):
+# DB_ENCRYPTION_KEY=$DB_KEY
+```
+
+Then start with: `docker compose up -d --build`
+
+> [!IMPORTANT]
+> **First-Time Encryption**: If you have an existing plaintext database and enable encryption, ClawChives will automatically migrate it. This is safe — your data is preserved.
+>
+> **Key Management**: Keep your `DB_ENCRYPTION_KEY` safe. If you lose it, your data becomes inaccessible. Store it separately from this repository.
+
 **Monitoring & Maintenance:**
 
 - **View Logs**: `docker compose logs -f`
@@ -206,7 +261,7 @@ docker compose -f docker-compose.dev.yml up -d --build
 - **Volume Inspection**: `docker volume inspect clawchives_sqlite_data`
 
 > [!IMPORTANT]
-> **Data Sovereignty & Persistence**: 
+> **Data Sovereignty & Persistence**:
 > All pinchmarks and agent identities are stored in local bind mounts on your host system for maximum visibility and ease of backup.
 > - **Production**: `./data/db.sqlite`
 > - **Development**: `./data-dev/db.sqlite`
