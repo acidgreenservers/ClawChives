@@ -34,7 +34,8 @@ fi
 # Switch to 'node' user if running as root
 if [ "$(id -u)" = "0" ]; then
     echo "🔒 [ClawChives] Dropping privileges to user 'node' (UID: $(id -u node))..."
-    exec su-exec node "$@"
+    # npx is part of npm, not in node_modules/.bin
+    exec su-exec node npx "$@"
 else
-    exec "$@"
+    exec npx "$@"
 fi

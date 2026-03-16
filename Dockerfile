@@ -33,7 +33,8 @@ WORKDIR /app
 
 # Copy only the server + package files first (layer cache optimisation)
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+# Keep tsx as a dev dependency — needed to run server.ts at runtime
+RUN npm install
 
 COPY server.ts ./
 COPY src ./src
@@ -60,4 +61,4 @@ ENV PORT=4545
 ENV DATA_DIR=/app/data
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-CMD ["tsx", "server.ts"]
+CMD ["npx", "tsx", "server.ts"]
