@@ -53,8 +53,9 @@ describe('Security Fixes: Key Generation & Agent Authorization Bypass', () => {
         .post('/api/auth/token')
         .send({ type: 'human', uuid: humanUuid, keyHash });
 
-      if (!resHuman.body.data) {
-        console.error('Failed to get human token', resHuman.body);
+      if (resHuman.status !== 201 || !resHuman.body.data) {
+        console.error('Failed to get human token:', { status: resHuman.status, body: resHuman.body });
+        throw new Error(`Failed to authenticate human: ${resHuman.status} ${JSON.stringify(resHuman.body)}`);
       }
       humanApiToken = resHuman.body.data.token;
 

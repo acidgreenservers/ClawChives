@@ -147,11 +147,12 @@ export function BookmarkModal({ isOpen, onClose, onSave, bookmark, folders, onFo
     if (jinaConversion && url.trim()) {
       try {
         new URL(url.trim());
-        const cleanUrl = url.trim().replace(/^https?:\/\//, '');
-        finalJinaUrl = `https://r.jina.ai/${cleanUrl}`;
+        finalJinaUrl = `https://r.jina.ai/${url.trim()}`;
       } catch {
         console.error("Invalid URL format for r.jina");
       }
+    } else if (!jinaConversion && bookmark?.jinaUrl) {
+      finalJinaUrl = null;
     }
 
     const bookmarkData: Bookmark = bookmark ? {

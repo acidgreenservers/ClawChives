@@ -44,9 +44,13 @@ npm install
 cp .env.example .env
 
 # 4. Start the frontend and backend servers together
-npm run start
-# → Frontend: http://localhost:5173
+npm run scuttle:dev-start
+# → Frontend: http://localhost:4545 (development, HMR enabled)
 # → Backend: http://localhost:4646/api/health
+
+# Or run individual servers in separate terminals:
+# Terminal 1: npm run start:api        (API on :4646)
+# Terminal 2: npm run dev              (UI on :4545 with HMR)
 ```
 
 ---

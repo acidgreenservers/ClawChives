@@ -5,7 +5,11 @@
     "network": {
       "ui_port": 4545,
       "api_port": 4646,
-      "env_config_source": "src/config/apiConfig.ts"
+      "env_config_source": "src/config/apiConfig.ts",
+      "dev_vite_host": "localhost (security: dev-only)",
+      "prod_vite_host": "0.0.0.0 (deployment: LAN-accessible)",
+      "express_host": "0.0.0.0 (implicit, all interfaces)",
+      "prod_build_first": "scuttle:prod-start must build before serving"
     },
     "crypto": {
       "char_set_size": 62,
@@ -43,6 +47,6 @@
     }
   },
   "status": "STABLE_LOCKED",
-  "last_lock_update": "2026-03-14T20:47:00Z",
+  "last_lock_update": "2026-03-16T09:15:00Z",
   "maintained_by": "CrustAgent©™"
 }

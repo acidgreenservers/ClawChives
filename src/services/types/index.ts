@@ -15,7 +15,7 @@ export interface Bookmark {
   color?: string;
   createdAt: string;
   updatedAt: string;
-  jinaUrl?: string; // Stores https://r.jina.ai/{original_url} (fetched client-side)
+  jinaUrl?: string | null; // Stored in jina_conversions table (human-only, LEFT JOIN)
 }
 
 export interface Folder {

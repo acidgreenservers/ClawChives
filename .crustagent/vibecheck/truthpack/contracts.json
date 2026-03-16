@@ -21,5 +21,20 @@
       "expirationDate": "string (ISO8601, optional)"
     },
     "verified": true
+  },
+  {
+    "contract": "Network Binding (Dev vs Prod)",
+    "dev_mode": {
+      "vite_server": "localhost:4545 (dev-only, not LAN-accessible)",
+      "express_api": "0.0.0.0:4646 (LAN-accessible)",
+      "script": "scuttle:dev-start"
+    },
+    "prod_mode": {
+      "vite_preview": "0.0.0.0:4545 (LAN-accessible, static dist/ files)",
+      "express_api": "0.0.0.0:4646 (LAN-accessible)",
+      "script": "scuttle:prod-start (builds first, then starts both)",
+      "flow": "npm run build && NODE_ENV=production tsx server.ts & vite preview &"
+    },
+    "verified": true
   }
 ]

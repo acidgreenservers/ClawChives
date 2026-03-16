@@ -11,8 +11,9 @@ This skill provides a complete implementation guide for adding r.jina.ai support
 
 **Core Philosophy:**
 - **Humans** make explicit decisions about which URLs to convert (via checkbox)
-- **Protocol Stripping:** The `https?://` prefix MUST be stripped from the source URL before prepending `https://r.jina.ai/`.
-- **Agents (lb-keys)** can READ Jina URLs but CANNOT create them (granular data control)
+- **Relational Storage:** Jina URLs occupy the `jina_conversions` table, preserving the core bookmark identity.
+- **Protocol Preservation:** The full protocol (e.g., `https://r.jina.ai/https://...`) MUST be preserved.
+- **Agent Preference:** Agents prioritize the Markdown-converted `jinaUrl` for deep research.
 - **Storage strategy:** Store only the Jina URL (not content), fetch on-demand like regular URLs
 - **Dual-layer UI:** Single-click for normal URL, right-click for r.jina.ai conversion option
 
@@ -129,8 +130,7 @@ const handleSave = async () => {
     // Validate URL is HTTP(S)
     try {
       new URL(url);
-      const cleanUrl = url.replace(/^https?:\/\//, '');
-      finalJinaUrl = `https://r.jina.ai/${cleanUrl}`;
+      finalJinaUrl = `https://r.jina.ai/${url}`; // Protocol preserved
     } catch {
       throw new Error("Invalid URL format");
     }

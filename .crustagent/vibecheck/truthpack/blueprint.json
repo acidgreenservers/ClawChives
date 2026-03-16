@@ -21,22 +21,23 @@
     "backend": 4646
   },
   "npm_scripts": {
-    "dev": "vite (frontend only, port 4545)",
-    "dev:server": "tsx --watch server.ts (API only, port 4646)",
-    "start-dev": "dev:server + dev concurrently",
-    "stop": "fuser -k clears ports 4545 and 4646",
-    "stop-dev": "alias for stop",
-    "start": "Production: tsx server.ts",
+    "dev": "vite dev server (localhost:4545, dev-only)",
+    "dev:server": "tsx --watch server.ts (API port 4646, 0.0.0.0)",
+    "scuttle:dev-start": "dev:server + dev (UI localhost:4545, API 0.0.0.0:4646)",
+    "scuttle:prod-start": "build && NODE_ENV=production tsx server.ts & vite preview (UI+API :4545 + :4646, both 0.0.0.0)",
+    "scuttle:prod-stop": "fuser -k clears ports 4545 and 4646",
+    "scuttle:dev-stop": "alias for prod-stop",
     "build": "tsc + vite build",
-    "test": "vitest run (12 integration tests)"
+    "test": "vitest run (13 tests)"
   },
   "gotchas": [
     "tsx --watch does NOT support --ignore flag on Node v22 — it will crash silently. Never add --ignore to tsx --watch.",
     "npm rebuild better-sqlite3 required after Node runtime upgrades (binary mismatch).",
     "sessionStorage is used for token persistence — NOT IndexedDB. Cleared on browser close.",
-    "DatabaseProvider log says server.js — this is a stale label, the actual target is server.ts on port 4646."
+    "Dev server: localhost:4545 (not on LAN). Prod preview: 0.0.0.0:4545 (LAN-accessible).",
+    "scuttle:prod-start builds frontend first (npm run build), then starts Express + vite preview."
   ],
-  "verified_by": "antigravity",
-  "last_audit": "2026-03-14",
+  "verified_by": "CrustAgent©™",
+  "last_audit": "2026-03-16",
   "version": "2.0.0"
 }

@@ -10,21 +10,28 @@ import { BookmarkSchemas } from '../validation/schemas.js';
 const router = Router();
 const audit = createAuditLogger(db);
 
+const BOOKMARK_SELECT = `
+  SELECT b.*, jc.url as jina_conversion_url
+  FROM bookmarks b
+  LEFT JOIN jina_conversions jc
+    ON b.id = jc.bookmark_id AND b.user_uuid = jc.user_uuid
+`;
+
 /** GET /api/bookmarks */
 router.get('/', requireAuth, requirePermission('canRead'), (req, res) => {
   const authReq = req as AuthRequest;
-  let sql = 'SELECT * FROM bookmarks WHERE user_uuid = ?';
+  let sql = `${BOOKMARK_SELECT} WHERE b.user_uuid = ?`;
   const params: unknown[] = [authReq.userUuid];
 
-  if (req.query.starred === 'true')   { sql += ' AND starred = 1'; }
-  if (req.query.archived === 'true')  { sql += ' AND archived = 1'; }
-  if (req.query.folderId)             { sql += ' AND folder_id = ?'; params.push(req.query.folderId); }
+  if (req.query.starred === 'true')   { sql += ' AND b.starred = 1'; }
+  if (req.query.archived === 'true')  { sql += ' AND b.archived = 1'; }
+  if (req.query.folderId)             { sql += ' AND b.folder_id = ?'; params.push(req.query.folderId); }
   if (req.query.search) {
     const q = `%${req.query.search}%`;
-    sql += ' AND (title LIKE ? OR url LIKE ? OR description LIKE ?)';
+    sql += ' AND (b.title LIKE ? OR b.url LIKE ? OR b.description LIKE ?)';
     params.push(q, q, q);
   }
-  sql += ' ORDER BY created_at DESC';
+  sql += ' ORDER BY b.created_at DESC';
 
   const rows = db.prepare(sql).all(...params);
   res.json({ success: true, data: rows.map(parseBookmark) });
@@ -33,7 +40,7 @@ router.get('/', requireAuth, requirePermission('canRead'), (req, res) => {
 /** GET /api/bookmarks/:id */
 router.get('/:id', requireAuth, requirePermission('canRead'), (req, res) => {
   const authReq = req as AuthRequest;
-  const row = db.prepare('SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?').get(req.params.id, authReq.userUuid);
+  const row = db.prepare(`${BOOKMARK_SELECT} WHERE b.id = ? AND b.user_uuid = ?`).get(req.params.id, authReq.userUuid);
   if (!row) return res.status(404).json({ success: false, error: 'Bookmark not found' });
   res.json({ success: true, data: parseBookmark(row) });
 });
@@ -63,12 +70,18 @@ router.post('/', requireAuth, requirePermission('canWrite'), validateBody(Bookma
     starred:     req.body.starred ? 1 : 0,
     archived:    req.body.archived ? 1 : 0,
     color:       req.body.color ?? null,
-    jina_url:    req.body.jinaUrl ?? null,
     created_at:  req.body.createdAt ?? now,
     updated_at:  now,
   };
 
-  db.prepare('INSERT INTO bookmarks (id,user_uuid,url,title,description,favicon,tags,folder_id,starred,archived,color,jina_url,created_at,updated_at) VALUES (@id,@user_uuid,@url,@title,@description,@favicon,@tags,@folder_id,@starred,@archived,@color,@jina_url,@created_at,@updated_at)').run(bookmark);
+  const doCreate = db.transaction((bookmarkData: any, jinaUrl: string | null) => {
+    db.prepare('INSERT INTO bookmarks (id,user_uuid,url,title,description,favicon,tags,folder_id,starred,archived,color,created_at,updated_at) VALUES (@id,@user_uuid,@url,@title,@description,@favicon,@tags,@folder_id,@starred,@archived,@color,@created_at,@updated_at)').run(bookmarkData);
+    if (jinaUrl) {
+      db.prepare('INSERT INTO jina_conversions (bookmark_id, user_uuid, url, created_at) VALUES (?, ?, ?, ?)').run(bookmarkData.id, bookmarkData.user_uuid, jinaUrl, bookmarkData.created_at);
+    }
+  });
+
+  doCreate(bookmark, req.body.jinaUrl ?? null);
 
   audit.log('BOOKMARK_CREATED', { actor: authReq.userUuid, actor_type: authReq.keyType, action: 'create', outcome: 'success', resource: 'bookmark', details: { bookmark_id: bookmark.id, title: bookmark.title } });
 
@@ -76,13 +89,13 @@ router.post('/', requireAuth, requirePermission('canWrite'), validateBody(Bookma
     audit.log('bookmark_jina_conversion_set', { actor: authReq.userUuid, actor_type: authReq.keyType, action: 'create', outcome: 'success', resource: 'bookmark', details: { bookmark_id: bookmark.id, jina_url: req.body.jinaUrl } });
   }
 
-  res.status(201).json({ success: true, data: parseBookmark(db.prepare('SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?').get(bookmark.id, authReq.userUuid)) });
+  res.status(201).json({ success: true, data: parseBookmark(db.prepare(`${BOOKMARK_SELECT} WHERE b.id = ? AND b.user_uuid = ?`).get(bookmark.id, authReq.userUuid)) });
 });
 
 /** PUT /api/bookmarks/:id */
 router.put('/:id', requireAuth, requirePermission('canEdit'), validateBody(BookmarkSchemas.update), (req, res) => {
   const authReq = req as AuthRequest;
-  const row = db.prepare('SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?').get(req.params.id, authReq.userUuid) as any;
+  const row = db.prepare(`${BOOKMARK_SELECT} WHERE b.id = ? AND b.user_uuid = ?`).get(req.params.id, authReq.userUuid) as any;
   if (!row) return res.status(404).json({ success: false, error: 'Bookmark not found' });
 
   // 🛡️ jinaUrl human-only field check
@@ -100,20 +113,30 @@ router.put('/:id', requireAuth, requirePermission('canEdit'), validateBody(Bookm
     starred:     req.body.starred     !== undefined ? (req.body.starred ? 1 : 0) : row.starred,
     archived:    req.body.archived    !== undefined ? (req.body.archived ? 1 : 0) : row.archived,
     color:       req.body.color       !== undefined ? req.body.color : row.color,
-    jina_url:    req.body.jinaUrl     !== undefined ? req.body.jinaUrl : row.jina_url,
     updated_at:  new Date().toISOString(),
     id:          req.params.id,
     user_uuid:   authReq.userUuid,
   };
 
-  db.prepare('UPDATE bookmarks SET url=@url, title=@title, description=@description, favicon=@favicon, tags=@tags, folder_id=@folder_id, starred=@starred, archived=@archived, color=@color, jina_url=@jina_url, updated_at=@updated_at WHERE id=@id AND user_uuid=@user_uuid').run(updated);
+  const doUpdate = db.transaction((updatedData: any, jinaUrl: string | null | undefined) => {
+    db.prepare('UPDATE bookmarks SET url=@url, title=@title, description=@description, favicon=@favicon, tags=@tags, folder_id=@folder_id, starred=@starred, archived=@archived, color=@color, updated_at=@updated_at WHERE id=@id AND user_uuid=@user_uuid').run(updatedData);
+
+    if (jinaUrl === null) {
+      db.prepare('DELETE FROM jina_conversions WHERE bookmark_id = ? AND user_uuid = ?').run(updatedData.id, updatedData.user_uuid);
+    } else if (jinaUrl !== undefined) {
+      db.prepare('INSERT INTO jina_conversions (bookmark_id, user_uuid, url, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(bookmark_id) DO UPDATE SET url=excluded.url, created_at=excluded.created_at').run(updatedData.id, updatedData.user_uuid, jinaUrl, new Date().toISOString());
+    }
+  });
+
+  doUpdate(updated, req.body.jinaUrl);
+
   audit.log('BOOKMARK_UPDATED', { actor: authReq.userUuid, actor_type: authReq.keyType, action: 'update', outcome: 'success', resource: 'bookmark', details: { bookmark_id: req.params.id } });
 
-  if (Object.prototype.hasOwnProperty.call(req.body, 'jinaUrl') && authReq.keyType === 'human' && req.body.jinaUrl !== row.jina_url) {
+  if (Object.prototype.hasOwnProperty.call(req.body, 'jinaUrl') && authReq.keyType === 'human' && req.body.jinaUrl !== (row.jina_conversion_url ?? row.jina_url)) {
     audit.log('bookmark_jina_conversion_set', { actor: authReq.userUuid, actor_type: authReq.keyType, action: 'update', outcome: 'success', resource: 'bookmark', details: { bookmark_id: req.params.id, jina_url: req.body.jinaUrl } });
   }
 
-  res.json({ success: true, data: parseBookmark(db.prepare('SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?').get(req.params.id, authReq.userUuid)) });
+  res.json({ success: true, data: parseBookmark(db.prepare(`${BOOKMARK_SELECT} WHERE b.id = ? AND b.user_uuid = ?`).get(req.params.id, authReq.userUuid)) });
 });
 
 /** DELETE /api/bookmarks/:id */
@@ -140,7 +163,7 @@ router.patch('/:id/star', requireAuth, requirePermission('canEdit'), (req, res) 
   if (!row) return res.status(404).json({ success: false, error: 'Bookmark not found' });
   const newStarred = row.starred ? 0 : 1;
   db.prepare('UPDATE bookmarks SET starred = ?, updated_at = ? WHERE id = ? AND user_uuid = ?').run(newStarred, new Date().toISOString(), req.params.id, authReq.userUuid);
-  const result = parseBookmark(db.prepare('SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?').get(req.params.id, authReq.userUuid));
+  const result = parseBookmark(db.prepare(`${BOOKMARK_SELECT} WHERE b.id = ? AND b.user_uuid = ?`).get(req.params.id, authReq.userUuid));
   audit.log('BOOKMARK_STARRED', { actor: authReq.userUuid, actor_type: authReq.keyType, action: 'update', outcome: 'success', resource: 'bookmark', details: { bookmark_id: req.params.id, starred: result?.starred } });
   res.json({ success: true, data: result });
 });
@@ -152,7 +175,7 @@ router.patch('/:id/archive', requireAuth, requirePermission('canEdit'), (req, re
   if (!row) return res.status(404).json({ success: false, error: 'Bookmark not found' });
   const newArchived = row.archived ? 0 : 1;
   db.prepare('UPDATE bookmarks SET archived = ?, updated_at = ? WHERE id = ? AND user_uuid = ?').run(newArchived, new Date().toISOString(), req.params.id, authReq.userUuid);
-  const result = parseBookmark(db.prepare('SELECT * FROM bookmarks WHERE id = ? AND user_uuid = ?').get(req.params.id, authReq.userUuid));
+  const result = parseBookmark(db.prepare(`${BOOKMARK_SELECT} WHERE b.id = ? AND b.user_uuid = ?`).get(req.params.id, authReq.userUuid));
   audit.log('BOOKMARK_ARCHIVED', { actor: authReq.userUuid, actor_type: authReq.keyType, action: 'update', outcome: 'success', resource: 'bookmark', details: { bookmark_id: req.params.id, archived: result?.archived } });
   res.json({ success: true, data: result });
 });
