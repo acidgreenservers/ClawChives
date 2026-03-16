@@ -148,12 +148,12 @@ npm install
 ```
 
 **Production Commands (The Great Scuttle):**
-- **Start All**: `npm run scuttle:prod-start` (API + Frontend)
+- **Start All**: `npm run scuttle:prod-start` (Builds frontend, then starts API + Frontend on `0.0.0.0`)
 - **Stop All**: `npm run scuttle:prod-stop`
 - **Reset DB**: `npm run scuttle:reset` (DANGER: Deletes prod reef)
 
 **Development Commands (The Coral Nursery):**
-- **Start All**: `npm run scuttle:dev-start` (API + Frontend w/ HMR)
+- **Start All**: `npm run scuttle:dev-start` (API + Frontend w/ HMR on `localhost`)
 - **Stop All**: `npm run scuttle:dev-stop`
 - **Reset DB**: `npm run scuttle:reset-dev` (Scuttles dev reef)
 
@@ -307,17 +307,18 @@ ClawChives/
 
 ## 🛠️ Available Scripts
 
-| Script | Description |
-|---|---|
-| `npm run scuttle:prod-start` | 🦞 Start both API + UI concurrently (recommended) |
-| `npm run scuttle:dev-start` | Hatch development environment (API + UI) |
-| `npm run scuttle:prod-stop` | Kill the API and UI server processes |
-| `npm run scuttle:reset` | Scuttle the production database |
-| `npm run scuttle:reset-dev` | Scuttle the development database |
-| `npm run start:api` | Start only the Express API server |
-| `npm run dev` | Vite dev server with HMR on `http://localhost:5173` |
-| `npm run preview` | Serve the production `dist/` locally |
-| `npm run lint` | ESLint check across all `.ts` / `.tsx` files |
+| Script | Port(s) | Accessible | Description |
+|---|---|---|---|
+| `npm run scuttle:prod-start` | 4545 (UI), 4646 (API) | `0.0.0.0` (LAN) | 🦞 Builds frontend, starts API + UI production servers |
+| `npm run scuttle:dev-start` | 4545 (UI), 4646 (API) | `localhost` only | Hatch development environment (API + UI w/ HMR) |
+| `npm run scuttle:prod-stop` | — | — | Kill the API and UI server processes |
+| `npm run scuttle:reset` | — | — | Scuttle the production database (DANGER) |
+| `npm run scuttle:reset-dev` | — | — | Scuttle the development database |
+| `npm run start:api` | 4646 | `0.0.0.0` | Start only the Express API server |
+| `npm run dev` | 4545 | `localhost` only | Vite dev server with HMR |
+| `npm run build` | — | — | Build production bundle (`npm run build` required before `scuttle:prod-start`) |
+| `npm run preview` | 4545 | `localhost` only | Serve the production `dist/` locally for testing |
+| `npm run lint` | — | — | ESLint check across all `.ts` / `.tsx` files |
 
 ---
 
