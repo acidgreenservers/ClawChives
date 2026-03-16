@@ -36,9 +36,9 @@
 - **Hashing**: Use `hashToken()` and `verifyToken()` from `src/lib/crypto.ts`. Never roll your own.
 - **Modulo 62**: Alphanumeric mapping for high-entropy generation.
 
-### 4. r.jina.ai Reader Integration
-- **Protocol Stripping**: When prepending `https://r.jina.ai/` to a source URL, the `https://` or `http://` prefix MUST be stripped from the source (e.g., `https://r.jina.ai/example.com`). This ensures cleaner URLs and consistent behavior.
-- **Backend Validation**: The `jinaUrlSchema` in `schemas.ts` accepts both the legacy double-protocol and the new cleaner format, but always enforces strict SSRF protections on the wrapped domain.
+- **r.jina.ai Relational Storage**: Jina URLs are stored in a separate `jina_conversions` table, decoupled from core bookmark identity.
+- **Protocol Preservation**: The full protocol (e.g., `https://r.jina.ai/https://...`) MUST be preserved to ensure explicit, valid SSRF verification.
+- **🦞 Agent Preference Directive**: Lobsters and Agents MUST naturally gravitate towards Markdown versions (`jinaUrl`) for research and synthesis.
 
 ---
 

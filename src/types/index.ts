@@ -10,7 +10,7 @@ export interface Bookmark {
   archived: boolean;
   createdAt: string;
   updatedAt?: string;
-  jinaUrl?: string; // Stores https://r.jina.ai/{original_url} (fetched client-side)
+  jinaUrl?: string | null; // Stores https://r.jina.ai/{wrapped_url}. Decoupled into jina_conversions table.
 }
 
 export interface Folder {

@@ -70,6 +70,14 @@ db.exec(`
     last_used       TEXT
   );
 
+  CREATE TABLE IF NOT EXISTS jina_conversions (
+    bookmark_id TEXT PRIMARY KEY,
+    user_uuid   TEXT NOT NULL,
+    url         TEXT NOT NULL,
+    created_at  TEXT NOT NULL,
+    FOREIGN KEY(bookmark_id) REFERENCES bookmarks(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -109,6 +117,18 @@ runColumnMigration('ALTER TABLE agent_keys ADD COLUMN revoked_by TEXT', 'agent_k
 runColumnMigration('ALTER TABLE agent_keys ADD COLUMN revoke_reason TEXT', 'agent_keys.revoke_reason');
 runColumnMigration('ALTER TABLE bookmarks ADD COLUMN jina_url TEXT', 'bookmarks.jina_url');
 
+// 📦 Relational Jina Migration
+try {
+  db.exec(`
+    INSERT OR IGNORE INTO jina_conversions (bookmark_id, user_uuid, url, created_at)
+    SELECT id, user_uuid, jina_url, updated_at
+    FROM bookmarks
+    WHERE jina_url IS NOT NULL
+  `);
+} catch (e: any) {
+  console.error('[DB] ❌ jina_conversions migration failed:', e.message);
+}
+
 // Ensure key_hash unique index
 const indexes = db.prepare("PRAGMA index_list('users')").all() as any[];
 const hasUniqueKeyHash = indexes.some((idx: any) =>
@@ -126,7 +146,7 @@ if (!hasUniqueKeyHash) {
 
 db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_bookmarks_user_url ON bookmarks(user_uuid, url);
-  CREATE INDEX IF NOT EXISTS idx_bookmarks_jina_url ON bookmarks(jina_url) WHERE jina_url IS NOT NULL;
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_jina_conversions_user ON jina_conversions(user_uuid);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_settings_user_key ON settings(user_uuid, key);
   CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);
   CREATE INDEX IF NOT EXISTS idx_audit_event_type ON audit_logs(event_type);

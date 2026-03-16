@@ -106,14 +106,14 @@ export function BookmarkCard({
               <>
                 {bookmark.jinaUrl ? (
                   <button
-                    onClick={(e) => { e.stopPropagation(); setContextMenu(null); window.open(bookmark.jinaUrl, '_blank', "noopener,noreferrer"); }}
+                    onClick={(e) => { e.stopPropagation(); setContextMenu(null); window.open(bookmark.jinaUrl!, '_blank', "noopener,noreferrer"); }}
                     className="w-full text-left px-4 py-2 text-sm text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 font-medium transition-colors border-t border-red-500/10 dark:border-red-500/20"
                   >
                     🦞 Open r.jina.ai Version
                   </button>
                 ) : (
                      <button
-                    onClick={(e) => { e.stopPropagation(); setContextMenu(null); const cleanUrl = bookmark.url.replace(/^https?:\/\//, ''); window.open(`https://r.jina.ai/${cleanUrl}`, '_blank', "noopener,noreferrer"); }}
+                    onClick={(e) => { e.stopPropagation(); setContextMenu(null); window.open(`https://r.jina.ai/${bookmark.url}`, '_blank', "noopener,noreferrer"); }}
                     className="w-full text-left px-4 py-2 text-sm text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 font-medium transition-colors border-t border-red-500/10 dark:border-red-500/20"
                   >
                     🦞 Open in r.jina.ai
