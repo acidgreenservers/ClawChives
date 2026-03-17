@@ -35,6 +35,7 @@ export const apiLimiter = rateLimit({
 
 export const createAgentKeyRateLimiter = () => {
   const limiterCache = new Map<string, ReturnType<typeof rateLimit>>();
+  const MAX_CACHE_SIZE = 100; // ⚡ LRU: keep only last 100 agent keys to prevent unbounded memory growth
 
   return async (req: Request, res: Response, next: NextFunction) => {
     const authReq = req as AuthRequest;
@@ -57,11 +58,16 @@ export const createAgentKeyRateLimiter = () => {
     if (!limit || !agentApiKey) return next();
 
     if (!limiterCache.has(agentApiKey)) {
-      const cacheKey = agentApiKey;
-      limiterCache.set(cacheKey, rateLimit({
+      // ⚡ Evict oldest entry if cache is full (LRU)
+      if (limiterCache.size >= MAX_CACHE_SIZE) {
+        const firstKey = limiterCache.keys().next().value as string;
+        limiterCache.delete(firstKey);
+      }
+
+      limiterCache.set(agentApiKey, rateLimit({
         windowMs: 60 * 1000,
         max: limit,
-        keyGenerator: () => cacheKey,
+        keyGenerator: () => agentApiKey as string,
         message: { success: false, error: 'Your carapace lacks the capacity! Agent rate limit exceeded.' },
       }));
     }
