@@ -16,7 +16,6 @@ dist-ssr
 data/
 data-dev/
 *.sqlite
-clawchives_identity_key.json
 
 # Editor / Tooling
 .vscode/*
@@ -28,6 +27,14 @@ clawchives_identity_key.json
 *.njsproj
 *.sln
 *.sw?
+
+# VibeCheck
+.vibecheck/
+.cursor/
+workflows/
+.github/copilot-instructions.md
+.cursorrules
+.islstudio/
 
 
 .claude/

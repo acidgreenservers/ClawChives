@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Git
+.git
+.gitignore
+
+# Development
+.vscode
+.cursor
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.vitest/
+.cache
+
+# VibeCheck
+.vibecheck/
+.crustagent/vibecheck/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+data/
+*.sqlite
+*.db

@@ -1,0 +1,37 @@
+[
+  {
+    "gate": "security-audit",
+    "enabled": false,
+    "reason": "ClawChives is self-hosted, not public. Security hardening only when explicitly requested.",
+    "trigger": "User explicitly requests /full-audit or /security-review",
+    "off_switch": "Once per release cycle (not per session)"
+  },
+  {
+    "gate": "code-quality-audit",
+    "enabled": false,
+    "reason": "Code works. Refactoring is future work, not blocking release.",
+    "trigger": "User explicitly requests /code-review",
+    "off_switch": "After completion, disabled for 1 week"
+  },
+  {
+    "gate": "dependency-audit",
+    "enabled": true,
+    "reason": "Critical only: npm audit for actual vulnerabilities, not outdated versions",
+    "trigger": "Automatic on release, or user requests /npm-audit",
+    "threshold": "Only HIGH/CRITICAL CVE severity (MODERATE/LOW ignored)"
+  },
+  {
+    "gate": "test-suite",
+    "enabled": true,
+    "reason": "Always run before commit",
+    "trigger": "Before every commit",
+    "off_switch": "Never (required)"
+  },
+  {
+    "gate": "production-readiness",
+    "enabled": false,
+    "reason": "Only run before deployment, not after every change",
+    "trigger": "When user says 'deploy' or 'release'",
+    "checklist": ["tests passing", "no HIGH/CRITICAL vulns", "builds successfully"]
+  }
+]
