@@ -43,7 +43,10 @@ npm install
 # 3. Copy the environment config
 cp .env.example .env
 
-# 4. Start the frontend and backend servers together
+# 4. Review the system architecture
+# See BLUEPRINT.md for the full technical blueprint
+
+# 5. Start the frontend and backend servers together
 npm run scuttle:dev-start
 # → Frontend: http://localhost:4545 (development, HMR enabled)
 # → Backend: http://localhost:4646/api/health
@@ -103,24 +106,33 @@ git checkout -b feat/my-new-feature
 
 ## 🏗️ Architectural Rules
 
-> These are **non-negotiable** constraints that maintain the project's long-term maintainability.
+> These are **non-negotiable** constraints that maintain long-term maintainability.
 
-1. **Separation of Concerns** — Components display. Services fetch/persist. Adapters abstract storage.
-2. **Use the REST architecture** — Database operations should be executed through the REST Server (`server.js`) rather than modifying local states.
-3. **No monolith files** — Files growing beyond ~150 lines are a signal to refactor into sub-modules.
-4. **Auth stays client-side** — Never send `hu-*` identity keys to the server. Only `api-` and `lb-` tokens are server-side artifacts.
-5. **Feature-first directories** — New component groups go inside a named feature folder (`components/myfeature/`), not flat in the components root.
+1. **Separation of Concerns** — Components display, services persist, adapters abstract storage
+   - See [BLUEPRINT.md § Architectural Tenets](./BLUEPRINT.md) for details
+
+2. **Use REST Architecture** — All data operations via Express server (no direct DB access)
+   - See [BLUEPRINT.md § Data Flow](./BLUEPRINT.md) for request cycle
+
+3. **No Monolith Files** — Files >150 lines signal refactoring need
+   - See [BLUEPRINT.md § Component Patterns](./BLUEPRINT.md)
+
+4. **Auth Stays Client-Side** — Never send `hu-*` keys to server (only `api-` and `lb-` tokens)
+   - See [BLUEPRINT.md § Key System Architecture](./BLUEPRINT.md)
+
+5. **Feature-First Directories** — New components in named folders, not flat root
+   - See [BLUEPRINT.md § Directory Structure](./BLUEPRINT.md)
 
 ---
 
 ## 📬 Submitting a Pull Request
 
-1. Run `npm run build` — must pass with **zero TypeScript errors**.
-2. Run `npm run lint` — must show **zero warnings**.
-3. Update [BLUEPRINT.md](./BLUEPRINT.md) if you added or moved files.
-4. Update [ROADMAP.md](./ROADMAP.md) if your change completes or introduces a roadmap item.
-5. Write a clear PR description: **what** changed, **why**, and **how to test**.
-6. Link any related GitHub Issues.
+1. Run `npm run lint && npm run build` to validate TypeScript & ESLint
+2. Ensure all new endpoints have corresponding Zod validation schemas
+3. Update [BLUEPRINT.md](./BLUEPRINT.md) if you added or moved files
+4. Update [ROADMAP.md](./ROADMAP.md) if your change completes or introduces a roadmap item
+5. Write a clear PR description: **what** changed, **why**, and **how to test**
+6. Link any related GitHub Issues
 
 ---
 
@@ -133,3 +145,13 @@ Open a GitHub Issue with:
 - Any console errors (screenshot or paste)
 
 For **security vulnerabilities**, see [SECURITY.md](./SECURITY.md) — do **not** open a public issue.
+
+---
+
+## 📚 Related Documentation
+
+- **[README.md](./README.md)** — Project overview and setup instructions
+- **[BLUEPRINT.md](./BLUEPRINT.md)** — Architecture and implementation patterns
+- **[SECURITY.md](./SECURITY.md)** — Security policy and hardening guide
+- **[CRUSTSECURITY.md](./CRUSTSECURITY.md)** — ClawStack©™ standards alignment
+- **[ROADMAP.md](./ROADMAP.md)** — Current and future development direction

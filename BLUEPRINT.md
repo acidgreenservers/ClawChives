@@ -3,11 +3,29 @@
 [![Blueprint](https://img.shields.io/badge/Architecture-Blueprint-blue?style=for-the-badge)](#)
 [![Separation of Concerns](https://img.shields.io/badge/Pattern-Feature_Separation-purple?style=for-the-badge)](#)
 
-> ASCII Construction Blueprint — the authoritative structural reference for ClawChives.
+> ASCII Construction Blueprint — the authoritative structural reference for ClawChives. This document covers architecture, patterns, constraints, and implementation details.
 
 ---
 
-## Full Directory Tree
+## 📖 Table of Contents
+
+<details>
+<summary>Expand to navigate sections</summary>
+
+- [📂 Complete Directory Structure](#-complete-directory-structure)
+- [📊 Data Flow & Architecture](#-data-flow--architecture)
+- [🏗️ Architectural Tenets](#-architectural-tenets)
+- [🔑 Key System Architecture](#-key-system-architecture)
+- [🔐 Hard Constraints & Stability Locks](#-hard-constraints--stability-locks)
+- [🎯 Component Patterns](#-component-patterns)
+- [🔌 API Routes & Endpoints](#-api-routes--endpoints)
+- [Cross-References](#cross-references)
+
+</details>
+
+---
+
+## 📂 Complete Directory Structure
 
 ```text
 ClawChives/
@@ -38,70 +56,71 @@ ClawChives/
 │   │   ├── utils/                   # auditLogger, crypto, parsers, tokenExpiry
 │   │   └── validation/              # Zod schemas for all endpoints
 │   │
-    │
-    ├── 📄 main.tsx                  # React mount point (wraps in DatabaseProvider)
-    ├── 📄 App.tsx                   # Root view controller + session state manager
-    │                                  sessionStorage: cc_authenticated, cc_view
-    ├── 📄 index.css                 # Global styles + Tailwind CSS directives
-    │
-    ├── components/                  # Feature-scoped UI components
-    │   ├── auth/
-    │   │   ├── LoginForm.tsx        # Identity file upload + One-Field hu- token validation
-    │   │   └── SetupWizard.tsx      # First-run: username, UUID, key generation
-    │   │                             Exports clawchives_identity_key.json
-    │   ├── dashboard/
-    │   │   ├── Dashboard.tsx        # Main layout: header, sidebar, content
-    │   │   ├── BookmarkGrid.tsx     # Responsive bookmark card grid
-    │   │   ├── BookmarkModal.tsx    # Add/Edit bookmark form
-    │   │   ├── Sidebar.tsx          # Folder tree + filter navigation
-    │   │   └── DatabaseStatsModal.tsx # IndexedDB record counts + size
-    │   ├── landing/
-    │   │   └── LandingPage.tsx      # Unauthenticated entry page
-    │   ├── settings/
-    │   │   ├── SettingsPanel.tsx    # Settings tabbed layout
-    │   │   ├── ProfileSettings.tsx  # Display name, avatar, email
-    │   │   ├── AppearanceSettings.tsx # Theme, layout, items-per-page
-    │   │   └── AgentKeyGeneratorModal.tsx # lb- key creation with permissions
-    │   └── ui/                      # shadcn/ui base components
-    │       ├── button.tsx
-    │       ├── card.tsx
-    │       ├── input.tsx
-    │       ├── label.tsx
-    │       └── select.tsx
-    │
-    ├── services/                    # Business logic + data access
-    │   ├── index.ts                 # Barrel export
-    │   ├── database/
-    │   │   ├── adapter.ts           # ◀ IDatabaseAdapter interface (contract)
-    │   │   ├── DatabaseProvider.tsx # ◀ React context: resolves RestAdapter
-    │   │   └── rest/
-    │   │       └── RestAdapter.ts   # fetch() → server.js (SQLite mode)
-    │   ├── bookmarks/               # Bookmark CRUD operations
-    │   ├── folders/                 # Folder management
-    │   ├── agents/                  # Agent key operations
-    │   ├── users/                   # User profile management
-    │   ├── auth/                    # Auth helper functions
-    │   ├── settings/                # Appearance + profile settings
-    │   ├── types/                   # Shared TypeScript interfaces
-    │   └── utils/                   # Constants, errors, DB helpers
-    │
-    ├── hooks/
-    │   └── useAuth.ts               # Authentication state hook
-    │
-    ├── lib/
-    │   ├── crypto.ts                # SHA-256 token hashing utilities
-    │   ├── api.ts                   # API client helpers
-    │   ├── exportImport.ts          # JSON bookmark import/export
-    │   └── utils.ts                 # Shared utility functions
-    │
-    └── types/
-        ├── index.ts                 # App-wide TypeScript types
-        └── agent.ts                 # AgentKey type + ExpirationType enum
+│   ├── 📄 main.tsx                  # React mount point (wraps in DatabaseProvider)
+│   ├── 📄 App.tsx                   # Root view controller + session state manager
+│   │                                  sessionStorage: cc_authenticated, cc_view
+│   ├── 📄 index.css                 # Global styles + Tailwind CSS directives
+│   │
+│   ├── components/                  # Feature-scoped UI components
+│   │   ├── auth/
+│   │   │   ├── LoginForm.tsx        # Identity file upload + One-Field hu- token validation
+│   │   │   └── SetupWizard.tsx      # First-run: username, UUID, key generation
+│   │   │                             Exports clawchives_identity_key.json
+│   │   ├── dashboard/
+│   │   │   ├── Dashboard.tsx        # Main layout: header, sidebar, content
+│   │   │   ├── BookmarkGrid.tsx     # Responsive bookmark card grid
+│   │   │   ├── BookmarkModal.tsx    # Add/Edit bookmark form
+│   │   │   ├── Sidebar.tsx          # Folder tree + filter navigation
+│   │   │   └── DatabaseStatsModal.tsx # IndexedDB record counts + size
+│   │   ├── landing/
+│   │   │   └── LandingPage.tsx      # Unauthenticated entry page
+│   │   ├── settings/
+│   │   │   ├── SettingsPanel.tsx    # Settings tabbed layout
+│   │   │   ├── ProfileSettings.tsx  # Display name, avatar, email
+│   │   │   ├── AppearanceSettings.tsx # Theme, layout, items-per-page
+│   │   │   └── AgentKeyGeneratorModal.tsx # lb- key creation with permissions
+│   │   └── ui/                      # shadcn/ui base components
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       └── select.tsx
+│   │
+│   ├── services/                    # Business logic + data access
+│   │   ├── index.ts                 # Barrel export
+│   │   ├── database/
+│   │   │   ├── adapter.ts           # ◀ IDatabaseAdapter interface (contract)
+│   │   │   ├── DatabaseProvider.tsx # ◀ React context: resolves RestAdapter
+│   │   │   └── rest/
+│   │   │       └── RestAdapter.ts   # fetch() → server.js (SQLite mode)
+│   │   ├── bookmarks/               # Bookmark CRUD operations
+│   │   ├── folders/                 # Folder management
+│   │   ├── agents/                  # Agent key operations
+│   │   ├── users/                   # User profile management
+│   │   ├── auth/                    # Auth helper functions
+│   │   ├── settings/                # Appearance + profile settings
+│   │   ├── types/                   # Shared TypeScript interfaces
+│   │   └── utils/                   # Constants, errors, DB helpers
+│   │
+│   ├── hooks/
+│   │   └── useAuth.ts               # Authentication state hook
+│   │
+│   ├── lib/
+│   │   ├── crypto.ts                # SHA-256 token hashing utilities
+│   │   ├── api.ts                   # API client helpers
+│   │   ├── exportImport.ts          # JSON bookmark import/export
+│   │   └── utils.ts                 # Shared utility functions
+│   │
+│   └── types/
+│       ├── index.ts                 # App-wide TypeScript types
+│       └── agent.ts                 # AgentKey type + ExpirationType enum
 ```
 
 ---
 
-## Data Flow
+## 📊 Data Flow & Architecture
+
+### Request-Response Pipeline
 
 ```mermaid
 graph LR
@@ -119,19 +138,47 @@ graph LR
     end
 
     subgraph Storage ["Storage Layer"]
-        G[(Express/SQLite server)]
+        G["Express/SQLite server"]
     end
 
     A --> B
     B --> C
     C -->|SQLITE| E
     E -->|HTTP + Bearer| G
-    G -->|better-sqlite3| H[(db.sqlite)]
+    G -->|better-sqlite3| H["db.sqlite"]
 ```
 
----
+───
 
-## Architectural Tenets
+### Auth State Machine
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  AUTHENTICATION FLOW                        │
+└─────────────────────────────────────────────────────────────┘
+
+  SETUP (First Run)                 LOGIN (Returning User)
+  ─────────────────                 ──────────────────────
+
+  SetupWizard                        LoginForm
+      ↓                                  ↓
+  Generate hu- token             Upload hu- OR lb- token
+      ↓                                  ↓
+  Create identity_key.json         POST /api/auth/token
+      ↓                                  ↓
+  Persist in sessionStorage        Receive api- token (32 chars)
+      ↓                                  ↓
+  Mount DatabaseProvider        Mount DatabaseProvider
+      ↓                                  ↓
+  RestAdapter ready              RestAdapter: ALL requests
+      ↓                           bearer Authorization: api-*
+  Dashboard (authenticated)            ↓
+                                 Dashboard (authenticated)
+```
+
+───
+
+## 🏗️ Architectural Tenets
 
 <details>
 <summary>View Core Principles</summary>
@@ -150,7 +197,9 @@ graph LR
 
 ---
 
-## Key System
+## 🔑 Key System Architecture
+
+### Key Types & Metadata
 
 ```mermaid
 classDiagram
@@ -178,30 +227,430 @@ classDiagram
     AgentKey --> ApiToken : can issue
 ```
 
+───
+
+### Key Types Reference
+
+| Prefix | Type | Length | Usage |
+|---|---|---|---|
+| `hu-` | **Human Key** | 64 chars | Your personal identity. Supports **One-Field Login** (key-only). |
+| `lb-` | **Lobster/Agent Key** | 64 chars | For your AI Lobsters and automated scripts. Generated in Settings with granular CUSTOM permissions. |
+| `api-` | **Session Token** | 32 chars | Short-lived REST API bearer. Issued via `POST /api/auth/token`. |
+
+───
+
+### API Token Lifecycle
+
+**Token Generation Rules:**
+- Issued when: user/agent supplies valid `hu-` or `lb-` key to `/api/auth/token`
+- Format: `api-` prefix + 32 random hex characters
+- Storage: Plain-text in `api_tokens` table with `key_hash` (SHA-256) for lookups
+- Validation: Server compares request bearer token to stored `key_hash` via index lookup
+- Expiration: Default 24 hours from creation (configurable per environment)
+- Revocation: Token becomes invalid immediately when owner key is revoked or disabled
+
+**Token Usage in Requests:**
+```
+Authorization: Bearer api-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+All API endpoints (except `/api/health` and `/api/auth/token`) require valid bearer token.
+
+───
+
+### Entropy & Generation Rules
+
+**hu- Token Generation** (SetupWizard):
+- Source: `crypto.getRandomValues()` in browser (32 bytes entropy)
+- Format: `hu-` prefix + hex-encoded 64 characters
+- Hashing: SHA-256 → stored as `key_hash` in `users` table
+- Storage: Client saves plaintext to `clawchives_identity_key.json` (user responsibility)
+
+**lb- Token Generation** (Settings Agent Key Creator):
+- Source: `crypto.getRandomValues()` in browser (32 bytes entropy)
+- Format: `lb-` prefix + hex-encoded 64 characters
+- Hashing: SHA-256 → stored in `agent_keys` table
+- Permissions: Granular scope (read, write, delete per resource type)
+- Expiry: Optional auto-expire setting (never, 30d, 90d, 1y)
+
+**api- Token Generation** (Server `/api/auth/token`):
+- Source: `crypto.getRandomBytes()` on server (16 bytes entropy = 32 hex chars)
+- Format: `api-` prefix + 32 random hex characters
+- Hashing: SHA-256 → stored in `api_tokens` table for index lookup
+- Lifetime: 24 hours (hardcoded, can be extended per config)
+
+───
+
+## 🔐 Hard Constraints & Stability Locks
+
+### Session State Invariants
+
+```
+✓ LOCKED: cc_authenticated (sessionStorage)
+  - Immutable after initial setup
+  - Boolean flag: user is authenticated (true) or not (false)
+  - Cleared ONLY on explicit logout
+
+✓ LOCKED: cc_view (sessionStorage)
+  - Tracks current navigation context (dashboard, settings, etc.)
+  - Modified only by explicit route changes
+  - Never cleared mid-session
+
+✓ LOCKED: User UUID Attachment
+  - Every database row includes user_uuid foreign key
+  - Prevents data leakage between user contexts
+  - Query filters ALWAYS include WHERE user_uuid = :uuid
+```
+
+───
+
+### Adapter Pattern Immutability
+
+```
+📌 IDatabaseAdapter Interface (CANNOT CHANGE)
+
+interface IDatabaseAdapter {
+  // Auth operations
+  register(userData: UserData): Promise<User>
+  validateToken(token: string): Promise<User | null>
+  issueToken(credentials: TokenRequest): Promise<ApiToken>
+
+  // Bookmarks CRUD
+  getBookmarks(filters?: FilterOptions): Promise<Bookmark[]>
+  createBookmark(data: BookmarkData): Promise<Bookmark>
+  updateBookmark(id: string, data: Partial<BookmarkData>): Promise<Bookmark>
+  deleteBookmark(id: string): Promise<void>
+
+  // Folders CRUD
+  getFolders(): Promise<Folder[]>
+  createFolder(data: FolderData): Promise<Folder>
+  updateFolder(id: string, data: Partial<FolderData>): Promise<Folder>
+  deleteFolder(id: string): Promise<void>
+
+  // Agent Keys CRUD
+  getAgentKeys(): Promise<AgentKey[]>
+  createAgentKey(data: AgentKeyData): Promise<AgentKey>
+  revokeAgentKey(id: string): Promise<void>
+
+  // Settings
+  getSetting(key: string): Promise<SettingValue>
+  setSetting(key: string, value: any): Promise<void>
+}
+
+⚡ Why Immutable:
+   - React context and hooks depend on this contract
+   - Multiple implementations possible (RestAdapter, MockAdapter, etc.)
+   - New storage backends MUST implement this interface
+   - Breaking changes = entire app breaks
+```
+
+───
+
+### Key System Entropy Requirements
+
+```
+✓ hu- tokens MUST use browser crypto.getRandomValues()
+  └─ Min 32 bytes entropy (256 bits)
+  └─ Hex-encoded output (64 visible chars)
+
+✓ lb- tokens MUST use browser crypto.getRandomValues()
+  └─ Min 32 bytes entropy (256 bits)
+  └─ Hex-encoded output (64 visible chars)
+
+✓ api- tokens MUST use server crypto.getRandomBytes()
+  └─ Min 16 bytes entropy (128 bits)
+  └─ Hex-encoded output (32 visible chars)
+
+✓ All tokens MUST be hashed with SHA-256 before storage
+  └─ Plain-text never persisted
+  └─ Comparison always via hash
+
+✓ Token file downloads (identity_key.json)
+  └─ Browser-only, never server-side downloads
+  └─ User responsible for secure backup
+```
+
+───
+
+### User Isolation Rules
+
+```
+📌 CRITICAL: Every row in every table includes user_uuid
+
+user_uuid attachment guarantees:
+  ✓ Users cannot see other users' bookmarks
+  ✓ Users cannot modify other users' folders
+  ✓ Agents can only access bookmarks scoped to creator
+  ✓ Settings are per-user (theme, layout, etc.)
+
+Query Pattern (LOCKED):
+  SELECT * FROM bookmarks
+  WHERE user_uuid = :uuid AND [other filters]
+
+  ⛔ FORBIDDEN:
+  SELECT * FROM bookmarks
+  (missing user_uuid filter = SQL bug)
+```
+
+───
+
+## 🎯 Component Patterns
+
+### Feature-Based Nesting Rules
+
+All components reside in `src/components/` organized by **feature area**, not by component type.
+
+```
+✓ CORRECT (Feature-First):
+  components/
+  ├── auth/           # All auth-related components
+  │   ├── LoginForm.tsx
+  │   ├── SetupWizard.tsx
+  │   └── index.ts
+  ├── dashboard/      # All dashboard components
+  │   ├── Dashboard.tsx
+  │   ├── BookmarkGrid.tsx
+  │   ├── BookmarkModal.tsx
+  │   ├── Sidebar.tsx
+  │   └── index.ts
+
+✗ WRONG (Type-Based Monolith):
+  components/
+  ├── forms/
+  │   ├── LoginForm.tsx
+  │   ├── BookmarkForm.tsx
+  │   └── SettingsForm.tsx
+  ├── modals/
+  │   ├── BookmarkModal.tsx
+  │   └── SettingsModal.tsx
+  └── grids/
+      └── BookmarkGrid.tsx
+```
+
+**Why This Matters:**
+- Feature discovery: "I need to modify auth" → go to `components/auth/`
+- Reduced merge conflicts: Team members work in separate feature directories
+- Scalability: New features are new directories, not scattered files
+
+───
+
+### Modal Architecture Pattern
+
+All modals follow a consistent pattern:
+
+```typescript
+// Pattern: [Feature]Modal.tsx
+// Location: components/[feature]/[Feature]Modal.tsx
+
+interface [Feature]ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSave?: (data: [FeatureData]) => Promise<void>
+  initialData?: Partial<[FeatureData]>
+}
+
+export function [Feature]Modal({
+  isOpen,
+  onClose,
+  onSave,
+  initialData
+}: [Feature]ModalProps) {
+  const [data, setData] = useState(initialData)
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await onSave?.(data)
+      onClose()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
+          {/* Modal form fields */}
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+**Key Rules:**
+- Modals are ALWAYS controlled components (open state managed by parent)
+- onClose handler ALWAYS fired when user dismisses
+- onSave handler ALWAYS async and error-aware
+- initialData for edit operations (undefined for create)
+
+───
+
+### State Management Patterns
+
+**Session State (Browser Memory):**
+```typescript
+// sessionStorage keys MUST be prefixed with 'cc_'
+sessionStorage.setItem('cc_authenticated', JSON.stringify(true))
+sessionStorage.setItem('cc_view', 'dashboard')
+```
+
+**Context State (React):**
+```typescript
+// DatabaseProvider wraps entire app
+// useDatabase() hook accesses IDatabaseAdapter
+const db = useDatabase()
+const bookmarks = await db.getBookmarks()
+```
+
+**Component State (useState):**
+```typescript
+// Local component state for UI-only values
+const [isModalOpen, setIsModalOpen] = useState(false)
+const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null)
+```
+
+**Fetched Data (Service Layer):**
+```typescript
+// Services interact with DatabaseAdapter
+// Components call services, never call adapter directly
+const bookmarks = await BookmarkService.getAll()
+```
+
+───
+
+### React Context & Hook Patterns
+
+**Context Creation Pattern:**
+```typescript
+// services/database/DatabaseProvider.tsx
+
+interface DatabaseContextType {
+  adapter: IDatabaseAdapter
+}
+
+const DatabaseContext = createContext<DatabaseContextType | null>(null)
+
+export function DatabaseProvider({ children }) {
+  const adapter = new RestAdapter()
+  return (
+    <DatabaseContext.Provider value={{ adapter }}>
+      {children}
+    </DatabaseContext.Provider>
+  )
+}
+
+// Hook Pattern
+export function useDatabase() {
+  const context = useContext(DatabaseContext)
+  if (!context) throw new Error('useDatabase outside DatabaseProvider')
+  return context.adapter
+}
+```
+
+**Hook Usage Pattern:**
+```typescript
+function BookmarkGrid() {
+  const db = useDatabase()
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
+
+  useEffect(() => {
+    db.getBookmarks().then(setBookmarks)
+  }, [db])
+
+  return <div>{/* render bookmarks */}</div>
+}
+```
+
+───
+
+## 🔌 API Routes & Endpoints
+
+All endpoints live in `src/server/routes/`.
+
+### Health & Auth
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/health` | ✗ Public | Health check + record counts |
+| `POST` | `/api/auth/register` | ✗ Public | Register a new identity (hu- token + metadata) |
+| `POST` | `/api/auth/token` | ✗ Public | Issue `api-` token from `hu-` or `lb-` key |
+| `GET` | `/api/auth/validate` | ✓ Bearer | Validate current Bearer token |
+
+───
+
+### Bookmarks
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/bookmarks` | ✓ Bearer | List all pinchmarks (filterable by folder, starred, archived) |
+| `POST` | `/api/bookmarks` | ✓ Bearer | Create pinchmark |
+| `GET` | `/api/bookmarks/:id` | ✓ Bearer | Get single pinchmark |
+| `PUT` | `/api/bookmarks/:id` | ✓ Bearer | Update pinchmark (title, URL, folder, notes) |
+| `DELETE` | `/api/bookmarks/:id` | ✓ Bearer | Delete pinchmark |
+| `PATCH` | `/api/bookmarks/:id/star` | ✓ Bearer | Toggle star |
+| `PATCH` | `/api/bookmarks/:id/archive` | ✓ Bearer | Toggle archive |
+
+───
+
+### Folders
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/folders` | ✓ Bearer | List all folders |
+| `POST` | `/api/folders` | ✓ Bearer | Create folder |
+| `PUT` | `/api/folders/:id` | ✓ Bearer | Update folder (name, color, icon) |
+| `DELETE` | `/api/folders/:id` | ✓ Bearer | Delete folder (moves contents to root) |
+
+───
+
+### Agent Keys
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/agent-keys` | ✓ Bearer | List agent Lobster keys |
+| `POST` | `/api/agent-keys` | ✓ Bearer | Create agent Lobster key (name, permissions, expiry) |
+| `PATCH` | `/api/agent-keys/:id/revoke` | ✓ Bearer | Revoke agent key (immediate, cannot reactivate) |
+| `DELETE` | `/api/agent-keys/:id` | ✓ Bearer | Delete agent key (remove from database) |
+
+───
+
+### Settings
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/settings/:key` | ✓ Bearer | Get setting (theme, itemsPerPage, displayName, etc.) |
+| `PUT` | `/api/settings/:key` | ✓ Bearer | Update setting |
+
+───
+
+## Cross-References
+
+**For contribution rules & development workflow:**
+→ See [CONTRIBUTING.md](./CONTRIBUTING.md)
+
+**For security model, vulnerability reporting, and ClawKeys©™ protocol:**
+→ See [SECURITY.md](./SECURITY.md)
+
+**For ClawStack©™ standards alignment and code patterns:**
+→ See [CRUSTSECURITY.md](./CRUSTSECURITY.md)
+
+**For project roadmap and future development:**
+→ See [ROADMAP.md](./ROADMAP.md)
+
+**For quick-start instructions and environment setup:**
+→ See [README.md](./README.md)
+
 ---
 
-## Component Class Diagram
+<div align="center">
 
-```mermaid
-classDiagram
-    class App {
-        +currentView string
-        +isAuthenticated boolean
-        +currentUser User
-        +sessionStorage cc_authenticated
-        +sessionStorage cc_view
-    }
-    class DatabaseProvider {
-        +IDatabaseAdapter adapter
-        +useDatabaseAdapter() hook
-        +useDatabaseMode() hook
-    }
-    class RestAdapter {
-        +implements IDatabaseAdapter
-        +API_BASE string
-        +request() fetch
-    }
-
-    App --> DatabaseProvider
-    DatabaseProvider --> RestAdapter
 ```
+    Built with 🦞 by ClawStack Studios©™
+    Maintained by CrustAgent©™
+```
+
+</div>

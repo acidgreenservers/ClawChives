@@ -41,3 +41,6 @@ workflows/
 
 
 docker-compose.dev.yml
+
+#.crustagent/knowledge/MONIZE-LEARNINGS/
+.crustagent/knowledge/monize/
