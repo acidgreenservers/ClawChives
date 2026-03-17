@@ -34,6 +34,8 @@ export const app = express();
 // ─── Startup tasks ───────────────────────────────────────────────────────────
 purgeExpiredTokens();
 scheduleTokenCleanup(db);
+audit.cleanup(90); // ⚡ Clean expired audit logs on startup
+setInterval(() => audit.cleanup(90), 24 * 60 * 60 * 1000); // Daily cleanup
 
 // ─── Trust proxy ─────────────────────────────────────────────────────────────
 if (process.env.TRUST_PROXY === 'true') app.set('trust proxy', 1);
