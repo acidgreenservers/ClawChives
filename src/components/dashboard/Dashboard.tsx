@@ -69,18 +69,19 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   // ── Debounce search query (300ms) ──
   const debouncedQuery = useDebounce(searchQuery, 300);
 
-  // ── Load folders on mount ──
+  // ── Load folders ──
+  const loadData = async () => {
+    if (!db) return;
+    try {
+      const allFolders = await db.getFolders();
+      setFolders(allFolders);
+    } catch (error) {
+      console.error("Failed to load folders:", error);
+    }
+  };
+
   useEffect(() => {
-    const loadFolders = async () => {
-      if (!db) return;
-      try {
-        const allFolders = await db.getFolders();
-        setFolders(allFolders);
-      } catch (error) {
-        console.error("Failed to load folders:", error);
-      }
-    };
-    loadFolders();
+    loadData();
   }, [db]);
 
   /** ── Bookmark handlers (via react-query) ── */
