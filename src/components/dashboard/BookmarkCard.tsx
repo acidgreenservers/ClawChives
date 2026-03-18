@@ -59,6 +59,7 @@ function formatRelativeTime(dateString: string) {
 
 export function BookmarkCard({
   bookmark,
+  layout = "grid",
   onEdit,
   onDelete,
   onToggleStar,
@@ -73,6 +74,154 @@ export function BookmarkCard({
   const handleCardClick = () => {
     window.open(bookmark.url, "_blank", "noopener,noreferrer");
   };
+
+  // List view layout
+  if (layout === "list") {
+    return (
+      <div
+        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-3 hover:shadow-md hover:border-cyan-300 dark:hover:border-cyan-700 transition-all cursor-pointer flex items-center gap-4 relative"
+        draggable={!!onDragStart}
+        onDragStart={(e) => onDragStart?.(e, bookmark.id)}
+        onClick={handleCardClick}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setContextMenu({ x: e.clientX, y: e.clientY });
+        }}
+      >
+        {contextMenu && (
+          <>
+            <div
+              className="fixed inset-0 z-50"
+              onClick={(e) => { e.stopPropagation(); setContextMenu(null); }}
+              onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu(null); }}
+            />
+            <div
+              className="fixed z-[51] bg-white dark:bg-slate-900 border-2 border-red-500/50 dark:border-red-500/70 rounded-xl shadow-2xl py-2 min-w-[200px]"
+              style={{ top: contextMenu.y, left: contextMenu.x }}
+            >
+              <button
+                onClick={(e) => { e.stopPropagation(); setContextMenu(null); window.open(bookmark.url, '_blank', "noopener,noreferrer"); }}
+                className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors"
+              >
+                🌐 Open URL
+              </button>
+              {userKeyType === 'human' && (
+                <>
+                  {bookmark.jinaUrl ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setContextMenu(null); window.open(bookmark.jinaUrl!, '_blank', "noopener,noreferrer"); }}
+                      className="w-full text-left px-4 py-2 text-sm text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 font-medium transition-colors border-t border-red-500/10 dark:border-red-500/20"
+                    >
+                      🦞 Open r.jina.ai Version
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setContextMenu(null); window.open(`https://r.jina.ai/${bookmark.url}`, '_blank', "noopener,noreferrer"); }}
+                      className="w-full text-left px-4 py-2 text-sm text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/30 font-medium transition-colors border-t border-red-500/10 dark:border-red-500/20"
+                    >
+                      🦞 Open in r.jina.ai
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Favicon */}
+        <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {faviconUrl ? (
+            <img src={faviconUrl} alt="" className="w-5 h-5" onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }} />
+          ) : (
+            <span className="text-lg">🦞</span>
+          )}
+        </div>
+
+        {/* Title + URL */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-50 truncate group-hover:text-cyan-700 dark:group-hover:text-cyan-400 transition-colors">
+            {bookmark.title || "Untitled"}
+          </h3>
+          <span className="text-xs text-slate-500 dark:text-slate-400 truncate block hover:text-cyan-600">
+            {bookmark.url}
+          </span>
+        </div>
+
+        {/* Tags (max 2, hidden on mobile) */}
+        {bookmark.tags.length > 0 && (
+          <div className="hidden md:flex items-center gap-1 flex-shrink-0 flex-wrap gap-1">
+            {bookmark.tags.slice(0, 2).map((tag) => (
+              <span key={tag} className={`text-xs px-1.5 py-0.5 rounded-full ${getTagColor(tag)}`}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Timestamp (hidden on mobile) */}
+        <span className="hidden lg:flex items-center gap-1 text-xs text-slate-400 flex-shrink-0">
+          <Clock className="w-3 h-3" />
+          {formatRelativeTime(bookmark.createdAt)}
+        </span>
+
+        {/* Actions */}
+        <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0 text-slate-400 hover:text-cyan-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(bookmark);
+            }}
+            title="Edit Pinchmark"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 w-7 p-0 ${bookmark.starred ? "text-amber-500" : "text-slate-400"}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleStar(bookmark);
+            }}
+            title={bookmark.starred ? "Unstar" : "Star"}
+          >
+            <Star className={`w-3.5 h-3.5 ${bookmark.starred ? "fill-current" : ""}`} />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0 text-slate-400 hover:text-red-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmOpen(true);
+            }}
+            title="Delete"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
+        {/* Delete Confirm Modal */}
+        <ConfirmModal
+          isOpen={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={() => onDelete(bookmark.id)}
+          title="Delete Pinchmark?"
+          message={`Are you sure you want to delete "${bookmark.title || "Untitled"}"? This cannot be undone.`}
+          confirmLabel="Delete Pinchmark"
+          cancelLabel="Keep it"
+          variant="danger"
+        />
+      </div>
+    );
+  }
 
   return (
     <div

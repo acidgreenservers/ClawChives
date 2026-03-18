@@ -20,6 +20,7 @@ const getColumnCount = () => {
 
 interface BookmarkGridProps {
   bookmarks: Bookmark[];
+  layout?: "grid" | "list";
   onEdit: (bookmark: Bookmark) => void;
   onDelete: (id: string) => void;
   onToggleStar: (bookmark: Bookmark) => void;
@@ -31,6 +32,7 @@ interface BookmarkGridProps {
 
 export function BookmarkGrid({
   bookmarks,
+  layout = "grid",
   onEdit,
   onDelete,
   onToggleStar,
@@ -41,11 +43,14 @@ export function BookmarkGrid({
 }: BookmarkGridProps) {
   const { ref: sentinelRef, inView } = useInView();
   const parentRef = useRef<HTMLDivElement>(null);
-  const [columnCount, setColumnCount] = useState(getColumnCount());
+  const [rawColumnCount, setRawColumnCount] = useState(getColumnCount());
+
+  // Force single column in list mode
+  const columnCount = layout === "list" ? 1 : rawColumnCount;
 
   // Update column count on window resize
   useEffect(() => {
-    const handleResize = () => setColumnCount(getColumnCount());
+    const handleResize = () => setRawColumnCount(getColumnCount());
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -123,6 +128,7 @@ export function BookmarkGrid({
                   <BookmarkCard
                     key={bookmark.id}
                     bookmark={bookmark}
+                    layout={layout}
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onToggleStar={onToggleStar}

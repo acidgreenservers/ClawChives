@@ -3,6 +3,8 @@ import { twMerge } from "tailwind-merge"
 import { useEffect, useState } from "react"
 import type { Bookmark } from "../services/types"
 
+export type SortBy = "date-desc" | "date-asc" | "name-asc" | "name-desc"
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -19,6 +21,24 @@ export function aggregateTags(bookmarks: Bookmark[]): [string, number][] {
   });
 
   return [...tagMap.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+/**
+ * Sorts bookmarks by the specified criteria.
+ * @param bookmarks Array of bookmarks to sort.
+ * @param sortBy Sort criteria: date-desc (default), date-asc, name-asc, name-desc.
+ * @returns A new sorted array.
+ */
+export function sortBookmarks(bookmarks: Bookmark[], sortBy: SortBy): Bookmark[] {
+  return [...bookmarks].sort((a, b) => {
+    switch (sortBy) {
+      case "date-desc": return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "date-asc":  return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "name-asc":  return (a.title || "").localeCompare(b.title || "");
+      case "name-desc": return (b.title || "").localeCompare(a.title || "");
+      default: return 0;
+    }
+  });
 }
 
 /**

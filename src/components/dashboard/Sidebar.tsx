@@ -208,15 +208,23 @@ export function Sidebar({
                   <button
                     onClick={() => {
                       onSelectFolder(folder.id);
-                      onFilterChange("all");
                     }}
-                    className="flex items-center gap-3 flex-1 px-3 py-2 text-sm font-medium text-left"
+                    className="flex items-center justify-between gap-3 flex-1 px-3 py-2 text-sm font-medium text-left"
                   >
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: folder.color ?? "#06b6d4" }}
-                    />
-                    <span className="truncate">{folder.name}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: folder.color ?? "#06b6d4" }}
+                      />
+                      <span className="truncate">{folder.name}</span>
+                    </div>
+                    <span className={`text-xs flex-shrink-0 px-2 py-0.5 rounded-full ${
+                      selectedFolder === folder.id
+                        ? "bg-cyan-200 text-cyan-900 dark:bg-cyan-800 dark:text-cyan-100"
+                        : "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                    }`}>
+                      {folderBookmarkCount(folder.id)}
+                    </span>
                   </button>
                   {/* Edit Pod button shown on hover */}
                   <button
