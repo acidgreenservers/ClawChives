@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Bookmark, FolderOpen, Tag } from "lucide-react";
 import type { Bookmark as BookmarkType, Folder } from "../../services/types";
 
@@ -100,14 +100,26 @@ function ScrollSection({
 }
 
 export function DashboardView({ bookmarks, folders }: DashboardViewProps) {
-  const allTags = [...new Set(bookmarks.flatMap((b) => b.tags))];
-  const pinnedFolder = folders.find((f) => f.name === "Pinned");
+  // ── Memoized derived data ──
+  const allTags = useMemo(() => [...new Set(bookmarks.flatMap((b) => b.tags))], [bookmarks]);
 
-  const recent = [...bookmarks].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10);
-  const pins = pinnedFolder
-    ? bookmarks.filter((b) => b.folderId === pinnedFolder.id).slice(0, 10)
-    : [];
-  const favorites = bookmarks.filter((b) => b.starred).slice(0, 10);
+  const pinnedFolder = useMemo(() => folders.find((f) => f.name === "Pinned"), [folders]);
+
+  const recent = useMemo(
+    () =>
+      [...bookmarks]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 10),
+    [bookmarks]
+  );
+
+  const pins = useMemo(
+    () =>
+      pinnedFolder ? bookmarks.filter((b) => b.folderId === pinnedFolder.id).slice(0, 10) : [],
+    [bookmarks, pinnedFolder]
+  );
+
+  const favorites = useMemo(() => bookmarks.filter((b) => b.starred).slice(0, 10), [bookmarks]);
 
   const stats = [
     { label: "Pinchmarks", value: bookmarks.length, icon: Bookmark, color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-900/20 border-cyan-200 dark:border-cyan-700/50" },

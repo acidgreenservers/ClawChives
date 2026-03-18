@@ -33,6 +33,11 @@ router.get('/', requireAuth, requirePermission('canRead'), (req, res) => {
   }
   sql += ' ORDER BY b.created_at DESC';
 
+  const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 50, 1), 1000);
+  const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+  sql += ' LIMIT ? OFFSET ?';
+  params.push(limit, offset);
+
   const rows = db.prepare(sql).all(...params);
   res.json({ success: true, data: rows.map(parseBookmark) });
 });

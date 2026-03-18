@@ -55,8 +55,17 @@ async function request<T>(
 export class RestAdapter implements IDatabaseAdapter {
   // ── Bookmarks ──────────────────────────────────────────────────────────────
 
-  getBookmarks(): Promise<Bookmark[]> {
-    return request<Bookmark[]>("/api/bookmarks");
+  /**
+   * getBookmarks — Fetch paginated bookmarks from the server
+   * @param limit Items per page (default 50)
+   * @param offset Pagination offset
+   * @returns Array of bookmarks for this page
+   */
+  getBookmarks(limit: number = 50, offset: number = 0): Promise<Bookmark[]> {
+    const params = new URLSearchParams();
+    params.set("limit", limit.toString());
+    params.set("offset", offset.toString());
+    return request<Bookmark[]>(`/api/bookmarks?${params.toString()}`);
   }
 
   getBookmark(id: string): Promise<Bookmark | null> {

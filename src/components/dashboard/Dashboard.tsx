@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Search, Plus, Settings, LogOut, Database, Menu, X } from "lucide-react";
@@ -9,6 +9,8 @@ import { DashboardView } from "./DashboardView";
 import { TagsView } from "./TagsView";
 import { AlertModal } from "../ui/LobsterModal";
 import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
+import { useInfiniteBookmarks } from "../../hooks/useInfiniteBookmarks";
+import { useDebounce } from "../../lib/utils";
 import { generateUUID } from "../../lib/crypto";
 import type { Bookmark, Folder } from "../../services/types";
 import { User } from "../../App";
@@ -23,7 +25,6 @@ interface DashboardProps {
 }
 
 export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats }: DashboardProps) {
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(() => sessionStorage.getItem("cc_selected_folder"));
   const [activeTab, setActiveTab] = useState<NavTab>(() => (sessionStorage.getItem("cc_active_tab") as NavTab) || "dashboard");
@@ -39,34 +40,46 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
 
   const db = useDatabaseAdapter();
 
+  // ── React Query: Infinite bookmarks ──
+  const {
+    flatBookmarks,
+    updateBookmark,
+    saveBookmark,
+    deleteBookmark,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteBookmarks();
+
+  // ── Debounce search query (300ms) ──
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
+  // ── Load folders on mount ──
   useEffect(() => {
-    if (db) loadData();
+    const loadFolders = async () => {
+      if (!db) return;
+      try {
+        const allFolders = await db.getFolders();
+        setFolders(allFolders);
+      } catch (error) {
+        console.error("Failed to load folders:", error);
+      }
+    };
+    loadFolders();
   }, [db]);
 
-  const loadData = async () => {
-    if (!db) return;
-    try {
-      const [allBookmarks, allFolders] = await Promise.all([
-        db.getBookmarks(),
-        db.getFolders(),
-      ]);
-      setBookmarks(allBookmarks);
-      setFolders(allFolders);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    }
-  };
-
-  /** ── Bookmark handlers ── */
+  /** ── Bookmark handlers (via react-query) ── */
   const handleAddBookmark = () => { setEditingBookmark(null); setIsModalOpen(true); };
   const handleEditBookmark = (bookmark: Bookmark) => { setEditingBookmark(bookmark); setIsModalOpen(true); };
 
   const handleSaveBookmark = async (bookmark: Bookmark) => {
-    if (!db) return;
     try {
-      const isExisting = bookmarks.some((b) => b.id === bookmark.id);
-      if (isExisting) { await db.updateBookmark(bookmark); } else { await db.saveBookmark(bookmark); }
-      await loadData();
+      const isExisting = flatBookmarks.some((b) => b.id === bookmark.id);
+      if (isExisting) {
+        updateBookmark(bookmark);
+      } else {
+        saveBookmark(bookmark);
+      }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Failed to save bookmark:", error);
@@ -75,21 +88,36 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   };
 
   const handleDeleteBookmark = async (id: string) => {
-    if (!db) return;
-    try { await db.deleteBookmark(id); await loadData(); }
-    catch (error) { console.error("Failed to delete bookmark:", error); showAlert("Delete Failed", "Failed to delete. Please try again."); }
+    try {
+      deleteBookmark(id);
+    } catch (error) {
+      console.error("Failed to delete bookmark:", error);
+      showAlert("Delete Failed", "Failed to delete. Please try again.");
+    }
   };
 
   const handleToggleStar = async (bookmark: Bookmark) => {
-    if (!db) return;
-    try { await db.updateBookmark({ ...bookmark, starred: !bookmark.starred, updatedAt: new Date().toISOString() }); await loadData(); }
-    catch (error) { console.error("Failed to toggle star:", error); }
+    try {
+      updateBookmark({
+        ...bookmark,
+        starred: !bookmark.starred,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Failed to toggle star:", error);
+    }
   };
 
   const handleToggleArchive = async (bookmark: Bookmark) => {
-    if (!db) return;
-    try { await db.updateBookmark({ ...bookmark, archived: !bookmark.archived, updatedAt: new Date().toISOString() }); await loadData(); }
-    catch (error) { console.error("Failed to toggle archive:", error); }
+    try {
+      updateBookmark({
+        ...bookmark,
+        archived: !bookmark.archived,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Failed to toggle archive:", error);
+    }
   };
 
   /** ── Folder handlers ── */
@@ -138,39 +166,55 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
 
   /** ── Delete tag (strip from all bookmarks) ── */
   const handleDeleteTag = async (tag: string) => {
-    if (!db) return;
     try {
-      const attached = bookmarks.filter((b) => b.tags.includes(tag));
+      const attached = flatBookmarks.filter((b) => b.tags.includes(tag));
       await Promise.all(
         attached.map((b) =>
-          db.updateBookmark({ ...b, tags: b.tags.filter((t) => t !== tag), updatedAt: new Date().toISOString() })
+          updateBookmark({
+            ...b,
+            tags: b.tags.filter((t) => t !== tag),
+            updatedAt: new Date().toISOString(),
+          })
         )
       );
-      await loadData();
     } catch (error) {
       console.error("Failed to delete tag:", error);
       showAlert("Tag Delete Failed", "Failed to delete tag. Please try again.");
     }
   };
 
-  /** ── Filtered bookmarks ── */
-  const filteredBookmarks = bookmarks.filter((bookmark) => {
-    const matchesSearch =
-      bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bookmark.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bookmark.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bookmark.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+  /** ── Filtered bookmarks (memoized) ── */
+  const filteredBookmarks = useMemo(
+    () =>
+      flatBookmarks.filter((bookmark) => {
+        const matchesSearch =
+          bookmark.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          bookmark.url.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          bookmark.description?.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+          bookmark.tags?.some((t) => t.toLowerCase().includes(debouncedQuery.toLowerCase()));
 
-    const matchesFolder = selectedFolder ? bookmark.folderId === selectedFolder : true;
-    const matchesFilter =
-      activeTab === "all" ||
-      (activeTab === "starred" && bookmark.starred) ||
-      (activeTab === "archived" && bookmark.archived);
+        const matchesFolder = selectedFolder ? bookmark.folderId === selectedFolder : true;
+        const matchesFilter =
+          activeTab === "all" ||
+          (activeTab === "starred" && bookmark.starred) ||
+          (activeTab === "archived" && bookmark.archived);
 
-    const matchesTag = tagFilter ? bookmark.tags.includes(tagFilter) : true;
+        const matchesTag = tagFilter ? bookmark.tags.includes(tagFilter) : true;
 
-    return matchesSearch && matchesFolder && matchesFilter && matchesTag;
-  });
+        return matchesSearch && matchesFolder && matchesFilter && matchesTag;
+      }),
+    [flatBookmarks, debouncedQuery, selectedFolder, activeTab, tagFilter]
+  );
+
+  /** ── Memoized bookmark counts ── */
+  const bookmarkCounts = useMemo(
+    () => ({
+      all: flatBookmarks.length,
+      starred: flatBookmarks.filter((b) => b.starred).length,
+      archived: flatBookmarks.filter((b) => b.archived).length,
+    }),
+    [flatBookmarks]
+  );
 
   const handleTabChange = (tab: NavTab) => {
     setActiveTab(tab);
@@ -207,12 +251,8 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
           onAddFolder={handleAddFolder}
           onEditFolder={handleEditFolder}
           onDeleteFolder={handleDeleteFolder}
-          bookmarkCounts={{
-            all: bookmarks.length,
-            starred: bookmarks.filter((b) => b.starred).length,
-            archived: bookmarks.filter((b) => b.archived).length,
-          }}
-          bookmarks={bookmarks}
+          bookmarkCounts={bookmarkCounts}
+          bookmarks={flatBookmarks}
         />
       </aside>
 
@@ -293,13 +333,13 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
         <div className="flex-1 overflow-auto">
           {activeTab === "dashboard" && (
             <DashboardView
-              bookmarks={bookmarks}
+              bookmarks={flatBookmarks}
               folders={folders}
             />
           )}
           {activeTab === "tags" && (
             <TagsView
-              bookmarks={bookmarks}
+              bookmarks={flatBookmarks}
               onSelectTag={handleSelectTag}
               onDeleteTag={handleDeleteTag}
             />
@@ -312,6 +352,9 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
                 onDelete={handleDeleteBookmark}
                 onToggleStar={handleToggleStar}
                 onToggleArchive={handleToggleArchive}
+                onFetchNextPage={fetchNextPage}
+                hasNextPage={hasNextPage ?? false}
+                isFetchingNextPage={isFetchingNextPage}
               />
             </div>
           )}
@@ -325,7 +368,13 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
         onSave={handleSaveBookmark}
         bookmark={editingBookmark}
         folders={folders}
-        onFoldersRefresh={loadData}
+        onFoldersRefresh={async () => {
+          // Reload folders only (bookmarks auto-update via react-query)
+          if (db) {
+            const updated = await db.getFolders();
+            setFolders(updated);
+          }
+        }}
       />
 
       {/* Global Alert Modal */}

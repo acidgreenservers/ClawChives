@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Plus, Folder, Star, Archive, LayoutDashboard, Tag, Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import { FolderEditModal } from "./FolderEditModal";
@@ -124,8 +124,10 @@ export function Sidebar({
     setFolderModalOpen(true);
   };
 
-  const folderBookmarkCount = (folderId: string) =>
-    bookmarks.filter((b) => b.folderId === folderId).length;
+  const folderBookmarkCount = useCallback(
+    (folderId: string) => bookmarks.filter((b) => b.folderId === folderId).length,
+    [bookmarks]
+  );
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900">
