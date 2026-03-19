@@ -102,11 +102,17 @@ app.use('/api/lobster-session',   lobsterSessionRoutes);
 // ─── Static Files (Production) ────────────────────────────────────────────────
 const distPath = path.join(__dirname, 'dist');
 app.use(express.static(distPath, {
+  maxAge: '1y',  // Default cache header for hashed assets
+  immutable: true, // Tells browsers hashed assets never change
   setHeaders(res, filePath) {
     if (filePath.endsWith('index.html')) {
+      // Bypass cache for index.html — always fetch fresh on new releases
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
+    } else {
+      // Hashed assets (JS/CSS chunks) can be cached indefinitely
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
   },
 }));

@@ -241,6 +241,11 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_api_tokens_expires_at ON api_tokens(expires_at);
   CREATE INDEX IF NOT EXISTS idx_agent_keys_api_key ON agent_keys(api_key);
   CREATE INDEX IF NOT EXISTS idx_agent_keys_active ON agent_keys(is_active);
+
+  -- ── Composite indexes for hot query paths (99% of app traffic) ──
+  CREATE INDEX IF NOT EXISTS idx_bookmarks_user_folder ON bookmarks(user_uuid, folder_id);
+  CREATE INDEX IF NOT EXISTS idx_bookmarks_user_created ON bookmarks(user_uuid, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_folders_user ON folders(user_uuid);
 `);
 
 console.log(`[DB] SQLite database at ${DB_PATH}`);
