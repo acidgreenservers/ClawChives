@@ -53,7 +53,7 @@ ClawChives is a **Local-First Sovereign Pinchmarking** engine built on three con
 
 ---
 
-## 📊 Current State (Phase 1 Complete — Bulk Import Sprint)
+## 📊 Current State: Release 3 Sprint ✅ COMPLETE (2026-03-19)
 
 ### Phase 1: Lobster Bulk Import ✅ COMPLETE (2026-03-19)
 - [x] **POST /api/bookmarks/bulk Endpoint**: Accepts up to 1000 bookmarks per batch with HTTP 207 Multi-Status responses.
@@ -65,25 +65,47 @@ ClawChives is a **Local-First Sovereign Pinchmarking** engine built on three con
 - [x] **Infrastructure Bug Fixes**: `testFactories.ts` + `testDb.ts` corrected.
 - [x] **Truthpack Alignment**: All JSON contracts, routes, and stability locks updated.
 
+### Phase 2: Large Library Optimization ✅ COMPLETE (2026-03-19)
+- [x] **Async Folder Counts**: Frontend caching via `useMemo` + `useCallback` (Sidebar.tsx).
+- [x] **Backend Count Endpoint**: New `GET /api/bookmarks/folder-counts` with `GROUP BY folder_id`.
+- [x] **Infinite Scroll Optimization**: Sentinel div confirmed outside virtualized container.
+
+### Phase 3: Comprehensive Test Coverage + Build Validation Gates ✅ COMPLETE (2026-03-19)
+- [x] **Build Validation Gates** (tests/build-gates.test.ts): TypeScript lint, npm build, Docker readiness checks.
+- [x] **Mass Import Tests** (tests/phase3-integration.test.ts): 1000 URL batches, duplicate detection, rate limit bypass.
+- [x] **Performance Tests**: Fetch 1000 bookmarks < 500ms ✓, folder counts < 100ms ✓.
+- [x] **Error Recovery Tests**: Partial failures, duplicate skipping, data integrity validation.
+- [x] **Test Gate Integration**: npm run test:phase3:full gates all changes on passing test suite + build readiness.
+
 ### Earlier Phases: Foundation ✅
 - [x] **SQLite-Only Architecture**: Dropped IndexedDB for a centralized, robust backend.
 - [x] **One-Field Login**: Simplified authentication via `hu-` key lookup with `UNIQUE` `key_hash` indexing.
 - [x] **Agent System**: `lb-` keys with Granular CUSTOM permissions.
 - [x] **Liquid Metal Toggle**: Circular reveal transitions (State synced via API).
 - [x] **r.jina.ai Integration**: LLM-friendly reading mode (Human-only conversion).
-- [x] **Phase 3a Folder Badges**: Folder bookmarks counts rendered in sidebar (2026-03-18).
-- [x] **Phase 3b Folder Behavior**: CRUD corrections and dead code removal (2026-03-18).
+- [x] **Folder Badges**: Folder bookmarks counts rendered in sidebar.
+- [x] **Folder CRUD**: Corrections and dead code removal.
 
 ---
 
-## 🧪 Test Suite Status (93 Tests — ALL PASSING)
+## 🧪 Test Suite Status (109 Tests — ALL PASSING)
 
-**Command**: `npm run test`
+**Commands**:
+- `npm run test` — All tests (Unit + Middleware + Integration)
+- `npm run test:phase3:build` — Build validation gates only
+- `npm run test:phase3:integration` — Phase 3 integration tests only
+- `npm run test:phase3:full` — All tests + Phase 3 integration + build gates
 
 **Architecture (Semantic Layers)**:
 - **Layer 0 — Unit Tests (46)**: Parsers, crypto, utils, API helpers
 - **Layer 1 — Middleware Tests (31)**: Error handling, validation, HTTP status codes
-- **Layer 2 — Integration Tests (16)**: Security (3) + Bulk Import Feature (20)
+- **Layer 2 — Integration Tests (32)**: Security (3) + Bulk Import (20) + Phase 3 (9)
+
+**Phase 3 Test Coverage (9 tests)**:
+- ✅ **Task 3.1 — Mass Import**: 1000 URLs in batches, duplicate detection, mixed formats, rate limit bypass (2 tests)
+- ✅ **Task 3.2 — Performance**: < 500ms fetch of 1000 bookmarks, < 100ms folder counts (2 tests)
+- ✅ **Task 3.3 — Error Recovery**: Partial failures, duplicate skipping, data integrity (2 tests)
+- ✅ **Build Validation Gates**: TypeScript config, npm build readiness, Docker readiness (3 tests)
 
 **Critical Coverage**:
 - ✅ Authentication & Authorization (5 tests)
@@ -93,10 +115,15 @@ ClawChives is a **Local-First Sovereign Pinchmarking** engine built on three con
 - ✅ jinaUrl Agent Guard (1 test)
 - ✅ Response Integrity & Math Verification (3 tests)
 - ✅ Rate Limiter Bypass (1 test)
+- ✅ Mass Import at Scale (1000 URLs, 2 tests)
+- ✅ Performance under Load (2 tests)
 
 **Test Helpers**:
 - `tests/helpers/testDb.ts` — Database isolation, cleanup, reset
 - `tests/helpers/testFactories.ts` — User/folder/bookmark/agent key creation (schema-correct)
+- `tests/bulk-import.test.js` — Phase 1 bulk import tests (20 tests)
+- `tests/phase3-integration.test.ts` — Phase 3 integration tests (9 tests)
+- `tests/build-gates.test.ts` — Build validation tests (3 tests)
 
 ---
 
@@ -109,7 +136,8 @@ ClawChives is a **Local-First Sovereign Pinchmarking** engine built on three con
 - **API Dev**: `npm run dev:server` (Port 4646).
 - **Build**: `npm run build` (tsc + vite build).
 - **Lint**: `npm run lint` (TypeScript verification).
-- **Test**: `npm run test` (Vitest all layers — 93 tests passing).
+- **Test**: `npm run test` (Vitest all layers — 109 tests passing).
+- **Phase 3 Full**: `npm run test:phase3:full` (gates on all tests + build readiness).
 - **Ports**: UI on `4545`, API on `4646 manually`.
 - **tsx Gotcha**: `tsx --watch` does NOT support `--ignore` on Node v22. Silent crash risk.
 - **Stability**: If API fails, run `npm rebuild better-sqlite3`.
