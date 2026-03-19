@@ -257,13 +257,33 @@ router.post('/bulk', requireAuth, requirePermission('canWrite'), (req, res) => {
     }
   }
 
+  // Accumulate errors to session if X-Session-Id header present
+  const sessionId = req.headers['x-session-id'] as string | undefined;
+  if (sessionId && errors.length > 0) {
+    try {
+      const session = db.prepare(
+        'SELECT id, errors_json, error_count FROM import_sessions WHERE id = ? AND user_uuid = ? AND closed_at IS NULL'
+      ).get(sessionId, authReq.userUuid) as any;
+
+      if (session) {
+        const existing = JSON.parse(session.errors_json || '[]');
+        const updated = [...existing, ...errors];
+        db.prepare('UPDATE import_sessions SET errors_json = ?, error_count = ? WHERE id = ?')
+          .run(JSON.stringify(updated), session.error_count + errors.length, sessionId);
+      }
+    } catch (e: any) {
+      // Silently fail if session tracking breaks; don't let it break the import response
+      console.warn('[Lobster Session] Failed to accumulate errors to session:', e.message);
+    }
+  }
+
   audit.log('BOOKMARKS_BULK_IMPORTED', {
     actor: authReq.userUuid,
     actor_type: authReq.keyType,
     action: 'create',
     outcome: 'success',
     resource: 'bookmark',
-    details: { imported, failed: errors.length, total: bookmarks.length },
+    details: { imported, failed: errors.length, total: bookmarks.length, sessionId: sessionId ?? null },
   });
 
   res.status(207).json({ success: true, imported, failed: errors.length, errors });

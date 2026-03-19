@@ -162,6 +162,16 @@ db.exec(`
     user_agent  TEXT,
     details     TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS import_sessions (
+    id          TEXT PRIMARY KEY,
+    user_uuid   TEXT NOT NULL,
+    key_id      TEXT NOT NULL,
+    started_at  TEXT NOT NULL,
+    closed_at   TEXT,
+    error_count INTEGER DEFAULT 0,
+    errors_json TEXT DEFAULT '[]'
+  );
 `);
 
 // ─── Migrations ────────────────────────────────────────────────────────────────

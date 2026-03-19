@@ -19,7 +19,9 @@
     "test": "vitest run",
     "test:phase3:build": "vitest run tests/build-gates.test.ts",
     "test:phase3:integration": "vitest run tests/phase3-integration.test.ts",
-    "test:phase3:full": "npm run test && npm run test:phase3:integration && npm run test:phase3:build"
+    "test:phase3:full": "npm run test && npm run test:phase3:integration && npm run test:phase3:build",
+    "test:lobster-session": "vitest run tests/lobster-session.test.ts",
+    "test:phase4:full": "npm run test && npm run test:lobster-session && npm run test:phase3:build"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
