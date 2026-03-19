@@ -47,6 +47,7 @@ export function LobsterImportModal({ isOpen, onClose }: LobsterImportModalProps)
       const { errors } = await closeLobsterSession(sessionId);
       setSessionErrors(errors);
       await queryClient.invalidateQueries({ queryKey: ['bookmarks', 'infinite'] });
+      await queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stats'] });
       setStep('done');
     } catch (e: any) {
       setError(e.message || 'Failed to close session');
@@ -64,6 +65,7 @@ export function LobsterImportModal({ isOpen, onClose }: LobsterImportModalProps)
     setIsMasked(true);
     setCopied(false);
     await queryClient.invalidateQueries({ queryKey: ['bookmarks', 'infinite'] });
+    await queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stats'] });
     onClose();
   };
 

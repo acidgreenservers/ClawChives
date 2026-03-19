@@ -12,6 +12,7 @@ import { ViewToggle } from "./ViewToggle";
 import { AlertModal } from "../ui/LobsterModal";
 import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
 import { useInfiniteBookmarks } from "../../hooks/useInfiniteBookmarks";
+import { useBookmarkStats } from "../../hooks/useBookmarkStats";
 import { useDebounce, sortBookmarks } from "../../lib/utils";
 import type { SortBy } from "../../lib/utils";
 import { generateUUID } from "../../lib/crypto";
@@ -65,6 +66,9 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteBookmarks();
+
+  // ── React Query: Bookmark stats (for accurate badge counts) ──
+  const { data: stats } = useBookmarkStats();
 
   // ── Debounce search query (300ms) ──
   const debouncedQuery = useDebounce(searchQuery, 300);
@@ -231,14 +235,14 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
     [flatBookmarks, debouncedQuery, selectedFolder, activeTab, tagFilter, sortBy]
   );
 
-  /** ── Memoized bookmark counts ── */
+  /** ── Bookmark counts from DB stats (accurate total, not just loaded pages) ── */
   const bookmarkCounts = useMemo(
     () => ({
-      all: flatBookmarks.length,
-      starred: flatBookmarks.filter((b) => b.starred).length,
-      archived: flatBookmarks.filter((b) => b.archived).length,
+      all: stats?.total ?? 0,
+      starred: stats?.starred ?? 0,
+      archived: stats?.archived ?? 0,
     }),
-    [flatBookmarks]
+    [stats]
   );
 
   const handleTabChange = (tab: NavTab) => {

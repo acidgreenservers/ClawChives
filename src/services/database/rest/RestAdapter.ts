@@ -72,6 +72,10 @@ export class RestAdapter implements IDatabaseAdapter {
     return request<Bookmark>(`/api/bookmarks/${id}`).catch(() => null);
   }
 
+  async getBookmarkStats(): Promise<{ total: number; starred: number; archived: number }> {
+    return request<{ total: number; starred: number; archived: number }>('/api/bookmarks/stats');
+  }
+
   async saveBookmark(bookmark: Bookmark): Promise<Bookmark> {
     return request<Bookmark>("/api/bookmarks", {
       method: "POST",

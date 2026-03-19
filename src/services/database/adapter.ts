@@ -14,6 +14,7 @@ export interface IDatabaseAdapter {
   // ── Bookmarks ──────────────────────────────────────────────────────────────
   getBookmarks(limit?: number, offset?: number): Promise<Bookmark[]>;
   getBookmark(id: string): Promise<Bookmark | null>;
+  getBookmarkStats(): Promise<{ total: number; starred: number; archived: number }>;
   saveBookmark(bookmark: Bookmark): Promise<Bookmark>;
   saveBulkBookmarks(bookmarks: Bookmark[]): Promise<{ imported: number; failed: number; errors: { url: string; reason: string }[] }>;
   updateBookmark(bookmark: Bookmark): Promise<Bookmark>;
