@@ -1,12 +1,13 @@
 {
-  "test_suite": "ClawChives HardShell Integration & Unit Tests",
+  "test_suite": "ClawChives v3.0 Release 3 — HardShell Integration & Unit Tests",
   "framework": "Vitest 4.x + Supertest",
   "total_tests": 131,
-  "status": "ALL PASSING (2026-03-19)",
+  "status": "ALL PASSING (2026-03-20 — Release 3 Ready)",
+  "version": "3.0",
   "phases": {
     "phase_4": {
       "name": "Phase 4: Ephemeral Lobster Sessions + Accurate Badge Counts",
-      "status": "✓ COMPLETE (2026-03-19)",
+      "status": "✓ COMPLETE (2026-03-20 — Release 3)",
       "tests": 29,
       "breakdown": {
         "lobster_session": {

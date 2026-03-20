@@ -1,3 +1,4 @@
+// ClawChives v3.0 Release 3 API Routes — Verified 2026-03-20
 [
   { "method": "GET",  "path": "/api/health", "auth": false, "requireHuman": false },
   { "method": "POST", "path": "/api/auth/register", "auth": false, "requireHuman": false },

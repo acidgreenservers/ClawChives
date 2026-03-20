@@ -1,3 +1,4 @@
+// ClawChives v3.0 Release 3 API Contracts — Verified 2026-03-20
 [
   {
     "endpoint": "POST /api/auth/token",
