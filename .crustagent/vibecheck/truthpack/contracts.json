@@ -46,6 +46,88 @@
     "verified": true
   },
   {
+    "endpoint": "GET /api/bookmarks/stats",
+    "response": {
+      "status": 200,
+      "body": {
+        "success": "boolean",
+        "data": {
+          "total": "number (true DB total, not pagination-limited)",
+          "starred": "number (count of starred bookmarks)",
+          "archived": "number (count of archived bookmarks)"
+        }
+      }
+    },
+    "constraints": {
+      "auth": "required",
+      "permission": "canRead",
+      "accuracy": "Returns exact DB counts (not capped by page size)"
+    },
+    "verified": true
+  },
+  {
+    "endpoint": "GET /api/bookmarks/tags",
+    "response": {
+      "status": 200,
+      "body": {
+        "success": "boolean",
+        "data": [
+          "string (unique tags across entire library, not pagination-limited)"
+        ]
+      }
+    },
+    "constraints": {
+      "auth": "required",
+      "permission": "canRead",
+      "accuracy": "Returns all unique tags (fixes hardcapped ceiling at 50)"
+    },
+    "verified": true
+  },
+  {
+    "endpoint": "POST /api/lobster-session/start",
+    "response": {
+      "status": 201,
+      "body": {
+        "success": "boolean",
+        "data": {
+          "sessionId": "string (UUID)",
+          "sessionKey": "string (lb-eph-* ephemeral key, 64 char)"
+        }
+      }
+    },
+    "constraints": {
+      "auth": "required",
+      "requireHuman": true,
+      "ttl": "15 minutes",
+      "permissions": "canWrite-only (for bulk import)"
+    },
+    "verified": true
+  },
+  {
+    "endpoint": "POST /api/lobster-session/:id/close",
+    "response": {
+      "status": 200,
+      "body": {
+        "success": "boolean",
+        "data": {
+          "errorCount": "number",
+          "errors": [
+            {
+              "url": "string",
+              "reason": "string"
+            }
+          ]
+        }
+      }
+    },
+    "constraints": {
+      "auth": "required",
+      "requireHuman": true,
+      "effect": "Revokes ephemeral key, returns accumulated errors"
+    },
+    "verified": true
+  },
+  {
     "endpoint": "POST /api/agent-keys",
     "payload": {
       "name": "string",

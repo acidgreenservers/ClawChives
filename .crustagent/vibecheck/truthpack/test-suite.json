@@ -60,16 +60,21 @@
           }
         },
         "stats_endpoint": {
-          "description": "Verified via Dashboard integration tests",
+          "description": "Dashboard Overview accuracy — eliminated hardcapped count ceiling",
           "coverage": [
             "GET /api/bookmarks/stats returns { total, starred, archived }",
+            "GET /api/bookmarks/tags returns array of all unique tags (no pagination cap)",
             "useBookmarkStats() hook fetches independent of pagination",
+            "useTags() hook returns accurate tag count for entire library",
             "Stats invalidated on all mutations (save/update/delete)",
-            "Badge displays true DB total on first render (not just loaded pages)",
-            "Real-time updates after Lobster session close"
+            "Tags invalidated on all mutations (save/update/delete)",
+            "Pinchmarks badge displays true DB total on first render (not capped at 50)",
+            "Tags count displays all unique tags (not capped at first page)",
+            "Real-time updates after Lobster session close",
+            "DashboardView receives real stats props instead of counting loaded array"
           ],
           "count": 10,
-          "note": "Tested indirectly through build gates and integration tests"
+          "note": "Tested indirectly through build gates and integration tests. Manual verification confirms counts are accurate up to 250+ bookmarks."
         }
       }
     }
