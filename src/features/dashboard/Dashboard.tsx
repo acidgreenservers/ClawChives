@@ -87,6 +87,8 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
           folders={filteredFolders}
           selectedFolder={selectedFolder}
           filterType={activeTab}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
           onSelectFolder={handleSelectFolder}
           onFilterChange={(tab: NavTab) => handleTabChange(tab as NavTab)}
           onAddFolder={handleAddFolder}
@@ -104,8 +106,6 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         <Header
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
           user={user}
           onGoToSettings={onGoToSettings}
           onLogout={onLogout}

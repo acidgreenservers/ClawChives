@@ -1,13 +1,10 @@
-import { Search, Settings, LogOut, Database, Plus, X } from "lucide-react";
+import { Settings, LogOut, Database, Plus, X } from "lucide-react";
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import { SortDropdown } from "../views/SortDropdown";
 import { ViewToggle } from "../views/ViewToggle";
 import type { SortBy } from '@/shared/lib/utils';
 
 interface HeaderProps {
-  searchQuery: string;
-  onSearchChange: (val: string) => void;
   user: { username: string } | null;
   onGoToSettings: () => void;
   onLogout: () => void;
@@ -23,8 +20,6 @@ interface HeaderProps {
 }
 
 export function Header({
-  searchQuery,
-  onSearchChange,
   user,
   onGoToSettings,
   onLogout,
@@ -42,16 +37,6 @@ export function Header({
     <header className="bg-white dark:bg-slate-900 border-b-2 border-cyan-600 dark:border-red-500 px-4 md:px-6 py-3 md:py-4 flex-shrink-0">
       <div className="flex flex-col gap-3 md:gap-4">
         <div className="flex items-center justify-between gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 text-sm md:text-base"
-            />
-          </div>
-
           <div className="md:hidden flex items-center gap-1">
             <Button variant="ghost" size="sm" onClick={onGoToSettings} className="text-cyan-700 dark:text-cyan-400 p-1.5">
               <Settings className="w-4 h-4" />

@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+import { Search, X } from "lucide-react";
+import { Input } from '@/shared/ui/input';
 import { useFolderCounts } from "@/hooks/useFolderCounts";
 import { FolderEditModal } from "./FolderEditModal";
 import { InteractiveBrand } from '@/shared/branding/InteractiveBrand';
@@ -9,6 +11,8 @@ interface SidebarProps {
   folders: FolderItem[];
   selectedFolder: string | null;
   filterType: NavTab;
+  searchQuery: string;
+  onSearchChange: (val: string) => void;
   onSelectFolder: (folderId: string | null) => void;
   onFilterChange: (filter: NavTab) => void;
   onAddFolder: (name: string) => void;
@@ -26,6 +30,8 @@ export function Sidebar({
   folders,
   selectedFolder,
   filterType,
+  searchQuery,
+  onSearchChange,
   onSelectFolder,
   onFilterChange,
   onAddFolder,
@@ -86,6 +92,27 @@ export function Sidebar({
             onFilterChange("dashboard");
           }} 
         />
+      </div>
+
+      {/* Search Bar */}
+      <div className="px-3 py-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <Input
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-10 text-sm dark:bg-slate-800 dark:border-slate-600 dark:text-white"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => onSearchChange("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Nav */}
