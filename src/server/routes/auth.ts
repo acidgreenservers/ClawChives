@@ -67,8 +67,22 @@ router.post('/token', authLimiter, validateBody(AuthSchemas.token), (req, res) =
     const agentKey = ownerKey;
     if (!agentKey?.startsWith('lb-')) return res.status(400).json({ success: false, error: 'Invalid agent key' });
 
+    // 🛡️ Sentinel: Fetch by key, then verify with timingSafeEqual to ensure constant-time response profiles
     const agent = db.prepare('SELECT * FROM agent_keys WHERE api_key = ? AND is_active = 1').get(agentKey) as any;
-    if (!agent) {
+    
+    // 🛡️ Sentinel Security Patch: Timing-safe comparison with pre-hashing
+    let keyMatch = false;
+    if (agent) {
+      try {
+        const storedKeyHash = crypto.createHash('sha256').update(agent.api_key).digest();
+        const providedKeyHash = crypto.createHash('sha256').update(agentKey).digest();
+        keyMatch = crypto.timingSafeEqual(storedKeyHash, providedKeyHash);
+      } catch {
+        keyMatch = false;
+      }
+    }
+
+    if (!agent || !keyMatch) {
       audit.log('AUTH_FAILURE', { action: 'login', outcome: 'failure', actor_type: 'agent', ip_address: req.ip, user_agent: req.headers['user-agent'] as string });
       return res.status(401).json({ success: false, error: 'Invalid or revoked agent key' });
     }
