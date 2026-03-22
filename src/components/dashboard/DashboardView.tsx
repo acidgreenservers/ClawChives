@@ -137,17 +137,17 @@ export function DashboardView({ bookmarks, folders, stats: totalStats, allTags: 
   ];
 
   return (
-    <div className="p-6 w-full">
+    <div className="p-4 md:p-6 w-full">
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className={`rounded-2xl border p-5 flex items-center gap-4 ${bg}`}>
-            <div className={`p-2 rounded-xl ${color}`}>
-              <Icon className="w-6 h-6" />
+          <div key={label} className={`rounded-lg md:rounded-2xl border p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 ${bg}`}>
+            <div className={`p-1.5 md:p-2 rounded-lg md:rounded-xl ${color} flex-shrink-0`}>
+              <Icon className="w-4 h-4 md:w-6 md:h-6" />
             </div>
-            <div>
-              <div className={`text-2xl font-bold ${color}`}>{value}</div>
-              <div className="text-sm text-slate-500 dark:text-slate-400">{label}</div>
+            <div className="text-center md:text-left">
+              <div className={`text-lg md:text-2xl font-bold ${color}`}>{value}</div>
+              <div className="text-xs md:text-sm text-slate-500 dark:text-slate-400">{label}</div>
             </div>
           </div>
         ))}

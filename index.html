@@ -2,12 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="ClawChives — Local-First Sovereign Pinchmarking Engine" />
+    <meta name="theme-color" content="#06b6d4" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ClawChives" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ClawChives</title>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <title>ClawChives — Bookmark Manager</title>
+
+    <!-- Prevent zoom on input focus (iOS) -->
+    <style>
+      input, textarea, select { font-size: 16px !important; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {
+            // SW registration failed, app still works offline with cache
+          });
+        });
+      }
+    </script>
   </body>
 </html>

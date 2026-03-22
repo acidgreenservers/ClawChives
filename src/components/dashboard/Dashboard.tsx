@@ -281,17 +281,25 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button + Overlay */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-slate-900 rounded-lg shadow-lg text-slate-700 dark:text-slate-300"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-slate-900 rounded-lg shadow-lg text-slate-700 dark:text-slate-300"
       >
         {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
       </button>
 
+      {/* Mobile Overlay (closes sidebar when clicked) */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/40 z-30"
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -311,64 +319,102 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="bg-white dark:bg-slate-900 border-b-2 border-cyan-600 dark:border-red-500 px-6 py-4 flex-shrink-0">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1">
-              <div className="relative flex-1 max-w-xl">
+        <header className="bg-white dark:bg-slate-900 border-b-2 border-cyan-600 dark:border-red-500 px-4 md:px-6 py-3 md:py-4 flex-shrink-0">
+          <div className="flex flex-col gap-3 md:gap-4">
+            {/* Top Row: Search + Menu */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
-                  placeholder="Search pinchmarks..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 text-sm md:text-base"
                 />
               </div>
-              {showGrid && (
-                <div className="flex items-center gap-2 ml-2">
-                  <SortDropdown sortBy={sortBy} onChange={handleSortChange} />
-                  <ViewToggle viewMode={viewMode} onChange={handleViewChange} />
-                </div>
-              )}
-              {user && (
-                <div className="ml-4 flex items-center gap-2">
+
+              {/* Mobile Menu */}
+              <div className="md:hidden flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onGoToSettings}
+                  className="text-cyan-700 dark:text-cyan-400 p-1.5"
+                >
+                  <Settings className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onLogout}
+                  className="text-red-600 dark:text-red-400 p-1.5"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Desktop Controls */}
+              <div className="hidden md:flex items-center gap-2">
+                {showGrid && (
+                  <div className="flex items-center gap-2">
+                    <SortDropdown sortBy={sortBy} onChange={handleSortChange} />
+                    <ViewToggle viewMode={viewMode} onChange={handleViewChange} />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Row: User greeting + Actions */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="hidden md:block">
+                {user && (
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Hello, {user.username}
                   </span>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <div className="flex items-center gap-2">
+              {/* Desktop Buttons */}
+              <div className="hidden md:flex items-center gap-2 flex-1 justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onShowDatabaseStats}
+                  className="text-amber-600 dark:text-amber-400 border border-amber-500 dark:border-amber-500/60 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                >
+                  <Database className="w-4 h-4 mr-2" />
+                  Database
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onGoToSettings}
+                  className="text-cyan-700 dark:text-cyan-400 border border-cyan-600 dark:border-cyan-500/60 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onLogout}
+                  className="text-red-600 dark:text-red-400 border border-red-500 dark:border-red-500/60 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+                <Button onClick={handleAddBookmark} className="bg-cyan-700 hover:bg-cyan-800 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Pinchmark
+                </Button>
+              </div>
+
+              {/* Mobile Add Button */}
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={onShowDatabaseStats}
-                className="text-amber-600 dark:text-amber-400 border border-amber-500 dark:border-amber-500/60 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                onClick={handleAddBookmark}
+                className="md:hidden bg-cyan-700 hover:bg-cyan-800 text-white p-2 h-auto"
               >
-                <Database className="w-4 h-4 mr-2" />
-                Database
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onGoToSettings}
-                className="text-cyan-700 dark:text-cyan-400 border border-cyan-600 dark:border-cyan-500/60 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onLogout}
-                className="text-red-600 dark:text-red-400 border border-red-500 dark:border-red-500/60 hover:bg-red-50 dark:hover:bg-red-900/20"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-              <Button onClick={handleAddBookmark} className="bg-cyan-700 hover:bg-cyan-800 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Pinchmark
+                <Plus className="w-5 h-5" />
               </Button>
             </div>
           </div>
