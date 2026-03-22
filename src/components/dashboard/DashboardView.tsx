@@ -137,7 +137,7 @@ export function DashboardView({ bookmarks, folders, stats: totalStats, allTags: 
   ];
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="p-6 w-full">
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
