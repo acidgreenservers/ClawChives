@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Star, Archive, Trash2, Pencil, ExternalLink, Clock } from "lucide-react";
 import { Button } from '@/shared/ui/button';
 import { ConfirmModal } from '@/shared/ui/LobsterModal';
-import type { Bookmark, IconSize } from "../../services/types";
+import type { Bookmark, IconSize } from "@/services/types";
 
 interface BookmarkCardProps {
   bookmark: Bookmark;

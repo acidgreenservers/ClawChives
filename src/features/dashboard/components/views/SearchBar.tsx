@@ -1,7 +1,7 @@
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { Search, X, Filter } from "lucide-react";
-import type { BookmarkFilters } from "../../types";
+import type { BookmarkFilters } from "@/services/types";
 
 interface SearchBarProps {
   filters: BookmarkFilters;

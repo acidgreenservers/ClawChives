@@ -1,6 +1,6 @@
 import { useRef, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Bookmark, FolderOpen, Tag } from "lucide-react";
-import type { Bookmark as BookmarkType, Folder } from "../../services/types";
+import type { Bookmark as BookmarkType, Folder } from "@/services/types";
 
 interface DashboardViewProps {
   bookmarks: BookmarkType[];
@@ -107,7 +107,7 @@ function ScrollSection({
   );
 }
 
-export function DashboardView({ bookmarks, folders, stats: totalStats, allTags: providedTags }: DashboardViewProps) {
+export function DashboardHome({ bookmarks, folders, stats: totalStats, allTags: providedTags }: DashboardViewProps) {
   // ── Memoized derived data ──
   const allTags = useMemo(() => {
     if (providedTags) return providedTags;

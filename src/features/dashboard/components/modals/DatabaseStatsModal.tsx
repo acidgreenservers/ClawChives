@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { X, Database, FileText, Folder, Tag, Star, Archive, Trash2, Search } from "lucide-react";
-import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
+import { useDatabaseAdapter } from "@/services/database/DatabaseProvider";
 import { ConfirmModal, AlertModal } from '@/shared/ui/LobsterModal';
 
 interface DatabaseStatsModalProps {

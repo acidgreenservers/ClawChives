@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { Plus, Folder, Star, Archive, LayoutDashboard, Tag, Pencil } from "lucide-react";
 import { Button } from '@/shared/ui/button';
-import { useFolderCounts } from "../../hooks/useFolderCounts";
+import { useFolderCounts } from "@/hooks/useFolderCounts";
 import { FolderEditModal } from "./FolderEditModal";
 import { InteractiveBrand } from '@/shared/branding/InteractiveBrand';
 
@@ -27,6 +27,7 @@ interface SidebarProps {
     all: number;
     starred: number;
     archived: number;
+    tags: number;
   };
 }
 
@@ -83,7 +84,8 @@ export function Sidebar({
       icon: Tag,
       active: "bg-sky-700 text-white dark:bg-sky-800 dark:text-white",
       inactive: "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
-      badge: null,
+      activeBadge: "text-xs bg-sky-200 text-sky-900 dark:bg-sky-800 dark:text-sky-100 px-2 py-0.5 rounded-full",
+      badge: bookmarkCounts.tags,
     },
     {
       id: "archived" as NavTab,

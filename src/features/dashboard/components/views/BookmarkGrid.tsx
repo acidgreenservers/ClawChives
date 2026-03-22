@@ -3,7 +3,7 @@ import { useInView } from "react-intersection-observer";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { BookmarkCard } from "./BookmarkCard";
 
-import type { Bookmark } from "../../services/types";
+import type { Bookmark } from "@/services/types";
 
 // Estimate card height — bookmark cards with title, URL, description, tags, actions
 const ESTIMATED_CARD_HEIGHT = 200;

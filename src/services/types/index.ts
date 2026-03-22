@@ -80,3 +80,11 @@ export interface User {
   avatar?: string;
   createdAt: string;
 }
+
+export interface BookmarkFilters {
+  starred?: boolean;
+  archived?: boolean;
+  folderId?: string;
+  tags?: string[];
+  search?: string;
+}

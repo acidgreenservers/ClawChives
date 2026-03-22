@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { LandingPage } from "@/features/landing/LandingPage";
-import { LoginForm } from "./components/auth/LoginForm";
-import { SetupWizard } from "./components/auth/SetupWizard";
-import { Dashboard } from "./components/dashboard/Dashboard";
+import { LoginForm } from "@/features/auth/LoginForm";
+import { SetupWizard } from "@/features/auth/SetupWizard";
+import { Dashboard } from "@/features/dashboard/Dashboard";
 import { SettingsPanel } from "./components/settings/SettingsPanel";
-import { DatabaseStatsModal } from "./components/dashboard/DatabaseStatsModal";
-import { useDatabaseAdapter } from "./services/database/DatabaseProvider";
+import { DatabaseStatsModal } from "@/features/dashboard/components/modals/DatabaseStatsModal";
+import { useDatabaseAdapter } from "@/services/database/DatabaseProvider";
 import { useTheme, type Theme } from "@/shared/theme/theme-provider";
-import { getApiBaseUrl } from "./config/apiConfig";
+import { getApiBaseUrl } from "@/config/apiConfig";
 
 // Simplified user type
 export interface User {
