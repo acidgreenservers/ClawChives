@@ -170,7 +170,7 @@ export function SidebarNav({
           <div className="border-t border-slate-200 dark:border-slate-800 my-2" />
           <button
             onClick={onGoToSettings}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-cyan-700 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
           >
             <Settings className="w-4 h-4" />
             Settings

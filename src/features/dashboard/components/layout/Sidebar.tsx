@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Search, X, Settings, LogOut, Database } from "lucide-react";
+import { Search, X, LogOut, Database } from "lucide-react";
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { useFolderCounts } from "@/hooks/useFolderCounts";
@@ -194,17 +194,6 @@ export function Sidebar({
             >
               <Database className="w-4 h-4 mr-2" />
               Database
-            </Button>
-          )}
-          {onGoToSettings && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onGoToSettings}
-              className="justify-start text-cyan-700 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
             </Button>
           )}
           {onLogout && (
