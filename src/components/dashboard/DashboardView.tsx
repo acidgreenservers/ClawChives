@@ -56,7 +56,9 @@ function ScrollSection({
 
   const scroll = (dir: "left" | "right") => {
     if (ref.current) {
-      ref.current.scrollBy({ left: dir === "right" ? 230 : -230, behavior: "smooth" });
+      // Card is w-52 (208px) + gap-3 (12px) = 220px total
+      // Scroll by exactly one card width per click
+      ref.current.scrollBy({ left: dir === "right" ? 224 : -224, behavior: "smooth" });
     }
   };
 
