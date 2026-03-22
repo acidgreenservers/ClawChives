@@ -28,14 +28,13 @@ data-dev/
 *.sln
 *.sw?
 
-# VibeCheck
-.vibecheck/
-.cursor/
-workflows/
-.github/copilot-instructions.md
-.cursorrules
-.islstudio/
+# CrustAgent
+.crustagent/knowledge/ShadowClaw.Sign
+
+# AI Tools
 .claude/
+.cursor/
+.cursorrules
 
 
 docker-compose.dev.yml
