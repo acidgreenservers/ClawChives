@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from '@/shared/ui/button';
 import { AlertTriangle, RefreshCw } from "lucide-react";
-import { resetDatabase } from "../../services/database";
+import { resetDatabase } from "@/services/database";
 
 export function DatabaseReset() {
   const [isResetting, setIsResetting] = useState(false);

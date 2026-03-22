@@ -4,7 +4,7 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Database, FileSpreadsheet, CheckCircle, Upload, FileText } from "lucide-react";
-import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
+import { useDatabaseAdapter } from "@/services/database/DatabaseProvider";
 import { generateUUID } from '@/shared/lib/crypto';
 import { ConfirmModal, AlertModal } from '@/shared/ui/LobsterModal';
 import { LobsterImportModal } from "./LobsterImportModal";

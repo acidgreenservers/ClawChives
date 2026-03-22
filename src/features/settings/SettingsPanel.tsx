@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from '@/shared/ui/button';
 import { ArrowLeft, User, Palette, Shield, Database, LogOut } from "lucide-react";
-import { ProfileSettings } from "./ProfileSettings";
-import { AppearanceSettings } from "./AppearanceSettings";
-import { AgentPermissions } from "./AgentPermissions";
-import { ImportExportSettings } from "./ImportExportSettings";
+import { ProfileSettings } from "./components/ProfileSettings";
+import { AppearanceSettings } from "./components/AppearanceSettings";
+import { AgentPermissions } from "./components/AgentPermissions";
+import { ImportExportSettings } from "./components/ImportExportSettings";
 import { InteractiveBrand } from '@/shared/branding/InteractiveBrand';
 
 type SettingsTab = "profile" | "appearance" | "agents" | "import-export";

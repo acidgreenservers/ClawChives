@@ -3,7 +3,7 @@ import { LandingPage } from "@/features/landing/LandingPage";
 import { LoginForm } from "@/features/auth/LoginForm";
 import { SetupWizard } from "@/features/auth/SetupWizard";
 import { Dashboard } from "@/features/dashboard/Dashboard";
-import { SettingsPanel } from "./components/settings/SettingsPanel";
+import { SettingsPanel } from "@/features/settings/SettingsPanel";
 import { DatabaseStatsModal } from "@/features/dashboard/components/modals/DatabaseStatsModal";
 import { useDatabaseAdapter } from "@/services/database/DatabaseProvider";
 import { useTheme, type Theme } from "@/shared/theme/theme-provider";

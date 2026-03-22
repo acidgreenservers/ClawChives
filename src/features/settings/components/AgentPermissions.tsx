@@ -8,8 +8,8 @@ import {
   getAllAgentKeys, 
   deleteAgentKey, 
   revokeAgentKey 
-} from "../../services/agents/agentKeyService";
-import { AgentKey, PERMISSION_INFO } from "../../types/agent";
+} from "@/services/agents/agentKeyService";
+import { AgentKey, PERMISSION_INFO } from "@/types/agent";
 import { 
   Key, 
   Shield, 

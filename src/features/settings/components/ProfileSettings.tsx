@@ -4,7 +4,7 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { User, Mail, Save, Upload, X, Download } from "lucide-react";
-import { useDatabaseAdapter } from "../../services/database/DatabaseProvider";
+import { useDatabaseAdapter } from "@/services/database/DatabaseProvider";
 
 export function ProfileSettings() {
   const [username, setUsername] = useState("");
