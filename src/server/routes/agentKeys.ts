@@ -6,6 +6,7 @@ import { calculateExpiry } from '../utils/tokenExpiry.js';
 import { parseAgentKey } from '../utils/parsers.js';
 import { requireAuth, requireHuman, AuthRequest } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 import { AgentKeySchemas } from '../validation/schemas.js';
 
 const router = Router();
@@ -19,7 +20,7 @@ router.get('/', requireAuth, requireHuman, (req, res) => {
 });
 
 /** POST /api/agent-keys */
-router.post('/', requireAuth, requireHuman, validateBody(AgentKeySchemas.create), (req, res) => {
+router.post('/', requireAuth, requireHuman, authLimiter, validateBody(AgentKeySchemas.create), (req, res) => {
   const authReq = req as AuthRequest;
   const { name } = req.body;
 
