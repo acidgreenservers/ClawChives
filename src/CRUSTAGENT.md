@@ -29,8 +29,8 @@ src/
 │   ├── dashboard/
 │   │   ├── components/
 │   │   │   ├── layout/
-│   │   │   │   ├── Sidebar.tsx          # Composes SidebarNav + FolderList
-│   │   │   │   ├── SidebarNav.tsx       # Top-level nav items
+│   │   │   │   ├── Sidebar.tsx          # Composes SidebarNav + FolderList (supports settingsMode for Settings page)
+│   │   │   │   ├── SidebarNav.tsx       # Top-level nav items + settings tabs (exports NavTab, SettingsTab types)
 │   │   │   │   └── FolderList.tsx       # Custom pod tree + counts
 │   │   │   └── modals/
 │   │   │       ├── DatabaseStatsModal.tsx  # Composes StatsCards + BookmarkTable
@@ -301,6 +301,7 @@ Red   (#ef4444) → Branding, delete, security barriers
 | `IdentityData` (identity JSON shape) | `src/shared/lib/crypto.ts` |
 | `ExportData`, `ExportFormatter`, `ClawChivesExport` | `src/shared/lib/export/types.ts` |
 | `ImportStep` (`"idle" \| "session" \| "done"`) | `src/features/settings/components/useLobsterSession.ts` |
+| `NavTab`, `SettingsTab` | `src/features/dashboard/components/layout/SidebarNav.tsx` |
 
 </details>
 
