@@ -4,9 +4,9 @@
  * Caches static assets, API responses, and enables offline operation
  */
 
-const CACHE_NAME = 'claw-chives-v3.0';
-const ASSETS_CACHE = 'claw-chives-assets-v3.0';
-const API_CACHE = 'claw-chives-api-v3.0';
+const CACHE_NAME = 'claw-chives-v3.1';
+const ASSETS_CACHE = 'claw-chives-assets-v3.1';
+const API_CACHE = 'claw-chives-api-v3.1';
 
 // Assets to precache on install
 const PRECACHE_ASSETS = [
@@ -45,6 +45,7 @@ self.addEventListener('activate', (event) => {
  * Fetch: Network-first with fallback to cache
  * - Static assets: Cache first, fallback to network
  * - API calls: Network first, fallback to cache
+ * - /api/skill: Always pass through to network (public, read-only)
  */
 self.addEventListener('fetch', (event) => {
   const { request } = event;
@@ -53,6 +54,11 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests and external requests
   if (request.method !== 'GET' || url.origin !== self.location.origin) {
     return;
+  }
+
+  // Public skill endpoint: Always fetch from network, no service worker interception
+  if (url.pathname === '/api/skill') {
+    return; // Let the browser handle it directly
   }
 
   // API requests: Network first, fallback to cache
@@ -65,7 +71,7 @@ self.addEventListener('fetch', (event) => {
           cache.then((c) => c.put(request, response.clone()));
           return response;
         })
-        .catch(() => caches.match(request))
+        .catch(() => caches.match(request).then(res => res || new Response(JSON.stringify({ error: 'Offline - API not reachable' }), { status: 503, headers: { 'Content-Type': 'application/json' } })))
     );
     return;
   }

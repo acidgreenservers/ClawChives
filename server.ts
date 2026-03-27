@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
+import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 // @ts-ignore — plain JS module, no type declarations
@@ -98,6 +99,16 @@ app.use('/api/folders',           folderRoutes);
 app.use('/api/agent-keys',        agentKeyRoutes);
 app.use('/api/settings',          settingsRoutes);
 app.use('/api/lobster-session',   lobsterSessionRoutes);
+// Skill doc: public, no auth — registered before static files and SPA catch-all (LNN pattern)
+app.get(['/skill.md', '/SKILL.md'], (_req, res) => {
+  const paths = [
+    path.join(__dirname, 'skills/clawchives/SKILL.md'),
+    path.join(process.cwd(), 'skills/clawchives/SKILL.md'),
+  ];
+  const found = paths.find(p => existsSync(p));
+  if (!found) return res.status(404).send('Skill document not found.');
+  res.sendFile(found);
+});
 
 // ─── Static Files (Production) ────────────────────────────────────────────────
 const distPath = path.join(__dirname, 'dist');
@@ -119,7 +130,7 @@ app.use(express.static(distPath, {
 
 // SPA catch-all: serve index.html for any non-API, non-asset route
 // ⚠️ Do NOT change this regex — it prevents CSS/JS from being served as index.html
-app.get(/^(?!\/api\/)(?!\/assets\/).*/, (_req, res) => {
+app.get(/^(?!\/api\/)(?!\/assets\/)(?!\/skill\.md)(?!\/SKILL\.md).*/, (_req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from '@/shared/ui/button';
+import { getApiBaseUrl } from '@/config/apiConfig';
 
 interface AuthGatewayProps {
   onCreateAccount: () => void;
@@ -85,44 +86,50 @@ export function AuthGateway({ onCreateAccount }: AuthGatewayProps) {
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 space-y-3 px-1">
                     <p className="flex items-center">
-                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">1</span> 
+                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">1</span>
                       Initialize the BotKit Toolkit in your project
                     </p>
                     <p className="flex items-center">
-                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">2</span> 
+                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">2</span>
                       Generate Key natively inside ClawChives Settings
                     </p>
                     <p className="flex items-center">
-                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">3</span> 
+                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">3</span>
                       Assign granular permissions to limit blast radius
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-200 dark:border-slate-800 shadow-inner flex items-center justify-center">
-                    <code className="text-amber-600 dark:text-amber-400 text-[10px] font-mono whitespace-pre text-left leading-relaxed">
-{`POST /api/auth/token
-{
-  "type": "agent",
-  "keyHash": "<SHA-256>"
-}`}
+                  <h4 className="text-slate-900 dark:text-white font-bold mb-4 text-center text-xs uppercase tracking-widest">
+                    Give This To Your<br /><span className="text-amber-500">Lobster</span>
+                  </h4>
+                  <div className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 mb-6 border border-slate-200 dark:border-slate-800 shadow-inner flex items-center justify-between group relative overflow-hidden">
+                    <code className="text-amber-600 dark:text-amber-400 text-[10px] font-mono whitespace-nowrap overflow-hidden text-ellipsis flex-1 relative z-10 selection:bg-amber-200 dark:selection:bg-amber-900/50">
+                      GET /skill.md
                     </code>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${getApiBaseUrl()}/skill.md`);
+                      }}
+                      className="ml-2 px-2 py-1 text-[9px] font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded transition-colors flex-shrink-0"
+                      title="Copy skill URL"
+                    >
+                      COPY
+                    </button>
+                    <div className="absolute inset-0 bg-amber-50 dark:bg-amber-900/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 space-y-3 px-1">
-                    <p className="flex items-center">
-                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">1</span> 
-                      Manually create a key via settings 
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">2</span> 
-                      Exchange hashed <code className="mx-1 px-1 bg-slate-200 dark:bg-slate-800 rounded">lb-</code> key for API token
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-5 h-5 flex items-center justify-center bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md font-black mr-3 text-[10px] flex-shrink-0">3</span> 
-                      Pass <code className="mx-1 px-1 bg-slate-200 dark:bg-slate-800 rounded">Bearer</code> token in Authorization header
+                  <div className="text-xs text-slate-500 dark:text-slate-400 space-y-3 px-1 mb-4">
+                    <p className="text-center italic">
+                      Give this URL to your Lobster to understand the ClawChive
                     </p>
                   </div>
+                  <button
+                    onClick={() => window.open(`${getApiBaseUrl()}/skill.md`, '_blank')}
+                    className="w-full px-3 py-2 text-xs font-bold rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
+                  >
+                    Preview Skill Document →
+                  </button>
                 </>
               )}
             </div>
