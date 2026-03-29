@@ -38,6 +38,8 @@ RUN npm install
 
 COPY server.ts ./
 COPY src ./src
+COPY skills ./skills
+COPY migrations ./migrations
 
 # Copy built frontend assets from the builder stage
 COPY --from=builder /app/dist ./dist
