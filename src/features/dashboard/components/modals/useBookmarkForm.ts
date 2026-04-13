@@ -55,6 +55,9 @@ export function useBookmarkForm({
   useEffect(() => {
     if (!url.trim() || !url.startsWith("http")) return;
 
+    // Do not overwrite if we already have both a title and description, or if the URL matches the initial bookmark URL
+    if (bookmark && url === bookmark.url) return;
+
     // Clear any pending fetch
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
@@ -66,7 +69,7 @@ export function useBookmarkForm({
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
-  }, [url]);
+  }, [url, bookmark]);
 
   const resetForm = () => {
     setUrl("");
@@ -80,14 +83,19 @@ export function useBookmarkForm({
     setJinaConversion(false);
   };
 
-  const handleUrlPaste = async (pastedText: string) => {
+  const handleUrlPaste = async (pastedText: string, forceOverride = false) => {
     setIsLoading(true);
     try {
       const response = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(pastedText)}`);
       const data = await response.json();
       if (data.data) {
-        setTitle(data.data.title || title);
-        setDescription(data.data.description || description);
+        if (forceOverride) {
+          setTitle(data.data.title || "");
+          setDescription(data.data.description || "");
+        } else {
+          setTitle((prev) => prev ? prev : (data.data.title || ""));
+          setDescription((prev) => prev ? prev : (data.data.description || ""));
+        }
       }
     } catch (error) {
       console.error("Failed to fetch metadata:", error);

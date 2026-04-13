@@ -90,7 +90,14 @@ export function BookmarkModal({
               onChange={(e) => setUrl(e.target.value)}
               onPaste={(e) => {
                 const pastedText = e.clipboardData.getData("text");
-                if (pastedText.startsWith("http")) handleUrlPaste(pastedText);
+                if (pastedText.startsWith("http")) {
+                  // If pasted, we can optionally force override or just rely on the effect.
+                  // Since the user might paste over an empty field, we can trigger handleUrlPaste with forceOverride = true
+                  // but actually it's fine to just rely on the onChange hook setting the URL, which then fetches.
+                  // But to provide instant feedback and potentially override manual input if they paste a new link,
+                  // we'll call it with forceOverride = true.
+                  handleUrlPaste(pastedText, true);
+                }
               }}
               className="mt-1 dark:bg-slate-800 dark:border-slate-600 dark:text-white"
             />
