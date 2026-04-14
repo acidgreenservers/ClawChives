@@ -175,6 +175,8 @@ export const BookmarkCardList = React.memo((props: BookmarkCardListProps) => {
 }, (prev, next) => {
   return (
     prev.bookmark.id === next.bookmark.id &&
-    prev.bookmark.updatedAt === next.bookmark.updatedAt
+    prev.bookmark.updatedAt === next.bookmark.updatedAt &&
+    prev.bookmark.starred === next.bookmark.starred &&
+    prev.bookmark.archived === next.bookmark.archived
   );
 });

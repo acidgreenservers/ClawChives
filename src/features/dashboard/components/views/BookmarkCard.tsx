@@ -415,6 +415,8 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
   return (
     prev.bookmark.id === next.bookmark.id &&
     prev.bookmark.updatedAt === next.bookmark.updatedAt &&
+    prev.bookmark.starred === next.bookmark.starred &&
+    prev.bookmark.archived === next.bookmark.archived &&
     prev.layout === next.layout
   );
 });
