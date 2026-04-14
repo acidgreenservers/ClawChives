@@ -71,6 +71,30 @@ export function useBookmarkForm({
     };
   }, [url, bookmark]);
 
+  const handleSetPinned = (isPinned: boolean) => {
+    setPinned(isPinned);
+    const pinnedFolder = folders.find((f) => f.name === "Pinned");
+    if (isPinned) {
+      if (pinnedFolder) {
+        setSelectedFolder(pinnedFolder.id);
+      }
+    } else {
+      if (pinnedFolder && selectedFolder === pinnedFolder.id) {
+        setSelectedFolder("");
+      }
+    }
+  };
+
+  const handleSetSelectedFolder = (folderId: string) => {
+    setSelectedFolder(folderId);
+    const pinnedFolder = folders.find((f) => f.name === "Pinned");
+    if (pinnedFolder && folderId === pinnedFolder.id) {
+      setPinned(true);
+    } else {
+      setPinned(false);
+    }
+  };
+
   const resetForm = () => {
     setUrl("");
     setTitle("");
@@ -126,6 +150,12 @@ export function useBookmarkForm({
       } else {
         finalFolderId = pinnedFolder.id;
       }
+    } else {
+      // If unpinned, make sure we don't save to the Pinned folder
+      const pinnedFolder = folders.find((f) => f.name === "Pinned");
+      if (pinnedFolder && finalFolderId === pinnedFolder.id) {
+        finalFolderId = undefined; // No Pod
+      }
     }
 
     let finalJinaUrl = undefined;
@@ -176,10 +206,10 @@ export function useBookmarkForm({
       title, setTitle,
       description, setDescription,
       tags, setTags,
-      selectedFolder, setSelectedFolder,
+      selectedFolder, setSelectedFolder: handleSetSelectedFolder,
       starred, setStarred,
       archived, setArchived,
-      pinned, setPinned,
+      pinned, setPinned: handleSetPinned,
       isLoading,
       jinaConversion, setJinaConversion
     },
