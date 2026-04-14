@@ -67,8 +67,10 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           if (!response || response.status !== 200) return response;
-          const cache = caches.open(API_CACHE);
-          cache.then((c) => c.put(request, response.clone()));
+          const responseToCache = response.clone();
+          caches.open(API_CACHE).then((cache) => {
+            cache.put(request, responseToCache);
+          });
           return response;
         })
         .catch(() => caches.match(request).then(res => res || new Response(JSON.stringify({ error: 'Offline - API not reachable' }), { status: 503, headers: { 'Content-Type': 'application/json' } })))
@@ -79,14 +81,18 @@ self.addEventListener('fetch', (event) => {
   // Static assets: Cache first, fallback to network
   event.respondWith(
     caches.match(request)
-      .then((response) => response || fetch(request))
       .then((response) => {
-        if (!response || response.status !== 200 || response.type === 'error') {
-          return response;
-        }
-        const cache = caches.open(ASSETS_CACHE);
-        cache.then((c) => c.put(request, response.clone()));
-        return response;
+        if (response) return response;
+        return fetch(request).then((networkResponse) => {
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === 'error') {
+            return networkResponse;
+          }
+          const responseToCache = networkResponse.clone();
+          caches.open(ASSETS_CACHE).then((cache) => {
+            cache.put(request, responseToCache);
+          });
+          return networkResponse;
+        });
       })
       .catch(() => new Response('Offline - asset not cached', { status: 503 }))
   );
