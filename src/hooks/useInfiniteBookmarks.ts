@@ -59,11 +59,13 @@ export function useInfiniteBookmarks() {
           };
         }
       );
+    },
+    onSettled: () => {
       // Invalidate stats if starred/archived/folder changed
       queryClient.invalidateQueries({ queryKey: BOOKMARK_STATS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: FOLDER_COUNTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: TAGS_QUERY_KEY });
-    },
+    }
   });
 
   // ── Mutation: Save new bookmark ──
@@ -87,11 +89,13 @@ export function useInfiniteBookmarks() {
           };
         }
       );
+    },
+    onSettled: () => {
       // Invalidate stats — total count increased
       queryClient.invalidateQueries({ queryKey: BOOKMARK_STATS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: FOLDER_COUNTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: TAGS_QUERY_KEY });
-    },
+    }
   });
 
   // ── Mutation: Delete bookmark ──
@@ -114,11 +118,13 @@ export function useInfiniteBookmarks() {
           };
         }
       );
+    },
+    onSettled: () => {
       // Invalidate stats — total count decreased
       queryClient.invalidateQueries({ queryKey: BOOKMARK_STATS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: FOLDER_COUNTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: TAGS_QUERY_KEY });
-    },
+    }
   });
 
   // ── Flatten pages for UI ──

@@ -133,7 +133,7 @@ export function useBookmarkForm({
     if (!db) return;
 
     const now = new Date().toISOString();
-    let finalFolderId = selectedFolder || undefined;
+    let finalFolderId: string | null = selectedFolder || null;
 
     if (pinned) {
       let pinnedFolder = folders.find((f) => f.name === "Pinned");
@@ -154,7 +154,7 @@ export function useBookmarkForm({
       // If unpinned, make sure we don't save to the Pinned folder
       const pinnedFolder = folders.find((f) => f.name === "Pinned");
       if (pinnedFolder && finalFolderId === pinnedFolder.id) {
-        finalFolderId = undefined; // No Pod
+        finalFolderId = null; // No Pod
       }
     }
 
@@ -170,13 +170,13 @@ export function useBookmarkForm({
       finalJinaUrl = null;
     }
 
-    const bookmarkData: Bookmark = bookmark ? {
+    const bookmarkData: any = bookmark ? {
       ...bookmark,
       url: url.trim(),
       title: title.trim() || "Untitled",
       description: description.trim() || undefined,
       tags,
-      folderId: finalFolderId,
+      folderId: finalFolderId, // Can be null, and we want to pass null to the backend explicitly
       starred,
       archived,
       jinaUrl: finalJinaUrl !== undefined ? finalJinaUrl : bookmark?.jinaUrl,
