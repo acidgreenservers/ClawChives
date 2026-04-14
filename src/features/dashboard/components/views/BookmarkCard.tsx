@@ -378,7 +378,7 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
             }}
             title={bookmark.archived ? "Unarchive" : "Archive"}
           >
-            <Archive className="w-4 h-4" />
+            <Archive className={`w-4 h-4 ${bookmark.archived ? "fill-current" : ""}`} />
           </Button>
 
           {/* Delete */}

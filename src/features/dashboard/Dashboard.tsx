@@ -125,7 +125,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
         <div className="flex-1 overflow-auto">
           {activeTab === "dashboard" && (
             <DashboardHome
-              bookmarks={flatBookmarks}
+              bookmarks={flatBookmarks.filter((b) => !b.archived)}
               folders={folders}
               stats={stats}
               allTags={allTags}
@@ -133,7 +133,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
           )}
           {activeTab === "tags" && (
             <TagsView
-              bookmarks={flatBookmarks}
+              bookmarks={flatBookmarks.filter((b) => !b.archived)}
               onSelectTag={setTagFilter}
               onDeleteTag={handleDeleteTag}
             />

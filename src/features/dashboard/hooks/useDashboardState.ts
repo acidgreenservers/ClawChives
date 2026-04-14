@@ -183,7 +183,7 @@ export const useDashboardState = () => {
 
           const matchesFolder = selectedFolder ? bookmark.folderId === selectedFolder : true;
           const matchesFilter =
-            activeTab === "all" ||
+            (activeTab === "all" && !bookmark.archived) ||
             (activeTab === "starred" && bookmark.starred) ||
             (activeTab === "archived" && bookmark.archived);
           const matchesTag = tagFilter ? bookmark.tags.includes(tagFilter) : true;
