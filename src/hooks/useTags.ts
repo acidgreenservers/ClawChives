@@ -16,7 +16,7 @@ export function useTags() {
     queryKey: TAGS_QUERY_KEY,
     queryFn: () => db!.getTags(),
     enabled: !!db,
-    staleTime: 500, // Debounce rapid mutations
+    staleTime: 0, // Immediately stale on mutations
     gcTime: 60000,  // Cache for 1 minute
   });
 }

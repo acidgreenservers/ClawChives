@@ -17,7 +17,7 @@ export function useFolderCounts() {
     queryKey: FOLDER_COUNTS_QUERY_KEY,
     queryFn: () => db!.getFolderCounts(),
     enabled: !!db,
-    staleTime: 500, // Hold fresh for 500ms to debounce rapid mutations (bulk import)
+    staleTime: 0, // Invalidate immediately to show updated counts after moves
     gcTime: 60000,  // Keep in cache for 60s (reuse across remounts)
   });
 }
