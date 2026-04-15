@@ -15,12 +15,23 @@ export function cn(...inputs: ClassValue[]) {
  * @returns An array of [tag, count] tuples.
  */
 export function aggregateTags(bookmarks: Bookmark[]): [string, number][] {
-  const tagMap = new Map<string, number>();
-  bookmarks.forEach((b) => {
-    b.tags.forEach((t: string) => tagMap.set(t, (tagMap.get(t) ?? 0) + 1));
-  });
+  // Using a null-prototype object for faster key lookups than Map
+  const tagObj: Record<string, number> = Object.create(null);
 
-  return [...tagMap.entries()].sort((a, b) => b[1] - a[1]);
+  // Traditional for-loops for performance over forEach
+  const len = bookmarks.length;
+  for (let i = 0; i < len; i++) {
+    const tags = bookmarks[i].tags;
+    const tagsLen = tags.length;
+    for (let j = 0; j < tagsLen; j++) {
+      const t = tags[j];
+      tagObj[t] = (tagObj[t] || 0) + 1;
+    }
+  }
+
+  // Pre-allocate entries array and sort
+  const entries = Object.keys(tagObj).map(key => [key, tagObj[key]] as [string, number]);
+  return entries.sort((a, b) => b[1] - a[1]);
 }
 
 /**
