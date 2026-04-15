@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
-import { LandingPage } from "@/features/landing/LandingPage";
-import { LoginForm } from "@/features/auth/LoginForm";
-import { SetupWizard } from "@/features/auth/SetupWizard";
-import { Dashboard } from "@/features/dashboard/Dashboard";
-import { SettingsPanel } from "@/features/settings/SettingsPanel";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { DatabaseStatsModal } from "@/features/dashboard/components/modals/DatabaseStatsModal";
 import { useDatabaseAdapter } from "@/services/database/DatabaseProvider";
 import { useTheme, type Theme } from "@/shared/theme/theme-provider";
 import { getApiBaseUrl } from "@/config/apiConfig";
+
+const LandingPage = lazy(() => import("@/features/landing/LandingPage").then(m => ({ default: m.LandingPage })));
+const LoginForm = lazy(() => import("@/features/auth/LoginForm").then(m => ({ default: m.LoginForm })));
+const SetupWizard = lazy(() => import("@/features/auth/SetupWizard").then(m => ({ default: m.SetupWizard })));
+const Dashboard = lazy(() => import("@/features/dashboard/Dashboard").then(m => ({ default: m.Dashboard })));
+const SettingsPanel = lazy(() => import("@/features/settings/SettingsPanel").then(m => ({ default: m.SettingsPanel })));
 
 // Simplified user type
 export interface User {
@@ -150,42 +151,44 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {currentView === "landing" && (
-        <LandingPage 
-          onCreateAccount={handleCreateAccount}
-          onLogin={handleLogin}
-        />
-      )}
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+        {currentView === "landing" && (
+          <LandingPage
+            onCreateAccount={handleCreateAccount}
+            onLogin={handleLogin}
+          />
+        )}
 
-      {currentView === "login" && (
-        <LoginForm
-          onSuccess={(uuid) => handleLoginSuccess(uuid)}
-          onCancel={() => setCurrentView("landing")}
-        />
-      )}
+        {currentView === "login" && (
+          <LoginForm
+            onSuccess={(uuid) => handleLoginSuccess(uuid)}
+            onCancel={() => setCurrentView("landing")}
+          />
+        )}
 
-      {currentView === "setup" && (
-        <SetupWizard 
-          onComplete={handleSetupComplete}
-          onCancel={() => setCurrentView("landing")}
-        />
-      )}
+        {currentView === "setup" && (
+          <SetupWizard
+            onComplete={handleSetupComplete}
+            onCancel={() => setCurrentView("landing")}
+          />
+        )}
 
-      {currentView === "dashboard" && (
-        <Dashboard 
-          user={currentUser}
-          onLogout={handleLogout}
-          onGoToSettings={handleGoToSettings}
-          onShowDatabaseStats={() => setShowDatabaseModal(true)}
-        />
-      )}
+        {currentView === "dashboard" && (
+          <Dashboard
+            user={currentUser}
+            onLogout={handleLogout}
+            onGoToSettings={handleGoToSettings}
+            onShowDatabaseStats={() => setShowDatabaseModal(true)}
+          />
+        )}
 
-      {currentView === "settings" && (
-        <SettingsPanel 
-          onBack={handleBackToDashboard}
-          onLogout={handleLogout}
-        />
-      )}
+        {currentView === "settings" && (
+          <SettingsPanel
+            onBack={handleBackToDashboard}
+            onLogout={handleLogout}
+          />
+        )}
+      </Suspense>
 
       <DatabaseStatsModal 
         isOpen={showDatabaseModal}
