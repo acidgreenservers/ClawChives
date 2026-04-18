@@ -139,6 +139,7 @@ export function useBookmarkForm({
       let pinnedFolder = folders.find((f) => f.name === "Pinned");
       if (!pinnedFolder) {
         const newFolder: FolderType = {
+          id: generateUUID(),
           name: "Pinned",
           color: "#ef4444",
           createdAt: now,
