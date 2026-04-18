@@ -42,6 +42,20 @@ export function generateUUID(): string {
     return crypto.randomUUID();
   }
 
+  // Fallback for non-secure HTTP contexts (e.g., local Unraid deployments)
+  // crypto.getRandomValues is available even when crypto.randomUUID is absent.
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    
+    // Set version (4) and variant (10) for UUIDv4
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    
+    const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+  }
+
   // 🛡️ Sentinel Security Fix: Removed insecure Math.random() fallback.
   // Predictable UUIDs can lead to ID guessing and collision attacks.
   // Application must fail securely if a cryptographically secure PRNG is unavailable.
