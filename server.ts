@@ -3,8 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
+import { createServer as createHttpsServer } from 'https';
+import { generateSelfSignedCert, getCertPaths } from './src/server/ssl/generateCert.js';
 
 // @ts-ignore — plain JS module, no type declarations
 import { getCorsConfig } from './src/config/corsConfig.js';
@@ -142,8 +144,41 @@ app.use('/api', (_req, res) => res.status(404).json({ success: false, error: 'Ro
 app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🦞 ClawChives v2 API running on port ${PORT}`);
-  console.log(`   Health:      http://localhost:${PORT}/api/health`);
-  console.log(`   Issue token: POST http://localhost:${PORT}/api/auth/token\n`);
-});
+const ENABLE_HTTPS = process.env.ENABLE_HTTPS === 'true';
+
+if (ENABLE_HTTPS) {
+  generateSelfSignedCert();
+  const certs = getCertPaths();
+
+  if (certs) {
+    try {
+      const options = {
+        cert: readFileSync(certs.cert),
+        key: readFileSync(certs.key),
+      };
+
+      createHttpsServer(options, app).listen(PORT, '0.0.0.0', () => {
+        console.log(`\n🔒 ClawChives v2 API running securely (HTTPS) on port ${PORT}`);
+        console.log(`   Health:      https://localhost:${PORT}/api/health`);
+        console.log(`   Issue token: POST https://localhost:${PORT}/api/auth/token\n`);
+      });
+    } catch (err: any) {
+      console.error('❌ Failed to start HTTPS server:', err.message);
+      console.log('🔗 Falling back to HTTP...');
+      startHttp();
+    }
+  } else {
+    console.error('❌ HTTPS requested but no certificates found. Falling back to HTTP.');
+    startHttp();
+  }
+} else {
+  startHttp();
+}
+
+function startHttp() {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n🦞 ClawChives v2 API running on port ${PORT} (HTTP)`);
+    console.log(`   Health:      http://localhost:${PORT}/api/health`);
+    console.log(`   Issue token: POST http://localhost:${PORT}/api/auth/token\n`);
+  });
+}
