@@ -139,7 +139,6 @@ export function useBookmarkForm({
       let pinnedFolder = folders.find((f) => f.name === "Pinned");
       if (!pinnedFolder) {
         const newFolder: FolderType = {
-          id: generateUUID(),
           name: "Pinned",
           color: "#ef4444",
           createdAt: now,
@@ -176,13 +175,12 @@ export function useBookmarkForm({
       title: title.trim() || "Untitled",
       description: description.trim() || undefined,
       tags,
-      folderId: finalFolderId, // Can be null, and we want to pass null to the backend explicitly
+      folderId: finalFolderId,
       starred,
       archived,
       jinaUrl: finalJinaUrl !== undefined ? finalJinaUrl : bookmark?.jinaUrl,
       updatedAt: now,
     } : {
-      id: generateUUID(),
       url: url.trim(),
       title: title.trim() || "Untitled",
       description: description.trim() || undefined,
