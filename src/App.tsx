@@ -3,7 +3,7 @@ import { DatabaseStatsModal } from "@/features/dashboard/components/modals/Datab
 import { useDatabaseAdapter } from "@/services/database/DatabaseProvider";
 import { useTheme, type Theme } from "@/shared/theme/theme-provider";
 import { getApiBaseUrl } from "@/config/apiConfig";
-import { queryClient } from "@/services/queryClient";
+import { clearUserSession } from "@/services/auth/clearUserSession";
 
 const LandingPage = lazy(() => import("@/features/landing/LandingPage").then(m => ({ default: m.LandingPage })));
 const LoginForm = lazy(() => import("@/features/auth/LoginForm").then(m => ({ default: m.LoginForm })));
@@ -131,12 +131,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("cc_api_token");
-    sessionStorage.removeItem("cc_user_uuid");
-    sessionStorage.removeItem("cc_username");
-    sessionStorage.removeItem("cc_key_type");
-    sessionStorage.removeItem("cc_view");
-    queryClient.clear();
+    clearUserSession();
     setCurrentUser(null);
     setCurrentView("landing");
   };
