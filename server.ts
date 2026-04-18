@@ -55,7 +55,7 @@ app.use(helmet({
       styleSrc:      ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc:       ["'self'", 'https://fonts.gstatic.com'],
       imgSrc:        ["'self'", 'data:', 'https:'],
-      connectSrc:    ["'self'", 'wss:', 'ws:', 'https://r.jina.ai'],
+      connectSrc:    ["'self'", 'wss:', 'ws:', 'https://r.jina.ai', 'https://api.microlink.io'],
       upgradeInsecureRequests: process.env.ENFORCE_HTTPS === 'true' ? [] : null,
     },
   },

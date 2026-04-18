@@ -22,11 +22,12 @@ export function getCorsConfig() {
             return callback(null, true);
           }
 
-          // Allow private IP ranges (LAN)
+          // Allow private IP ranges (LAN + Tailscale CGNAT)
           const isPrivateIP =
             /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
             /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
-            /^172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname);
+            /^172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
+            /^100\.(6[4-9]|[7-9]\d|1[0-1]\d|12[0-7])\.\d{1,3}\.\d{1,3}$/.test(hostname);
 
           if (isPrivateIP) {
             return callback(null, true);
@@ -66,12 +67,13 @@ export function getCorsConfig() {
             return callback(null, true);
           }
 
-          // Allow private IP ranges (LAN)
-          // 192.168.x.x, 10.x.x.x, 172.16-31.x.x
+          // Allow private IP ranges (LAN + Tailscale CGNAT)
+          // 192.168.x.x, 10.x.x.x, 172.16-31.x.x, 100.64-127.x.x
           const isPrivateIP =
             /^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
             /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
-            /^172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname);
+            /^172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
+            /^100\.(6[4-9]|[7-9]\d|1[0-1]\d|12[0-7])\.\d{1,3}\.\d{1,3}$/.test(hostname);
 
           if (isPrivateIP) {
             return callback(null, true);
