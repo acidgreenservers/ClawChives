@@ -60,6 +60,23 @@ export function useInfiniteBookmarks() {
         }
       );
     },
+    onSuccess: (savedBookmark) => {
+      // Update cache with actual backend response (including updated_at) to trigger React.memo
+      if (savedBookmark) {
+        queryClient.setQueriesData(
+          { queryKey: BOOKMARKS_QUERY_KEY },
+          (oldData: any) => {
+            if (!oldData?.pages) return oldData;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page: Bookmark[]) =>
+                page.map((b) => (b.id === savedBookmark.id ? savedBookmark : b))
+              ),
+            };
+          }
+        );
+      }
+    },
     onSettled: () => {
       // Invalidate stats if starred/archived/folder changed
       queryClient.invalidateQueries({ queryKey: BOOKMARK_STATS_QUERY_KEY });
