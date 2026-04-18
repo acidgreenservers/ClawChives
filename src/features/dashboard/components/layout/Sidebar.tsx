@@ -155,30 +155,34 @@ export function Sidebar({
         </div>
       )}
 
-      {/* Nav */}
-      <div className="flex-1 overflow-y-auto p-3">
-        <SidebarNav
-          filterType={filterType}
-          selectedFolder={selectedFolder}
-          onFilterChange={onFilterChange}
-          onSelectFolder={onSelectFolder}
-          bookmarkCounts={bookmarkCounts}
-          settingsMode={settingsMode}
-          activeSettingsTab={activeSettingsTab}
-          onSettingsTabChange={onSettingsTabChange}
-          onGoToSettings={!settingsMode ? onGoToSettings : undefined}
-          onGoToDashboard={settingsMode ? onGoToDashboard : undefined}
-        />
+      {/* Main Sidebar Layout */}
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="p-3 shrink-0">
+          <SidebarNav
+            filterType={filterType}
+            selectedFolder={selectedFolder}
+            onFilterChange={onFilterChange}
+            onSelectFolder={onSelectFolder}
+            bookmarkCounts={bookmarkCounts}
+            settingsMode={settingsMode}
+            activeSettingsTab={activeSettingsTab}
+            onSettingsTabChange={onSettingsTabChange}
+            onGoToSettings={!settingsMode ? onGoToSettings : undefined}
+            onGoToDashboard={settingsMode ? onGoToDashboard : undefined}
+          />
+        </div>
 
         {!settingsMode && (
-          <FolderList
-            folders={folders}
-            selectedFolder={selectedFolder}
-            onSelectFolder={onSelectFolder}
-            openCreateFolder={openCreateFolder}
-            openEditFolder={openEditFolder}
-            folderBookmarkCount={folderBookmarkCount}
-          />
+          <div className="flex-1 flex flex-col min-h-0 p-3 pt-0">
+            <FolderList
+              folders={folders}
+              selectedFolder={selectedFolder}
+              onSelectFolder={onSelectFolder}
+              openCreateFolder={openCreateFolder}
+              openEditFolder={openEditFolder}
+              folderBookmarkCount={folderBookmarkCount}
+            />
+          </div>
         )}
       </div>
 

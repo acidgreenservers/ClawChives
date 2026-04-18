@@ -26,8 +26,8 @@ export function FolderList({
   folderBookmarkCount,
 }: FolderListProps) {
   return (
-    <div className="mt-6">
-      <div className="flex items-center justify-between px-3 mb-2">
+    <>
+      <div className="flex items-center justify-between px-3 mt-4 mb-2 shrink-0">
         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           Pods
         </span>
@@ -50,8 +50,9 @@ export function FolderList({
           New Pod
         </button>
       ) : (
-        <nav className="space-y-1">
-          {folders.map((folder) => (
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <nav className="space-y-1">
+            {folders.map((folder) => (
             <div
               key={folder.id}
               className={`group/pod flex items-center gap-0 rounded-lg transition-colors ${
@@ -91,8 +92,9 @@ export function FolderList({
               </button>
             </div>
           ))}
-        </nav>
+          </nav>
+        </div>
       )}
-    </div>
+    </>
   );
 }

@@ -60,7 +60,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   const showGrid = activeTab !== "dashboard" && activeTab !== "tags";
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
