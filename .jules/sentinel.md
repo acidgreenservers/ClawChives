@@ -10,3 +10,8 @@
 **Prevention:**
 1. `is_active = 1` checks should be rigorously applied across all token validation steps natively (or we should delete `api-` tokens eagerly when revoking an agent).
 2. For secure keys, explicitly use high-level methods like `crypto.randomInt` instead of manual arithmetic on byte buffers, or rely strictly on `crypto.randomUUID()` / base64 of bytes without manual alphabet mapping.
+
+## 2024-04-15 - [Insecure PRNG Fallback for UUIDs]
+**Vulnerability:** `generateUUID` function used `Math.random()` as a fallback in environments where `crypto.randomUUID` is unavailable.
+**Learning:** `Math.random()` is not cryptographically secure and using it for identifiers like UUIDs can lead to predictable IDs and collision attacks. Developers sometimes use insecure fallbacks to maintain functionality in non-secure HTTP environments, inadvertently compromising the unpredictability of security-critical identifiers.
+**Prevention:** Always fail securely by throwing an error rather than falling back to weak random number generators (`Math.random()`) for security-related IDs or tokens.
