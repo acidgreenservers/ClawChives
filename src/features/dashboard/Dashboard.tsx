@@ -122,7 +122,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {activeTab === "dashboard" && (
             <DashboardHome
               bookmarks={flatBookmarks.filter((b) => !b.archived)}

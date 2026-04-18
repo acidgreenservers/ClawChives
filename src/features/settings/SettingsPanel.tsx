@@ -24,7 +24,7 @@ export function SettingsPanel({ onBack, onLogout }: SettingsPanelProps) {
   }, [activeTab]);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -78,7 +78,7 @@ export function SettingsPanel({ onBack, onLogout }: SettingsPanelProps) {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        <div className="flex-1 overflow-auto p-4 md:p-6">
+        <div className="flex-1 overflow-y-auto min-h-0 p-4 md:p-6">
           {activeTab === "profile" && <ProfileSettings />}
           {activeTab === "appearance" && <AppearanceSettings />}
           {activeTab === "agents" && <AgentPermissions />}
