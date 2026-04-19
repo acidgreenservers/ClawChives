@@ -18,6 +18,8 @@ export function AppearanceSettings() {
   const [sortBy, setSortBy] = useState<"dateAdded" | "title" | "starred">("dateAdded");
   const [notifications, setNotifications] = useState(true);
   const [pwaUpdates, setPwaUpdates] = useState(true);
+  const [isResizable, setIsResizable] = useState(() => localStorage.getItem("cc_is_resizable") === "true");
+  const [showToast, setShowToast] = useState(false);
 
   const db = useDatabaseAdapter();
 
@@ -57,6 +59,9 @@ export function AppearanceSettings() {
       notifications,
       pwaUpdates,
     });
+    
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   return (
@@ -189,7 +194,6 @@ export function AppearanceSettings() {
                 />
               </button>
             </div>
-
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Show Favicons</Label>
@@ -208,6 +212,29 @@ export function AppearanceSettings() {
                 />
               </button>
             </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="font-medium">Resizable Sidebar</Label>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Enable draggable sidebar width (Dashboard only)</p>
+              </div>
+              <button
+                onClick={() => {
+                  const newVal = !isResizable;
+                  setIsResizable(newVal);
+                  localStorage.setItem("cc_is_resizable", newVal ? "true" : "false");
+                }}
+                className={`relative w-12 h-6 rounded-full transition-colors ${
+                  isResizable ? "bg-cyan-600" : "bg-slate-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-1 w-4 h-4 bg-white dark:bg-slate-900 rounded-full transition-transform ${
+                    isResizable ? "left-7" : "left-1"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
 
           {/* Save Button */}
@@ -219,6 +246,12 @@ export function AppearanceSettings() {
               <Palette className="w-4 h-4 mr-2" />
               Apply Appearance Settings
             </Button>
+            
+            {showToast && (
+              <div className="mt-4 p-3 rounded-lg bg-cyan-500 text-red-600 font-bold text-center animate-in fade-in slide-in-from-top-2 duration-300">
+                Appearance Settings Applied Successfully! 🦞
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
