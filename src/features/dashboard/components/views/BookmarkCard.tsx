@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Star, Archive, Trash2, Pencil, ExternalLink, Clock } from "lucide-react";
 import { Button } from '@/shared/ui/button';
 import { ConfirmModal } from '@/shared/ui/LobsterModal';
+import { getCardTheme } from "../../utils/cardThemes";
 import type { Bookmark, IconSize } from "@/services/types";
 
 interface BookmarkCardProps {
@@ -79,9 +80,10 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
 
   // List view layout
   if (layout === "list") {
+    const theme = getCardTheme(bookmark.id);
     return (
       <div
-        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-3 hover:shadow-md hover:border-cyan-300 dark:hover:border-cyan-700 transition-all cursor-pointer flex items-center gap-4 relative"
+        className={`group ${theme.bg} border ${theme.border} ${theme.hover} rounded-lg px-4 py-3 hover:shadow-md transition-all cursor-pointer flex items-center gap-4 relative`}
         draggable={!!onDragStart}
         onDragStart={(e) => onDragStart?.(e, bookmark.id)}
         onClick={handleCardClick}
@@ -143,7 +145,7 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
 
         {/* Title + URL */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm text-slate-900 dark:text-slate-50 truncate group-hover:text-cyan-700 dark:group-hover:text-cyan-400 transition-colors">
+          <h3 className={`font-semibold text-sm ${theme.text} truncate group-hover:${theme.accent} transition-colors`}>
             {bookmark.title || "Untitled"}
           </h3>
           <span className="text-xs text-slate-500 dark:text-slate-400 truncate block hover:text-cyan-600">
@@ -225,9 +227,11 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
     );
   }
 
+  const theme = getCardTheme(bookmark.id);
+
   return (
     <div
-      className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-lg hover:border-cyan-300 dark:hover:border-cyan-700 transition-all cursor-pointer relative"
+      className={`group ${theme.bg} border ${theme.border} ${theme.hover} rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer relative`}
       draggable={!!onDragStart}
       onDragStart={(e) => onDragStart?.(e, bookmark.id)}
       onClick={handleCardClick}
@@ -287,7 +291,7 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
         </div>
         <div className="flex-1 min-w-0">
           <h3
-            className="font-semibold text-slate-900 dark:text-slate-50 truncate group-hover:text-cyan-700 dark:group-hover:text-cyan-400 transition-colors"
+            className={`font-semibold ${theme.text} truncate group-hover:${theme.accent} transition-colors`}
           >
             {bookmark.title || "Untitled"}
           </h3>

@@ -60,18 +60,18 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   const showGrid = activeTab !== "dashboard" && activeTab !== "tags";
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden flex">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="md:hidden fixed inset-0 bg-black/40 z-30"
+          className="md:hidden fixed inset-0 bg-black/40 z-50 py-0"
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - FIXED to the viewport */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-40 w-64 h-full flex-none flex flex-col overflow-hidden bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 ease-in-out md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -103,8 +103,8 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
         />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
+      {/* Main Content Area - Shifted by sidebar width on desktop */}
+      <main className="md:ml-64 h-full flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950 overflow-hidden relative">
         <Header
           user={user}
           onGoToSettings={onGoToSettings}
