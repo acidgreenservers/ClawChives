@@ -112,7 +112,7 @@ export function Sidebar({
   );
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900">
+    <div className="h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900">
       {/* Logo */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-800">
         <InteractiveBrand 
@@ -173,7 +173,7 @@ export function Sidebar({
         </div>
 
         {!settingsMode && (
-          <div className="flex-1 flex flex-col min-h-0 p-3 pt-0">
+          <div className="flex-1 min-h-0 px-3 pb-3">
             <FolderList
               folders={folders}
               selectedFolder={selectedFolder}
