@@ -173,7 +173,7 @@ export function Sidebar({
         </div>
 
         {!settingsMode && (
-          <div className="flex-1 min-h-0 px-3 pb-3">
+          <div className="flex-1 min-h-0 flex flex-col px-3 pb-3">
             <FolderList
               folders={folders}
               selectedFolder={selectedFolder}

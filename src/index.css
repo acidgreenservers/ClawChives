@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Layout anchor – must be outside @layer to win over Tailwind preflight */
+html, body, #root {
+  height: 100%;
+}
+
 @layer base {
   body {
     @apply antialiased text-slate-900 bg-slate-50;
