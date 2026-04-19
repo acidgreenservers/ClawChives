@@ -44,7 +44,7 @@ export function FolderList({
   });
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-0 h-full">
       {/* Pods header — always visible, never shrinks */}
       <div className="flex items-center justify-between px-3 mt-4 mb-2 shrink-0">
         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">

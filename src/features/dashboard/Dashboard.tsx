@@ -60,7 +60,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
   const showGrid = activeTab !== "dashboard" && activeTab !== "tags";
 
   return (
-    <div className="h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden flex">
+    <div className="h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -69,7 +69,7 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
         />
       )}
 
-      {/* Sidebar - FIXED to the viewport */}
+      {/* Sidebar - FIXED to the left viewport wall */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 ease-in-out md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -103,8 +103,8 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
         />
       </aside>
 
-      {/* Main Content Area - Shifted by sidebar width on desktop */}
-      <main className="md:ml-64 h-full flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950 overflow-hidden relative">
+      {/* Main Content Area - Shifted by padding on desktop */}
+      <main className="md:pl-64 h-full w-full flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950 overflow-hidden relative">
         <Header
           user={user}
           onGoToSettings={onGoToSettings}
@@ -122,24 +122,28 @@ export function Dashboard({ user, onLogout, onGoToSettings, onShowDatabaseStats 
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 min-h-0 relative">
           {activeTab === "dashboard" && (
-            <DashboardHome
-              bookmarks={flatBookmarks.filter((b) => !b.archived)}
-              folders={folders}
-              stats={stats}
-              allTags={allTags}
-            />
+            <div className="h-full overflow-y-auto">
+              <DashboardHome
+                bookmarks={flatBookmarks.filter((b) => !b.archived)}
+                folders={folders}
+                stats={stats}
+                allTags={allTags}
+              />
+            </div>
           )}
           {activeTab === "tags" && (
-            <TagsView
-              bookmarks={flatBookmarks.filter((b) => !b.archived)}
-              onSelectTag={setTagFilter}
-              onDeleteTag={handleDeleteTag}
-            />
+            <div className="h-full overflow-y-auto">
+              <TagsView
+                bookmarks={flatBookmarks.filter((b) => !b.archived)}
+                onSelectTag={setTagFilter}
+                onDeleteTag={handleDeleteTag}
+              />
+            </div>
           )}
           {showGrid && (
-            <div className="p-6">
+            <div className="h-full p-6">
               <BookmarkGrid
                 bookmarks={filteredBookmarks}
                 layout={viewMode}

@@ -5,6 +5,7 @@
 /* Layout anchor – must be outside @layer to win over Tailwind preflight */
 html, body, #root {
   height: 100%;
+  overflow: hidden !important;
 }
 
 @layer base {
