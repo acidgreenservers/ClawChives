@@ -112,7 +112,7 @@ export function Sidebar({
   );
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900">
+    <div className="h-full flex flex-col overflow-hidden bg-white dark:bg-slate-900">
       {/* Logo */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-800">
         <InteractiveBrand 
@@ -155,30 +155,34 @@ export function Sidebar({
         </div>
       )}
 
-      {/* Nav */}
-      <div className="flex-1 overflow-y-auto p-3">
-        <SidebarNav
-          filterType={filterType}
-          selectedFolder={selectedFolder}
-          onFilterChange={onFilterChange}
-          onSelectFolder={onSelectFolder}
-          bookmarkCounts={bookmarkCounts}
-          settingsMode={settingsMode}
-          activeSettingsTab={activeSettingsTab}
-          onSettingsTabChange={onSettingsTabChange}
-          onGoToSettings={!settingsMode ? onGoToSettings : undefined}
-          onGoToDashboard={settingsMode ? onGoToDashboard : undefined}
-        />
+      {/* Main Sidebar Layout */}
+      <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
+        <div className="p-3 shrink-0">
+          <SidebarNav
+            filterType={filterType}
+            selectedFolder={selectedFolder}
+            onFilterChange={onFilterChange}
+            onSelectFolder={onSelectFolder}
+            bookmarkCounts={bookmarkCounts}
+            settingsMode={settingsMode}
+            activeSettingsTab={activeSettingsTab}
+            onSettingsTabChange={onSettingsTabChange}
+            onGoToSettings={!settingsMode ? onGoToSettings : undefined}
+            onGoToDashboard={settingsMode ? onGoToDashboard : undefined}
+          />
+        </div>
 
         {!settingsMode && (
-          <FolderList
-            folders={folders}
-            selectedFolder={selectedFolder}
-            onSelectFolder={onSelectFolder}
-            openCreateFolder={openCreateFolder}
-            openEditFolder={openEditFolder}
-            folderBookmarkCount={folderBookmarkCount}
-          />
+          <div className="flex-1 min-h-0 flex flex-col px-3 pb-3">
+            <FolderList
+              folders={folders}
+              selectedFolder={selectedFolder}
+              onSelectFolder={onSelectFolder}
+              openCreateFolder={openCreateFolder}
+              openEditFolder={openEditFolder}
+              folderBookmarkCount={folderBookmarkCount}
+            />
+          </div>
         )}
       </div>
 
