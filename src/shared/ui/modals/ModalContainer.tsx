@@ -10,9 +10,13 @@ export function ModalContainer({
   maxWidth?: string;
 }) {
   return (
-    <div className={BACKDROP}>
+    <div
+      className={BACKDROP}
+      onClick={(e) => e.stopPropagation()}
+    >
       <div
         className={`bg-white dark:bg-slate-900 border-2 ${borderColor} rounded-2xl shadow-2xl w-full ${maxWidth} overflow-hidden`}
+        onClick={(e) => e.stopPropagation()}
       >
         {children}
       </div>
