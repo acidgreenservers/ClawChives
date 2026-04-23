@@ -62,7 +62,7 @@ export function AlertModal({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="h-8 w-8 p-0 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50"
         >
           <X className="w-5 h-5" />
@@ -76,7 +76,7 @@ export function AlertModal({
 
       {/* Footer */}
       <div className={`flex p-6 border-t ${footerBorder}`}>
-        <Button onClick={onClose} className={`flex-1 ${btnColor}`}>
+        <Button onClick={(e) => { e.stopPropagation(); onClose(); }} className={`flex-1 ${btnColor}`}>
           Got it 🦞
         </Button>
       </div>
