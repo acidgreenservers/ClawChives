@@ -38,7 +38,7 @@ export function TagBlockedModal({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="h-8 w-8 p-0 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50"
         >
           <X className="w-5 h-5" />
@@ -84,7 +84,7 @@ export function TagBlockedModal({
       {/* Footer */}
       <div className="flex p-6 border-t border-amber-500/20 dark:border-amber-500/30">
         <Button
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="flex-1 bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20"
         >
           Got it, I'll clean the reef first 🦞

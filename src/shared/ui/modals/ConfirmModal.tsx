@@ -68,7 +68,7 @@ export function ConfirmModal({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="h-8 w-8 p-0 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50"
         >
           <X className="w-5 h-5" />
@@ -84,13 +84,13 @@ export function ConfirmModal({
       <div className={`flex gap-3 p-6 border-t ${footerBorder}`}>
         <Button
           variant="outline"
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="flex-1 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           {cancelLabel}
         </Button>
         <Button
-          onClick={() => { onConfirm(); onClose(); }}
+          onClick={(e) => { e.stopPropagation(); onConfirm(); onClose(); }}
           className={`flex-1 ${confirmBtn}`}
         >
           {confirmLabel}
