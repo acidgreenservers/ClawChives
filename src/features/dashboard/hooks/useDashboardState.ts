@@ -25,6 +25,13 @@ export const useDashboardState = () => {
   const [alertModal, setAlertModal] = useState<{ title: string; message: string; variant?: "info" | "error" } | null>(null);
   const [sortBy, setSortBy] = useState<SortBy>(() => (sessionStorage.getItem("cc_sort_by") as SortBy) || "date-desc");
   const [viewMode, setViewMode] = useState<"grid" | "list">(() => (sessionStorage.getItem("cc_view_mode") as "grid" | "list") || "grid");
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    const saved = localStorage.getItem("cc_sidebar_width");
+    return saved ? parseInt(saved, 10) : 256;
+  });
+  const [isResizable, setIsResizable] = useState<boolean>(() => {
+    return localStorage.getItem("cc_is_resizable") === "true";
+  });
 
   const db = useDatabaseAdapter();
   const queryClient = useQueryClient();
@@ -74,6 +81,18 @@ export const useDashboardState = () => {
   const handleViewChange = (mode: "grid" | "list") => {
     setViewMode(mode);
     sessionStorage.setItem("cc_view_mode", mode);
+  };
+
+  const handleSidebarWidthChange = (width: number) => {
+    // Enforce safety bounds: 200px - 600px
+    const constrained = Math.min(Math.max(width, 200), 600);
+    setSidebarWidth(constrained);
+    localStorage.setItem("cc_sidebar_width", constrained.toString());
+  };
+
+  const handleResizableToggle = (val: boolean) => {
+    setIsResizable(val);
+    localStorage.setItem("cc_is_resizable", val ? "true" : "false");
   };
 
   const handleSaveBookmark = async (bookmark: Bookmark) => {
@@ -233,6 +252,10 @@ export const useDashboardState = () => {
     fetchNextPage,
     deleteBookmark,
     updateBookmark,
-    loadFolders
+    loadFolders,
+    sidebarWidth,
+    setSidebarWidth: handleSidebarWidthChange,
+    isResizable,
+    setIsResizable: handleResizableToggle
   };
 };

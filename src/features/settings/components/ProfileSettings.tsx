@@ -25,7 +25,7 @@ export function ProfileSettings() {
     if (!db) return;
     const settings = await db.getProfileSettings();
     if (settings) {
-      setDisplayName(settings.displayName);
+      setDisplayName(settings.displayName || "");
       setEmail(settings.email || "");
       setAvatar(settings.avatar || "");
     }
