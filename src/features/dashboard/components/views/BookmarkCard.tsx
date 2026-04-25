@@ -74,9 +74,16 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const pinchCardClick = (_e: React.MouseEvent) => {
     if (confirmOpen) return;
-    window.open(bookmark.url, "_blank", "noopener,noreferrer");
+    
+    // Hard-shell validation: Only allow http/https to prevent XSS via javascript: uris
+    const isSafe = bookmark.url.startsWith('http://') || bookmark.url.startsWith('https://');
+    if (isSafe) {
+      window.open(bookmark.url, "_blank", "noopener,noreferrer");
+    } else {
+      console.warn("Blocked unsafe URL navigation:", bookmark.url);
+    }
   };
 
   // List view layout
@@ -87,7 +94,7 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
         className={`group ${theme.bg} border ${theme.border} ${theme.hover} rounded-lg px-4 py-3 hover:shadow-md transition-all cursor-pointer flex items-center gap-4 relative`}
         draggable={!!onDragStart}
         onDragStart={(e) => onDragStart?.(e, bookmark.id)}
-        onClick={handleCardClick}
+        onClick={pinchCardClick}
         onContextMenu={(e) => {
           e.preventDefault();
           setContextMenu({ x: e.clientX, y: e.clientY });
@@ -235,7 +242,7 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
       className={`group ${theme.bg} border ${theme.border} ${theme.hover} rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer relative`}
       draggable={!!onDragStart}
       onDragStart={(e) => onDragStart?.(e, bookmark.id)}
-      onClick={handleCardClick}
+      onClick={pinchCardClick}
       onContextMenu={(e) => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY });
