@@ -46,9 +46,9 @@ export function LoginForm({ onSuccess, onCancel }: LoginFormProps) {
 
         <div className="text-center mb-8 flex flex-col items-center">
           <InteractiveBrand 
-            variant="prominent" 
-            showIcon={true} 
-            className="flex-col gap-4 mb-4" 
+            variant="subtle"
+            showIcon={true}
+            className="flex-col gap-4 mb-4"
             iconClassName="w-16 h-16"
           />
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-2">Welcome Back</h1>

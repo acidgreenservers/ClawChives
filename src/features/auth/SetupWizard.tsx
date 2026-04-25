@@ -49,9 +49,9 @@ export function SetupWizard({ onComplete, onCancel }: SetupWizardProps) {
       <Card className="w-full max-w-lg shadow-xl border-2 border-red-500">
         <CardHeader className="text-center pb-4 flex flex-col items-center">
           <InteractiveBrand 
-            variant="prominent" 
-            showIcon={true} 
-            className="flex-col gap-4 mb-4" 
+            variant="subtle"
+            showIcon={true}
+            className="flex-col gap-4 mb-4"
             iconClassName="w-16 h-16"
           />
           <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-50">Welcome to ClawChives</CardTitle>
