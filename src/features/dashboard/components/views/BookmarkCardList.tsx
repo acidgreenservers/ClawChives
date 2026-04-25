@@ -31,9 +31,16 @@ export const BookmarkCardList = React.memo((props: BookmarkCardListProps) => {
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number } | null>(null);
 
-  const handleCardClick = (_e: React.MouseEvent) => {
+  const pinchCardClick = (_e: React.MouseEvent) => {
     if (confirmOpen) return;
-    window.open(bookmark.url, "_blank", "noopener,noreferrer");
+    
+    // Hard-shell validation: Only allow http/https to prevent XSS via javascript: uris
+    const isSafe = bookmark.url.startsWith('http://') || bookmark.url.startsWith('https://');
+    if (isSafe) {
+      window.open(bookmark.url, "_blank", "noopener,noreferrer");
+    } else {
+      console.warn("Blocked unsafe URL navigation:", bookmark.url);
+    }
   };
 
   return (
@@ -41,7 +48,7 @@ export const BookmarkCardList = React.memo((props: BookmarkCardListProps) => {
       className="group flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 hover:shadow-lg hover:border-cyan-300 dark:hover:border-cyan-700 transition-all cursor-pointer relative"
       draggable={!!onDragStart}
       onDragStart={(e) => onDragStart?.(e, bookmark.id!)}
-      onClick={handleCardClick}
+      onClick={pinchCardClick}
       onContextMenu={(e) => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY });
