@@ -74,7 +74,7 @@ export const BookmarkCard = React.memo((props: BookmarkCardProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const handleCardClick = (_e: React.MouseEvent) => {
     if (confirmOpen) return;
     window.open(bookmark.url, "_blank", "noopener,noreferrer");
   };
