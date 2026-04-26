@@ -130,6 +130,7 @@ gantt
 
 ## 🔭 Phase 8 — Lobster Ecosystem Integration
 
+rename the agent_keys table and routes to lobster_keys to be more aligned to Lobsterized philosophy.
 - [ ] **Shell-Sidecar** — Browser extension for one-click pinching (Chrome/Firefox)
 - [ ] **Molt-Sync** — Encrypted p2p sync between browser and remote SQLite
 - [ ] Webhook support for `lb-` keys
